@@ -1,0 +1,26 @@
+{
+  "name": "@mirrorn/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@lucide/vue": "^1.47.0",
+    "@mirrorn/shared": "workspace:*",
+    "fuse.js": "^7.5.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7",
+    "vitest": "^2.1.8",
+    "vue-tsc": "^2.2.0"
+  }
+}

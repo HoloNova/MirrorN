@@ -1,0 +1,91 @@
+[
+  {
+    "id": "pypi-official",
+    "name": "PyPI 官方源",
+    "kind": "official",
+    "homepageUrl": "https://pypi.org/",
+    "sources": [
+      {
+        "url": "https://pip.pypa.io/en/stable/cli/pip_install/",
+        "checkedAt": "2026-09-18",
+        "note": "pip 官方安装文档中的默认 Python 包索引。"
+      }
+    ],
+    "aliases": ["pypi", "pypi official", "pypi官方源", "python官方源", "pip官方源"]
+  },
+  {
+    "id": "npm-official",
+    "name": "npm 官方 Registry",
+    "kind": "official",
+    "homepageUrl": "https://www.npmjs.com/",
+    "sources": [
+      {
+        "url": "https://docs.npmjs.com/cli/v11/using-npm/registry",
+        "checkedAt": "2026-09-18",
+        "note": "npm 官方 Registry 文档。"
+      }
+    ],
+    "aliases": ["npmjs", "npm official", "npm官方源", "registry.npmjs.org"]
+  },
+  {
+    "id": "tsinghua",
+    "name": "清华大学开源软件镜像站",
+    "kind": "university",
+    "homepageUrl": "https://mirrors.tuna.tsinghua.edu.cn/",
+    "sources": [
+      {
+        "url": "https://mirrors.tuna.tsinghua.edu.cn/help/pypi/",
+        "checkedAt": "2026-09-18",
+        "note": "清华 TUNA 的 PyPI 使用帮助；该记录只关联 pip，不代表 npm Registry。"
+      }
+    ],
+    "aliases": ["tuna", "tsinghua", "qinghua", "清华", "清华源", "清华大学", "thu"]
+  },
+  {
+    "id": "aliyun",
+    "name": "阿里云开发者镜像站",
+    "kind": "commercial",
+    "homepageUrl": "https://developer.aliyun.com/mirror/",
+    "sources": [
+      {
+        "url": "https://developer.aliyun.com/mirror/pypi",
+        "checkedAt": "2026-09-18",
+        "note": "阿里云 PyPI 镜像说明。"
+      },
+      {
+        "url": "https://developer.aliyun.com/mirror/NPM",
+        "checkedAt": "2026-09-18",
+        "note": "阿里云 npm 镜像说明。"
+      }
+    ],
+    "aliases": ["aliyun", "ali", "阿里", "阿里云", "阿里云镜像", "aliyun mirror"]
+  },
+  {
+    "id": "npmmirror",
+    "name": "npmmirror",
+    "kind": "community",
+    "homepageUrl": "https://npmmirror.com/",
+    "sources": [
+      {
+        "url": "https://developer.aliyun.com/mirror/NPM",
+        "checkedAt": "2026-09-18",
+        "note": "通过阿里云镜像说明核对 Registry 地址；不将其标记为 npm 官方源。"
+      }
+    ],
+    "aliases": ["npmmirror", "taobao", "淘宝", "淘宝源", "cnpm", "cnpm源", "npm淘宝源"]
+  },
+  {
+    "id": "tencent",
+    "name": "腾讯云软件源",
+    "kind": "commercial",
+    "homepageUrl": "https://mirrors.tencent.com/",
+    "sources": [
+      {
+        "url": "https://cloud.tencent.com/document/product/213/8623",
+        "checkedAt": "2026-09-18",
+        "note": "腾讯云文档中的 NPM 软件源地址为 mirrors.tencent.com/npm。"
+      }
+    ],
+    "aliases": ["tencent", "tengxun", "腾讯", "腾讯云", "腾讯云镜像", "tx"]
+  }
+]

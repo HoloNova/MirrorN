@@ -1,0 +1,91 @@
+[
+  {
+    "id": "pip-ssl-certificate-error",
+    "ecosystemId": "pip",
+    "title": "换源后提示 SSL 证书校验失败",
+    "problem": "安装包时出现 SSLError、CERTIFICATE_VERIFY_FAILED，或提示自签名证书。",
+    "steps": [
+      {
+        "title": "先排除本地时间问题",
+        "content": "检查系统时间是否正确。时间偏差过大会让所有 HTTPS 证书校验失败，而且与换源无关。"
+      },
+      {
+        "title": "确认系统根证书已安装",
+        "content": "Debian/Ubuntu 需要 ca-certificates 包，RHEL 系同样需要 ca-certificates。安装后重新执行命令再判断。"
+      },
+      {
+        "title": "公司或学校网络的 TLS 代理",
+        "content": "如果网络里有 TLS 中间人代理，需要把该代理的根证书加入系统信任库，而不是关闭校验。"
+      },
+      {
+        "title": "最后才考虑跳过证书校验",
+        "content": "只有在完全确认该镜像站可信、并理解风险时，才临时加上 --trusted-host <主机名>。它不会验证证书，不要写进全局配置长期使用。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://pip.pypa.io/en/stable/cli/pip_install/",
+        "checkedAt": "2026-09-18",
+        "note": "pip 官方文档中 --trusted-host 与 --cert 的说明。"
+      }
+    ]
+  },
+  {
+    "id": "pip-command-not-found",
+    "ecosystemId": "pip",
+    "title": "提示 python 不是内部或外部命令 / command not found",
+    "problem": "执行 python 或 pip 时终端提示找不到命令，Windows 上是“不是内部或外部命令，也不是可运行的程序”。",
+    "steps": [
+      {
+        "title": "先确认命令名",
+        "content": "macOS 与多数 Linux 发行版只提供 python3，请把命令中的 python 换成 python3 再试。"
+      },
+      {
+        "title": "Windows 上确认是否真的安装了 Python",
+        "content": "执行 py -0p 或 where python 查看安装位置与版本；如果没有任何输出，说明尚未安装 Python。"
+      },
+      {
+        "title": "把 Python 加入 PATH",
+        "content": "已安装但找不到命令时，需要把 Python 安装目录及其 Scripts 子目录加入 PATH 环境变量，然后重新打开终端。"
+      },
+      {
+        "title": "这与换源无关",
+        "content": "先让 python3 --version 和 python3 -m pip --version 正常输出，再执行本向导的换源命令。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://docs.python.org/3/using/windows.html",
+        "checkedAt": "2026-09-18",
+        "note": "Python 官方 Windows 使用文档，包含 PATH 与 py 启动器说明。"
+      }
+    ]
+  },
+  {
+    "id": "pip-permission-denied",
+    "ecosystemId": "pip",
+    "title": "安装或写入配置时提示权限不足",
+    "problem": "出现 Permission denied、EACCES，或提示无法写入系统目录。",
+    "steps": [
+      {
+        "title": "不要用 sudo 装包",
+        "content": "用 sudo 安装会污染系统 Python 环境。改为用户级安装：python3 -m pip install --user <包名>。"
+      },
+      {
+        "title": "优先使用虚拟环境",
+        "content": "在项目目录执行 python3 -m venv .venv 并激活，再安装依赖；这样不会影响系统环境，也不会有权限问题。"
+      },
+      {
+        "title": "换源本身不需要管理员权限",
+        "content": "pip config set 写入的是用户级配置文件，普通用户即可执行。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://pip.pypa.io/en/stable/cli/pip_install/",
+        "checkedAt": "2026-09-18",
+        "note": "pip 官方文档中 --user 参数说明。"
+      }
+    ]
+  }
+]

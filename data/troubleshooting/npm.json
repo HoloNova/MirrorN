@@ -1,0 +1,91 @@
+[
+  {
+    "id": "npm-eacces-permission",
+    "ecosystemId": "npm",
+    "title": "全局安装时出现 EACCES 权限错误",
+    "problem": "执行 npm install -g 时报 EACCES、permission denied。",
+    "steps": [
+      {
+        "title": "不要用 sudo 运行 npm",
+        "content": "用管理员权限执行 npm 会让缓存和全局目录归 root 所有，之后普通用户操作会持续报权限错误。"
+      },
+      {
+        "title": "推荐用版本管理器安装 Node",
+        "content": "使用 nvm、fnm 等版本管理器安装 Node.js，全局包目录自然属于当前用户，不会再出现 EACCES。"
+      },
+      {
+        "title": "或者修改全局目录位置",
+        "content": "执行 npm config set prefix ~/.npm-global，并把 ~/.npm-global/bin 加入 PATH。"
+      },
+      {
+        "title": "与本向导的关系",
+        "content": "本向导只修改 registry，不会改动 prefix 或目录归属；遇到权限问题请先按上面步骤处理。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally",
+        "checkedAt": "2026-09-18",
+        "note": "npm 官方对 EACCES 的说明与推荐处理方式。"
+      }
+    ]
+  },
+  {
+    "id": "npm-registry-not-applied",
+    "ecosystemId": "npm",
+    "title": "设置后 npm 仍在使用旧 Registry",
+    "problem": "执行过 npm config set registry 之后，npm config get registry 显示的并不是刚设置的地址。",
+    "steps": [
+      {
+        "title": "查看当前生效配置",
+        "content": "执行 npm config list，确认生效的值以及它来自哪个配置文件。"
+      },
+      {
+        "title": "理解配置优先级",
+        "content": "命令行参数高于环境变量（如 NPM_CONFIG_REGISTRY），环境变量高于项目目录下的 .npmrc，项目级 .npmrc 又高于用户级 .npmrc 和全局配置。"
+      },
+      {
+        "title": "检查项目级 .npmrc",
+        "content": "如果你在某个项目目录里，项目自带的 .npmrc 会覆盖用户级设置；修改或删除其中关于 registry 的行后再验证。"
+      },
+      {
+        "title": "检查环境变量",
+        "content": "如果曾设置过 NPM_CONFIG_REGISTRY，需要在对应的 shell 配置文件中取消或修改它。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://docs.npmjs.com/cli/v11/using-npm/config",
+        "checkedAt": "2026-09-18",
+        "note": "npm 官方配置层级与优先级说明。"
+      }
+    ]
+  },
+  {
+    "id": "npm-publish-to-mirror",
+    "ecosystemId": "npm",
+    "title": "发布包失败：镜像 Registry 不支持发布",
+    "problem": "把 Registry 换到镜像后执行 npm publish 报错，或包没有出现在 npm 官方仓库。",
+    "steps": [
+      {
+        "title": "发布时临时切回官方 Registry",
+        "content": "镜像 Registry 通常只做只读代理，不支持 publish。发布时使用：npm publish --registry https://registry.npmjs.org/。"
+      },
+      {
+        "title": "看来源列表里的发布标记",
+        "content": "本站在来源中标记是否支持发布，镜像来源默认标记为不支持发布，仅供下载依赖使用。"
+      },
+      {
+        "title": "发布与下载可以分开配置",
+        "content": "日常安装依赖使用镜像，需要发布时再用上面的 --registry 参数临时切换即可。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://docs.npmjs.com/cli/v11/commands/npm-publish",
+        "checkedAt": "2026-09-18",
+        "note": "npm 官方发布文档。"
+      }
+    ]
+  }
+]

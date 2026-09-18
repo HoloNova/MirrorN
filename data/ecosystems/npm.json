@@ -1,0 +1,214 @@
+{
+  "id": "npm",
+  "name": "Node.js / npm",
+  "packageManager": "npm",
+  "description": "Node.js 默认包管理器，支持临时指定 Registry、用户级 registry 配置和 .npmrc 文件。",
+  "prerequisites": [
+    "已安装 Node.js（包含 npm），终端里 `node --version` 与 `npm --version` 能正常输出版本号。",
+    "如果尚未安装 Node.js，请先从官方或镜像下载安装包；本向导只切换 Registry，不会安装 Node.js。",
+    "以普通用户身份操作即可，不要使用 sudo 运行 npm 命令。"
+  ],
+  "aliases": ["node", "nodejs", "npm", "npm换源", "装node", "js包"],
+  "supports": [
+    {
+      "ecosystemId": "npm",
+      "mirrorId": "npm-official",
+      "repositoryUrl": "https://registry.npmjs.org/",
+      "supportsPublish": true,
+      "sources": [
+        {
+          "url": "https://docs.npmjs.com/cli/v11/using-npm/registry",
+          "checkedAt": "2026-09-18",
+          "note": "npm 官方 Registry 文档。"
+        }
+      ]
+    },
+    {
+      "ecosystemId": "npm",
+      "mirrorId": "npmmirror",
+      "repositoryUrl": "https://registry.npmmirror.com/",
+      "supportsPublish": false,
+      "sources": [
+        {
+          "url": "https://developer.aliyun.com/mirror/NPM",
+          "checkedAt": "2026-09-18",
+          "note": "阿里云镜像说明中的 npmmirror Registry 地址。"
+        }
+      ]
+    },
+    {
+      "ecosystemId": "npm",
+      "mirrorId": "tencent",
+      "repositoryUrl": "https://mirrors.tencent.com/npm/",
+      "supportsPublish": false,
+      "sources": [
+        {
+          "url": "https://cloud.tencent.com/document/product/213/8623",
+          "checkedAt": "2026-09-18",
+          "note": "腾讯云文档中的 NPM 软件源地址。"
+        }
+      ]
+    }
+  ],
+  "guides": [
+    {
+      "id": "npm-windows-powershell",
+      "os": "windows",
+      "shell": "powershell",
+      "variables": ["mirrorUrl", "packageName"],
+      "temporary": {
+        "label": "单次命令使用镜像",
+        "command": "npm install --registry {{mirrorUrl}} {{packageName}}",
+        "note": "只影响当前安装命令。"
+      },
+      "persistent": {
+        "label": "设置用户级 Registry",
+        "command": "npm config set registry {{mirrorUrl}}",
+        "note": "页面只提供可复制命令，不会自动修改 .npmrc。"
+      },
+      "configFile": {
+        "path": "%USERPROFILE%\\.npmrc",
+        "format": "text",
+        "content": "registry={{mirrorUrl}}\n",
+        "instructions": "文件已存在时合并 registry 行，保留 token 等其他配置；不要直接覆盖整个文件。",
+        "backup": "复制原 .npmrc 到带日期的备份文件。"
+      },
+      "verification": {
+        "command": "npm config get registry",
+        "expected": "输出中包含所选 Registry 地址。"
+      },
+      "restore": {
+        "command": "npm config delete registry",
+        "expected": "用户级 registry 配置被移除，npm 回到其他配置层级或官方默认 Registry。",
+        "note": "如果项目目录或环境变量另有设置，删除用户级配置不会影响它们；删除也不会恢复你原来的 Registry，请用备份还原。"
+      },
+      "sources": [
+        {
+          "url": "https://docs.npmjs.com/cli/v11/commands/npm-config",
+          "checkedAt": "2026-09-18",
+          "note": "npm config 命令文档。"
+        }
+      ]
+    },
+    {
+      "id": "npm-windows-cmd",
+      "os": "windows",
+      "shell": "cmd",
+      "variables": ["mirrorUrl", "packageName"],
+      "temporary": {
+        "label": "单次命令使用镜像",
+        "command": "npm install --registry {{mirrorUrl}} {{packageName}}"
+      },
+      "persistent": {
+        "label": "设置用户级 Registry",
+        "command": "npm config set registry {{mirrorUrl}}"
+      },
+      "configFile": {
+        "path": "%USERPROFILE%\\.npmrc",
+        "format": "text",
+        "content": "registry={{mirrorUrl}}\n",
+        "instructions": "文件已存在时合并 registry 行，保留其他配置。",
+        "backup": "复制原 .npmrc 到带日期的备份文件。"
+      },
+      "verification": {
+        "command": "npm config get registry",
+        "expected": "输出中包含所选 Registry 地址。"
+      },
+      "restore": {
+        "command": "npm config delete registry",
+        "expected": "用户级 registry 配置被移除。",
+        "note": "这不是对原配置的自动还原；如果你原来就有自定义 Registry，删除后不会恢复它，请用备份还原。"
+      },
+      "sources": [
+        {
+          "url": "https://docs.npmjs.com/cli/v11/commands/npm-config",
+          "checkedAt": "2026-09-18"
+        }
+      ]
+    },
+    {
+      "id": "npm-linux-bash",
+      "os": "linux",
+      "shell": "bash",
+      "variables": ["mirrorUrl", "packageName"],
+      "temporary": {
+        "label": "单次命令使用镜像",
+        "command": "npm install --registry {{mirrorUrl}} {{packageName}}"
+      },
+      "persistent": {
+        "label": "设置用户级 Registry",
+        "command": "npm config set registry {{mirrorUrl}}"
+      },
+      "configFile": {
+        "path": "~/.npmrc",
+        "format": "text",
+        "content": "registry={{mirrorUrl}}\n",
+        "instructions": "文件已存在时合并 registry 行，保留 token 等其他配置。",
+        "backup": "复制原 .npmrc 到带日期的备份文件。"
+      },
+      "verification": {
+        "command": "npm config get registry",
+        "expected": "输出中包含所选 Registry 地址。"
+      },
+      "restore": {
+        "command": "npm config delete registry",
+        "expected": "用户级 registry 配置被移除。",
+        "note": "这不是对原配置的自动还原；如果你原来就有自定义 Registry，删除后不会恢复它，请用备份还原。"
+      },
+      "sources": [
+        {
+          "url": "https://docs.npmjs.com/cli/v11/commands/npm-config",
+          "checkedAt": "2026-09-18"
+        }
+      ]
+    },
+    {
+      "id": "npm-macos-bash",
+      "os": "macos",
+      "shell": "bash",
+      "variables": ["mirrorUrl", "packageName"],
+      "temporary": {
+        "label": "单次命令使用镜像",
+        "command": "npm install --registry {{mirrorUrl}} {{packageName}}"
+      },
+      "persistent": {
+        "label": "设置用户级 Registry",
+        "command": "npm config set registry {{mirrorUrl}}"
+      },
+      "configFile": {
+        "path": "~/.npmrc",
+        "format": "text",
+        "content": "registry={{mirrorUrl}}\n",
+        "instructions": "文件已存在时合并 registry 行，保留 token 等其他配置。",
+        "backup": "复制原 .npmrc 到带日期的备份文件。"
+      },
+      "verification": {
+        "command": "npm config get registry",
+        "expected": "输出中包含所选 Registry 地址。"
+      },
+      "restore": {
+        "command": "npm config delete registry",
+        "expected": "用户级 registry 配置被移除。",
+        "note": "这不是对原配置的自动还原；如果你原来就有自定义 Registry，删除后不会恢复它，请用备份还原。"
+      },
+      "sources": [
+        {
+          "url": "https://docs.npmjs.com/cli/v11/commands/npm-config",
+          "checkedAt": "2026-09-18"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://docs.npmjs.com/cli/v11/commands/npm-config",
+      "checkedAt": "2026-09-18",
+      "note": "npm config 命令文档。"
+    },
+    {
+      "url": "https://docs.npmjs.com/cli/v11/using-npm/registry",
+      "checkedAt": "2026-09-18",
+      "note": "npm Registry 文档。"
+    }
+  ]
+}

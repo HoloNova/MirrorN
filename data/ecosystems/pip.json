@@ -1,0 +1,216 @@
+{
+  "id": "pip",
+  "name": "Python / pip",
+  "packageManager": "pip",
+  "description": "Python 官方包索引客户端，支持临时安装、用户级默认源和配置文件方式。",
+  "prerequisites": [
+    "已安装 Python 3.9 或更高版本，终端里 `python3 --version`（Windows 为 `python --version`）能正常输出版本号。",
+    "pip 可用：`python3 -m pip --version`（Windows 为 `python -m pip --version`）能输出版本号。",
+    "如果 pip 尚未安装，请先按 Python 官方文档安装 pip；本向导只切换下载源，不会安装 Python 或 pip。"
+  ],
+  "aliases": ["python", "pip", "pypi", "python换源", "装python", "装包"],
+  "supports": [
+    {
+      "ecosystemId": "pip",
+      "mirrorId": "pypi-official",
+      "repositoryUrl": "https://pypi.org/simple/",
+      "supportsPublish": false,
+      "sources": [
+        {
+          "url": "https://pip.pypa.io/en/stable/cli/pip_install/",
+          "checkedAt": "2026-09-18",
+          "note": "pip 官方安装选项文档。"
+        }
+      ]
+    },
+    {
+      "ecosystemId": "pip",
+      "mirrorId": "tsinghua",
+      "repositoryUrl": "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/",
+      "supportsPublish": false,
+      "sources": [
+        {
+          "url": "https://mirrors.tuna.tsinghua.edu.cn/help/pypi/",
+          "checkedAt": "2026-09-18",
+          "note": "URL 末尾的 /simple/ 来自 TUNA 官方帮助。"
+        }
+      ]
+    },
+    {
+      "ecosystemId": "pip",
+      "mirrorId": "aliyun",
+      "repositoryUrl": "https://mirrors.aliyun.com/pypi/simple/",
+      "supportsPublish": false,
+      "sources": [
+        {
+          "url": "https://developer.aliyun.com/mirror/pypi",
+          "checkedAt": "2026-09-18",
+          "note": "阿里云官方镜像说明。"
+        }
+      ]
+    }
+  ],
+  "guides": [
+    {
+      "id": "pip-windows-powershell",
+      "os": "windows",
+      "shell": "powershell",
+      "variables": ["mirrorUrl", "packageName"],
+      "temporary": {
+        "label": "单次安装使用镜像",
+        "command": "python -m pip install --index-url {{mirrorUrl}} {{packageName}}",
+        "note": "只影响当前命令，不会修改 pip 的持久配置。"
+      },
+      "persistent": {
+        "label": "设置用户级默认源",
+        "command": "python -m pip config set global.index-url {{mirrorUrl}}",
+        "note": "这是用户级配置；页面不会自动执行命令。"
+      },
+      "configFile": {
+        "path": "%APPDATA%\\pip\\pip.ini",
+        "format": "ini",
+        "content": "[global]\nindex-url = {{mirrorUrl}}\n",
+        "instructions": "文件已存在时先备份并合并 [global] 部分，不要直接覆盖其他配置。",
+        "backup": "复制原 pip.ini 到带日期的备份文件；恢复原配置需要手动还原备份。"
+      },
+      "verification": {
+        "command": "python -m pip config get global.index-url",
+        "expected": "输出中包含所选镜像的仓库地址。",
+        "note": "若命令提示没有该配置，检查执行用户和配置文件层级。"
+      },
+      "restore": {
+        "command": "python -m pip config unset global.index-url",
+        "expected": "用户级 index-url 被移除，pip 回到其他配置层级或官方默认源。",
+        "note": "这不是对原配置文件的自动还原；已有备份应由用户手动恢复。"
+      },
+      "sources": [
+        {
+          "url": "https://pip.pypa.io/en/stable/topics/configuration/",
+          "checkedAt": "2026-09-18",
+          "note": "pip 配置文件层级和命令文档。"
+        }
+      ]
+    },
+    {
+      "id": "pip-windows-cmd",
+      "os": "windows",
+      "shell": "cmd",
+      "variables": ["mirrorUrl", "packageName"],
+      "temporary": {
+        "label": "单次安装使用镜像",
+        "command": "python -m pip install --index-url {{mirrorUrl}} {{packageName}}",
+        "note": "只影响当前命令，不会修改 pip 的持久配置。"
+      },
+      "persistent": {
+        "label": "设置用户级默认源",
+        "command": "python -m pip config set global.index-url {{mirrorUrl}}",
+        "note": "这是用户级配置；页面不会自动执行命令。"
+      },
+      "configFile": {
+        "path": "%APPDATA%\\pip\\pip.ini",
+        "format": "ini",
+        "content": "[global]\nindex-url = {{mirrorUrl}}\n",
+        "instructions": "文件已存在时先备份并合并 [global] 部分，不要直接覆盖其他配置。",
+        "backup": "复制原 pip.ini 到带日期的备份文件；恢复原配置需要手动还原备份。"
+      },
+      "verification": {
+        "command": "python -m pip config get global.index-url",
+        "expected": "输出中包含所选镜像的仓库地址。"
+      },
+      "restore": {
+        "command": "python -m pip config unset global.index-url",
+        "expected": "用户级 index-url 被移除，pip 回到其他配置层级或官方默认源。",
+        "note": "这不是对原配置文件的自动还原。"
+      },
+      "sources": [
+        {
+          "url": "https://pip.pypa.io/en/stable/topics/configuration/",
+          "checkedAt": "2026-09-18"
+        }
+      ]
+    },
+    {
+      "id": "pip-linux-bash",
+      "os": "linux",
+      "shell": "bash",
+      "variables": ["mirrorUrl", "packageName"],
+      "temporary": {
+        "label": "单次安装使用镜像",
+        "command": "python3 -m pip install --index-url {{mirrorUrl}} {{packageName}}"
+      },
+      "persistent": {
+        "label": "设置用户级默认源",
+        "command": "python3 -m pip config set global.index-url {{mirrorUrl}}"
+      },
+      "configFile": {
+        "path": "~/.config/pip/pip.conf",
+        "format": "ini",
+        "content": "[global]\nindex-url = {{mirrorUrl}}\n",
+        "instructions": "文件已存在时先备份并合并 [global] 部分，不要直接覆盖其他配置。",
+        "backup": "复制原 pip.conf 到带日期的备份文件。"
+      },
+      "verification": {
+        "command": "python3 -m pip config get global.index-url",
+        "expected": "输出中包含所选镜像的仓库地址。"
+      },
+      "restore": {
+        "command": "python3 -m pip config unset global.index-url",
+        "expected": "用户级 index-url 被移除，pip 回到其他配置层级或官方默认源。"
+      },
+      "sources": [
+        {
+          "url": "https://pip.pypa.io/en/stable/topics/configuration/",
+          "checkedAt": "2026-09-18"
+        }
+      ]
+    },
+    {
+      "id": "pip-macos-bash",
+      "os": "macos",
+      "shell": "bash",
+      "variables": ["mirrorUrl", "packageName"],
+      "temporary": {
+        "label": "单次安装使用镜像",
+        "command": "python3 -m pip install --index-url {{mirrorUrl}} {{packageName}}"
+      },
+      "persistent": {
+        "label": "设置用户级默认源",
+        "command": "python3 -m pip config set global.index-url {{mirrorUrl}}"
+      },
+      "configFile": {
+        "path": "~/Library/Application Support/pip/pip.conf",
+        "format": "ini",
+        "content": "[global]\nindex-url = {{mirrorUrl}}\n",
+        "instructions": "文件已存在时先备份并合并 [global] 部分，不要直接覆盖其他配置。",
+        "backup": "复制原 pip.conf 到带日期的备份文件。"
+      },
+      "verification": {
+        "command": "python3 -m pip config get global.index-url",
+        "expected": "输出中包含所选镜像的仓库地址。"
+      },
+      "restore": {
+        "command": "python3 -m pip config unset global.index-url",
+        "expected": "用户级 index-url 被移除，pip 回到其他配置层级或官方默认源。"
+      },
+      "sources": [
+        {
+          "url": "https://pip.pypa.io/en/stable/topics/configuration/",
+          "checkedAt": "2026-09-18",
+          "note": "macOS 配置文件位置仍应以当前 pip 文档和实际 pip config debug 结果为准。"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://pip.pypa.io/en/stable/cli/pip_config/",
+      "checkedAt": "2026-09-18",
+      "note": "pip config 命令文档。"
+    },
+    {
+      "url": "https://pip.pypa.io/en/stable/topics/configuration/",
+      "checkedAt": "2026-09-18",
+      "note": "pip 配置文件层级文档。"
+    }
+  ]
+}
