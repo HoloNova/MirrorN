@@ -1,0 +1,51 @@
+# MirrorN 一键启动（API + 静态页面 + 同步状态快照持久化）
+#
+#   docker compose up --build          # 首次构建并启动
+#   docker compose ps                  # 看健康状态（healthy 表示 /api/health 通过）
+#   docker compose down                # 停止（快照留在 named volume 里）
+#
+# 需要先准备环境文件：
+#   cp .env.example .env               # 然后填入你自己的 MIRRORN_FINGERPRINT_SECRET
+#
+# 端口：默认映射到本机 8787。已经在跑 dev（8787）时会冲突——那是刻意的，
+# 用 MIRRORN_PUBLISHED_PORT 换一个端口即可，例如：
+#   MIRRORN_PUBLISHED_PORT=8080 docker compose up --build
+
+services:
+  mirrorn:
+    build:
+      context: .
+    image: mirrorn:local
+    restart: unless-stopped
+    ports:
+      - '${MIRRORN_PUBLISHED_PORT:-8787}:8787'
+    environment:
+      # 容器里唯一必须你自己提供的值：网络指纹的 HMAC secret。
+      # 留空则不提供指纹功能（接口返回 available: false），这是刻意的降级。
+      MIRRORN_FINGERPRINT_SECRET: ${MIRRORN_FINGERPRINT_SECRET:-}
+      # 直接对外暴露（没有反向代理）时必须保持 false：否则任何人都能伪造 X-Forwarded-For。
+      MIRRORN_TRUSTED_PROXY: 'false'
+      # 反向代理终止 TLS 时改成 true，并把端口只绑到 127.0.0.1（见下方注释）。
+      MIRRORN_SYNC_ENABLED: 'true'
+      MIRRORN_SYNC_INTERVAL_MS: '900000'
+    volumes:
+      # 快照：容器重启后仍能先展示上一次成功的同步状态。
+      - mirrorn-data:/var/lib/mirrorn
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8787/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  mirrorn-data:
+    # 需要自己指定宿主机目录时改成：
+    # driver_opts:
+    #   type: none
+    #   o: bind
+    #   device: /srv/mirrorn/state

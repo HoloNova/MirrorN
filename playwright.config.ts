@@ -22,7 +22,10 @@ export default defineConfig({
   },
   projects: [{ name: 'chrome', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    command: `pnpm validate:data && pnpm --filter @mirrorn/web exec vite --port ${port} --strictPort`,
+    // --mode e2e 让 vite 把依赖预打包写到 node_modules/.vite-e2e，不碰 dev 的缓存。
+    // VITE_API_BASE 显式打开状态接口（否则该模式按生产构建行为保持纯静态，不发请求）；
+    // 具体响应仍由各用例的 page.route 提供，不依赖本机后端。
+    command: `pnpm validate:data && VITE_API_BASE=/ pnpm --filter @mirrorn/web exec vite --port ${port} --strictPort --mode e2e`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

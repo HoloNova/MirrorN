@@ -1,0 +1,107 @@
+name: CI
+
+# 阶段 6.2 要求：CI 执行 lint、typecheck、数据校验、单测、构建与关键 E2E。
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: 质量门禁
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          # 版本来自 package.json 的 packageManager 字段（pnpm@12.4.2）。
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 格式检查
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: 类型检查
+        run: pnpm typecheck
+
+      - name: 数据校验
+        run: pnpm validate:data
+
+      - name: 单元测试
+        run: pnpm test
+
+      - name: 构建（后端 + 前端）
+        run: pnpm build
+
+      - name: 准备浏览器
+        run: pnpm exec playwright install --with-deps chrome
+
+      - name: 端到端测试
+        run: pnpm test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+
+  compose:
+    name: 容器部署（docker compose up --build + 健康检查）
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 构建并启动
+        run: MIRRORN_PUBLISHED_PORT=8888 MIRRORN_FINGERPRINT_SECRET=ci-secret docker compose up --build -d
+
+      - name: 等待健康检查通过
+        run: |
+          for _ in $(seq 1 60); do
+            status="$(docker inspect --format '{{.State.Health.Status}}' "$(docker compose ps -q mirrorn)")"
+            if [ "$status" = "healthy" ]; then
+              echo "容器状态：$status"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "容器未在超时内变为 healthy，输出日志：" >&2
+          docker compose logs --no-color >&2
+          exit 1
+
+      - name: 验证接口与静态页面
+        run: |
+          curl -fsS http://127.0.0.1:8888/api/health
+          echo
+          curl -fsS http://127.0.0.1:8888/api/mirrors | head -c 200
+          echo
+          curl -fsS -o /dev/null -w 'index.html HTTP %{http_code}\n' http://127.0.0.1:8888/
+          curl -fsS -o /dev/null -w 'hash 路由回落 HTTP %{http_code}\n' http://127.0.0.1:8888/ecosystems/apt
+
+      - name: 失败时输出日志
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: 清理
+        if: always()
+        run: docker compose down -v

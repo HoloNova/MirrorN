@@ -28,6 +28,7 @@
       "mirrorId": "tsinghua",
       "repositoryUrl": "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/",
       "supportsPublish": false,
+      "statusJob": "pypi",
       "sources": [
         {
           "url": "https://mirrors.tuna.tsinghua.edu.cn/help/pypi/",

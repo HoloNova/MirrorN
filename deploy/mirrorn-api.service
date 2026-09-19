@@ -1,0 +1,32 @@
+[Unit]
+Description=MirrorN API (MirrorZ sync status aggregation)
+Documentation=file:/srv/mirrorn/api/README.deploy.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mirrorn
+Group=mirrorn
+WorkingDirectory=/srv/mirrorn/api
+EnvironmentFile=/etc/mirrorn/api.env
+# 必须使用现代 Node：Debian/Ubuntu 自带的 /usr/bin/node 可能是 v12，
+# 运行打包产物时会因 V8 版本过旧直接 SIGILL 崩溃（部署脚本会先校验版本）。
+ExecStart=/usr/local/bin/node /srv/mirrorn/api/server.js
+Restart=on-failure
+RestartSec=5
+
+# 收紧权限：服务只需要读自己的目录、写快照目录，不需要任何特权。
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+# 快照目录必须显式放行：ProtectSystem=strict 下 ReadWritePaths 之外全是只读。
+ReadWritePaths=/var/lib/mirrorn
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=true
+# 刻意不启用 MemoryDenyWriteExecute：V8 需要可写可执行内存做 JIT，
+# 开启后 Node 会在启动时直接 V8_Fatal（OS::SetPermissions / Check failed: 12 == errno）。
+
+[Install]
+WantedBy=multi-user.target

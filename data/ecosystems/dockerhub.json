@@ -1,0 +1,85 @@
+{
+  "id": "dockerhub",
+  "name": "Docker Hub / 镜像加速",
+  "packageManager": "docker",
+  "description": "Docker 守护进程的 registry-mirrors 配置：拉取 docker.io 镜像时走你确认过的加速地址。本向导不提供任何第三方加速地址，只给出合并方式、验证与还原步骤。",
+  "prerequisites": [
+    "registry-mirrors 只影响 Docker Hub（docker.io）。ghcr.io、quay.io、私有仓库等其它 registry 不受影响，也不能用它加速。",
+    "本向导不提供任何公共加速地址：这类地址是否长期可用、是否可信，需要你自己核实来源。请从你信任的渠道获取（例如云厂商控制台给出的专属加速地址），再填进命令里的 `<你的加速地址>`。",
+    "daemon.json 是全局配置，必须合并而不是整份覆盖；写坏 JSON 语法会导致 docker 守护进程启动失败。下面的命令已经包含备份与合并步骤。",
+    "命令用 python3 合并 JSON（Ubuntu 22.04/24.04 默认自带；最小化容器或极简系统可能没有）。缺失时命令会直接提示，不会写坏配置——也可以改用编辑器手动合并。",
+    "需要 Docker 已经安装并且正在运行（`systemctl status docker`）；修改后要重启 docker 才会生效。"
+  ],
+  "aliases": [
+    "docker hub",
+    "dockerhub",
+    "镜像加速",
+    "加速器",
+    "registry-mirrors",
+    "拉取镜像慢",
+    "docker加速"
+  ],
+  "supports": [
+    {
+      "ecosystemId": "dockerhub",
+      "mirrorId": "dockerhub-official",
+      "repositoryUrl": "https://registry-1.docker.io/",
+      "supportsPublish": false,
+      "sources": [
+        {
+          "url": "https://docs.docker.com/docker-hub/mirror/",
+          "checkedAt": "2026-09-19",
+          "note": "Docker 官方关于 registry mirror 的说明：只影响 Docker Hub，官方不提供公共加速地址。"
+        }
+      ]
+    }
+  ],
+  "guides": [
+    {
+      "id": "dockerhub-linux-bash",
+      "os": "linux",
+      "shell": "bash",
+      "distribution": "linux",
+      "variables": [],
+      "persistent": {
+        "label": "合并写入 registry-mirrors",
+        "command": "# 0) 检查依赖：下面的合并用 python3（Ubuntu 22.04/24.04 默认自带）\ncommand -v python3 >/dev/null || { echo '缺少 python3：请先安装（sudo apt-get install -y python3），或用编辑器手动合并 daemon.json'; exit 1; }\n\n# 1) 先看现有配置（文件不存在时会提示，属正常情况）\nsudo cat /etc/docker/daemon.json 2>/dev/null || echo '（当前没有 daemon.json）'\n\n# 2) 备份并只合并 registry-mirrors 一个键，其它键原样保留\nsudo cp -a /etc/docker/daemon.json /etc/docker/daemon.json.mirrorn.bak 2>/dev/null || true\nsudo python3 -c \"import json,pathlib;p=pathlib.Path('/etc/docker/daemon.json');d=json.loads(p.read_text()) if p.exists() and p.stat().st_size else {};d['registry-mirrors']=['https://<你的加速地址>'];p.write_text(json.dumps(d,indent=2,ensure_ascii=False)+'\\n');print(json.dumps(d,indent=2,ensure_ascii=False))\"\n\n# 3) 重启守护进程让配置生效\nsudo systemctl restart docker\n",
+        "note": "把 `<你的加速地址>` 换成你自己的地址（通常形如 https://xxxx.mirror.aliyuncs.com）。命令只改动 registry-mirrors 这一个键，daemon.json 里的其它设置会原样保留。"
+      },
+      "verification": {
+        "command": "docker info --format '{{json .RegistryConfig.Mirrors}}'",
+        "expected": "输出的数组里包含你填写的加速地址；如果是空数组或 null，说明配置没有生效（检查 JSON 语法与 docker 是否重启）。",
+        "note": "验证命令里的大括号是 docker CLI 自己的模板语法，不会被本页面替换。"
+      },
+      "restore": {
+        "command": "sudo python3 -c \"import json,pathlib;p=pathlib.Path('/etc/docker/daemon.json');d=json.loads(p.read_text());d.pop('registry-mirrors',None);p.write_text(json.dumps(d,indent=2,ensure_ascii=False)+'\\n');print(json.dumps(d,indent=2,ensure_ascii=False))\" && sudo systemctl restart docker",
+        "expected": "daemon.json 中的 registry-mirrors 被移除，docker 重启后不再使用加速地址（其它配置保持不变）。",
+        "note": "如果 daemon.json 里除了 registry-mirrors 没有其它内容，也可以直接删除该文件（备份在 daemon.json.mirrorn.bak）。"
+      },
+      "sources": [
+        {
+          "url": "https://docs.docker.com/docker-hub/mirror/",
+          "checkedAt": "2026-09-19",
+          "note": "Docker 官方关于 registry mirror 的说明：只影响 Docker Hub，官方不提供公共加速地址。"
+        },
+        {
+          "url": "https://docs.docker.com/engine/daemon/",
+          "checkedAt": "2026-09-19",
+          "note": "Docker 官方 daemon.json 字段说明；JSON 语法错误会导致守护进程无法启动。"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://docs.docker.com/docker-hub/mirror/",
+      "checkedAt": "2026-09-19",
+      "note": "Docker 官方关于 registry mirror 的说明：只影响 Docker Hub，官方不提供公共加速地址。"
+    },
+    {
+      "url": "https://docs.docker.com/engine/daemon/",
+      "checkedAt": "2026-09-19",
+      "note": "Docker 官方 daemon.json 字段说明；JSON 语法错误会导致守护进程无法启动。"
+    }
+  ]
+}

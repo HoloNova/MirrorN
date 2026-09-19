@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ArrowLeft, CircleAlert, Info, ShieldCheck } from '@lucide/vue';
-import { computed } from 'vue';
+import { ArrowLeft, CircleAlert, Info, RotateCw, ShieldCheck } from '@lucide/vue';
+import { computed, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 
-import type { Ecosystem } from '@mirrorn/shared';
+import type { Ecosystem, Mirror } from '@mirrorn/shared';
 import {
   GUIDE_MODE_LABELS,
   OPERATING_SYSTEM_LABELS,
@@ -12,8 +12,12 @@ import {
 } from '@mirrorn/shared/generators';
 
 import CommandBlock from './CommandBlock.vue';
+import ProbeBadge from './ProbeBadge.vue';
 import TroubleshootingList from './TroubleshootingList.vue';
+import { createMirrorProbeAccess, toProbeTargets } from '../composables/useMirrorProbes';
+import { useMirrorStatus } from '../composables/useMirrorStatus';
 import { getTroubleshooting, listEcosystemMirrors } from '../lib/ecosystems';
+import { describeSyncStatus } from '../lib/statusView';
 import { createGuideWizard, WIZARD_STEPS } from '../lib/wizard';
 
 const props = defineProps<{ ecosystem: Ecosystem }>();
@@ -23,25 +27,96 @@ const {
   step,
   os,
   shell,
+  version,
   mirrorId,
   mode,
   platforms,
   shells,
+  versions,
+  versionLabel,
   guide,
   modes,
   detectionNote,
   canProceed,
+  mirrorPinned,
   setOs,
   setShell,
+  setVersion,
   setMirror,
   setMode,
   goToStep,
   next,
   previous,
+  applyRecommendation,
 } = wizard;
 
 const mirrors = listEcosystemMirrors(props.ecosystem);
 const troubleshooting = getTroubleshooting(props.ecosystem.id);
+
+// 候选只包含数据里声明了探针的来源；其余来源在界面上显示“无法测量”。
+// 用 createMirrorProbeAccess 而不是 useMirrorProbes：测速初始化失败时降级为“无法测量”，
+// 不让向导页因为增强功能的问题打不开（失败原因见浏览器控制台）。
+const probeTargets = toProbeTargets(mirrors);
+
+// 先建状态接入，再建测速接入：同步状态参与推荐评分，而状态里的网络指纹变化要作废测量结果。
+// 指纹回调只会在后续检查里触发，因此这里用可变引用破掉两者之间的循环依赖。
+let invalidateProbes: () => void = () => undefined;
+const statusAccess = useMirrorStatus({ onFingerprintChange: () => invalidateProbes() });
+const {
+  enabled: statusEnabled,
+  meta: statusMeta,
+  recordFor: statusRecordFor,
+  statusFor,
+} = statusAccess;
+
+const {
+  viewFor: probeViewFor,
+  recommendedMirrorId,
+  refreshing: probeRefreshing,
+  offline: probeOffline,
+  lastMeasuredAt,
+  refresh: refreshProbes,
+  invalidate: invalidateProbesInternal,
+} = createMirrorProbeAccess({
+  getTargets: () => probeTargets,
+  getSyncStatus: (mirrorId) => statusFor(mirrorId, props.ecosystem.id),
+});
+
+invalidateProbes = invalidateProbesInternal;
+
+/** 同步状态文案：评分用状态值，展示用文案，口径集中在 lib/statusView.ts。 */
+function syncFor(mirror: Mirror) {
+  const record = statusRecordFor(mirror.id, props.ecosystem.id);
+  return describeSyncStatus({
+    mirrorId: mirror.id,
+    hasSource: mirror.statusSource !== undefined,
+    isOfficial: mirror.kind === 'official',
+    stale: statusMeta.value.stale,
+    ...(record === undefined ? {} : { record }),
+  });
+}
+
+const statusSourceNote = computed<string | undefined>(() => {
+  if (!statusEnabled) {
+    return undefined;
+  }
+  const meta = statusMeta.value;
+  if (meta.fetchedAt === undefined) {
+    return '已连接的运行时没有可用同步数据（首次同步可能正在进行），下面按“未知”展示。';
+  }
+  const available = meta.sources.filter((source) => source.ok).length;
+  const updated = new Date(meta.fetchedAt).toLocaleString('zh-CN', { hour12: false });
+  const freshness = meta.stale ? '，数据可能已过期' : '';
+  return `同步状态来自后端聚合，更新于 ${updated}（来源 ${available}/${meta.sources.length} 个可用${freshness}）。`;
+});
+
+// 推荐结果在探测过程中会变；一旦用户手动点过来源，向导自身会忽略后续推荐。
+watch(recommendedMirrorId, (value) => applyRecommendation(value), { immediate: true });
+
+const lastMeasuredLabel = computed<string | undefined>(() => {
+  const at = lastMeasuredAt.value;
+  return at === undefined ? undefined : new Date(at).toLocaleTimeString('zh-CN', { hour12: false });
+});
 
 const KIND_LABELS: Record<string, string> = {
   official: '官方',
@@ -57,6 +132,9 @@ function repositoryUrlFor(id: string): string {
 const selectedMirrorKind = computed(
   () => mirrors.find((mirror) => mirror.id === mirrorId.value)?.kind ?? '',
 );
+
+// 只保留 http(s) 链接作为可点击入口；数据校验已经限制为 HTTPS。
+const ecosystemSources = computed(() => props.ecosystem.sources);
 
 const activeCommand = computed(() => {
   if (!guide.value.ok) {
@@ -99,6 +177,16 @@ function modeLabel(value: GuideMode): string {
       <ul>
         <li v-for="item in ecosystem.prerequisites" :key="item">{{ item }}</li>
       </ul>
+
+      <div class="source-links">
+        <span class="source-links-label">数据来源与官方文档</span>
+        <ul>
+          <li v-for="source in ecosystemSources" :key="source.url">
+            <a :href="source.url" target="_blank" rel="noreferrer noopener">{{ source.url }}</a>
+            <span v-if="source.note" class="source-note">{{ source.note }}</span>
+          </li>
+        </ul>
+      </div>
     </section>
 
     <nav aria-label="配置步骤">
@@ -151,6 +239,30 @@ function modeLabel(value: GuideMode): string {
         </button>
       </div>
 
+      <template v-if="versions.length > 0">
+        <h3>发行版版本</h3>
+        <div class="option-grid compact">
+          <button
+            v-for="item in versions"
+            :key="item"
+            type="button"
+            :aria-pressed="version === item"
+            :class="{ 'is-active': version === item }"
+            @click="setVersion(item)"
+          >
+            <span class="option-title">Ubuntu {{ item }}</span>
+          </button>
+        </div>
+        <p class="panel-note">
+          <Info :size="14" aria-hidden="true" />
+          <span
+            >命令与配置文件格式随版本变化（24.04 用 deb822，22.04/20.04 用
+            sources.list）。本向导只覆盖上面列出的 LTS
+            版本；其它发行版或架构请勿套用本页命令，请看页面底部的官方文档。</span
+          >
+        </p>
+      </template>
+
       <p v-if="detectionNote" class="panel-note">
         <Info :size="14" aria-hidden="true" />
         <span>{{ detectionNote }}</span>
@@ -162,6 +274,15 @@ function modeLabel(value: GuideMode): string {
       <p class="panel-hint">来源地址全部来自仓库中的数据文件，可追溯到具体文档。</p>
 
       <h3>镜像来源</h3>
+      <div class="probe-actions">
+        <span v-if="lastMeasuredLabel" class="probe-timestamp">
+          最近测量 {{ lastMeasuredLabel }}
+        </span>
+        <button type="button" class="icon-button" :disabled="probeOffline" @click="refreshProbes()">
+          <RotateCw :size="14" :class="{ 'is-spinning': probeRefreshing }" aria-hidden="true" />
+          <span>重新测量</span>
+        </button>
+      </div>
       <div class="mirror-list">
         <button
           v-for="mirror in mirrors"
@@ -176,8 +297,43 @@ function modeLabel(value: GuideMode): string {
             <span class="mirror-kind">{{ KIND_LABELS[mirror.kind] ?? mirror.kind }}</span>
           </span>
           <code class="mirror-url">{{ repositoryUrlFor(mirror.id) }}</code>
+          <span class="sync-status" :data-tone="syncFor(mirror).tone">
+            <span class="sync-dot" aria-hidden="true"></span>
+            <span class="sync-text">{{ syncFor(mirror).text }}</span>
+            <span v-if="syncFor(mirror).detail" class="sync-detail">
+              {{ syncFor(mirror).detail }}
+            </span>
+          </span>
+          <ProbeBadge
+            :view="probeViewFor(mirror.id)"
+            :recommended="mirror.id === recommendedMirrorId"
+          />
         </button>
       </div>
+
+      <p v-if="statusSourceNote" class="panel-note">
+        <Info :size="14" aria-hidden="true" />
+        <span>{{ statusSourceNote }}</span>
+      </p>
+
+      <p class="panel-hint probe-note">
+        测量由你的浏览器直接请求来源站上审核过的小资源，得到的是响应耗时估算（受
+        DNS、连接复用和缓存影响），
+        不代表下载速度，也不能证明仓库内容正常。只有数据里声明了探针的来源会测量。
+      </p>
+
+      <p v-if="probeOffline" class="panel-note">
+        <Info :size="14" aria-hidden="true" />
+        <span>浏览器报告当前处于离线状态，已停止测量；联网后可以点“重新测量”。</span>
+      </p>
+
+      <p
+        v-if="mirrorPinned && recommendedMirrorId && recommendedMirrorId !== mirrorId"
+        class="panel-note"
+      >
+        <Info :size="14" aria-hidden="true" />
+        <span>你已经手动选过来源，测量结果不会自动替换它；要改用推荐来源，请点上面的那一项。</span>
+      </p>
 
       <p v-if="selectedMirrorKind === 'official'" class="panel-note">
         <Info :size="14" aria-hidden="true" />
@@ -244,6 +400,7 @@ function modeLabel(value: GuideMode): string {
 
         <p v-if="mirrorInfo" class="panel-hint">
           当前来源：{{ mirrorInfo.name }} · 数据核对于 {{ mirrorInfo.checkedAt }}
+          <template v-if="versionLabel"> · 适用系统：{{ versionLabel }} </template>
           <template v-if="!mirrorInfo.supportsPublish">
             · 该来源不支持发布包，仅用于下载依赖
           </template>

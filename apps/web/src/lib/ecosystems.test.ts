@@ -12,9 +12,15 @@ describe('static catalog', () => {
   it('loads every ecosystem file from data/ecosystems in a stable order', () => {
     const catalog = getCatalog();
 
-    expect(catalog.ecosystems.map((ecosystem) => ecosystem.id)).toEqual(['npm', 'pip']);
-    expect(catalog.mirrors.length).toBeGreaterThanOrEqual(5);
-    expect(catalog.troubleshooting.length).toBeGreaterThanOrEqual(2);
+    expect(catalog.ecosystems.map((ecosystem) => ecosystem.id)).toEqual([
+      'apt',
+      'docker-ce',
+      'dockerhub',
+      'npm',
+      'pip',
+    ]);
+    expect(catalog.mirrors.length).toBeGreaterThanOrEqual(9);
+    expect(catalog.troubleshooting.length).toBeGreaterThanOrEqual(13);
   });
 
   it('resolves a mirror name without inventing a fallback record', () => {

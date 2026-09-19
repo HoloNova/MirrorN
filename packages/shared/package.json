@@ -13,6 +13,14 @@
     "./generators": {
       "types": "./dist/generators/index.d.ts",
       "import": "./dist/generators/index.js"
+    },
+    "./probe": {
+      "types": "./dist/probe/index.d.ts",
+      "import": "./dist/probe/index.js"
+    },
+    "./sync": {
+      "types": "./dist/sync/index.d.ts",
+      "import": "./dist/sync/index.js"
     }
   },
   "scripts": {

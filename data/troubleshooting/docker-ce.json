@@ -1,0 +1,105 @@
+[
+  {
+    "id": "docker-ce-repo-conflict",
+    "ecosystemId": "docker-ce",
+    "title": "docker.sources / docker.list 同时存在导致 apt 报错",
+    "problem": "apt update 提示同一条仓库出现两次、GPG 冲突或 'Conflicting values set for option Signed-By'。",
+    "steps": [
+      {
+        "title": "查看有哪些 Docker 仓库文件",
+        "content": "执行 `ls -l /etc/apt/sources.list.d/ | grep -i docker`。常见的是 docker.sources（deb822）与 docker.list（一行式）同时存在。"
+      },
+      {
+        "title": "只保留一份",
+        "content": "保留其中一份（本向导生成的是 docker.sources），把另一份改名备份，例如 `sudo mv /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/docker.list.bak`。"
+      },
+      {
+        "title": "确认 Signed-By 指向存在的 keyring",
+        "content": "deb822 格式里 Signed-By 必须指向真实存在的文件（默认 /etc/apt/keyrings/docker.gpg）。用 `ls -l /etc/apt/keyrings/` 确认。"
+      },
+      {
+        "title": "重新更新索引",
+        "content": "`sudo apt-get update` 不再报错后，再执行 `apt-get --print-uris -y install docker-ce | head -n 3` 确认下载地址是你要用的仓库。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://docs.docker.com/engine/install/ubuntu/",
+        "checkedAt": "2026-09-19",
+        "note": "Docker CE 官方安装文档：GPG 公钥与仓库配置步骤。"
+      },
+      {
+        "url": "https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/",
+        "checkedAt": "2026-09-19",
+        "note": "清华 docker-ce 帮助页：该镜像不是 Docker Hub，只提供软件包。"
+      }
+    ]
+  },
+  {
+    "id": "docker-ce-not-dockerhub",
+    "ecosystemId": "docker-ce",
+    "title": "换了 Docker CE 仓库，拉取镜像还是慢",
+    "problem": "按本页换源后 docker pull 依然很慢或超时。",
+    "steps": [
+      {
+        "title": "两个概念不要混",
+        "content": "本页换的是「软件包仓库」（安装/升级 docker-ce 用的 apt 仓库）。docker pull 下载的是镜像，来自 Docker Hub 或其它 registry，与 apt 仓库无关。"
+      },
+      {
+        "title": "镜像站也不是 Docker Hub 的加速器",
+        "content": "清华等镜像站的 docker-ce 目录只提供软件包；它们自己已经不再提供 Docker Hub 镜像加速服务。"
+      },
+      {
+        "title": "要加速拉取镜像请用另一套配置",
+        "content": "使用「Docker Hub / 镜像加速」那一项：它修改的是 /etc/docker/daemon.json 的 registry-mirrors，需要你自己提供可核实的加速地址。"
+      },
+      {
+        "title": "确认相关服务已启动",
+        "content": "`systemctl status docker` 应为 running；安装后如果没有自动启动，用 `sudo systemctl enable --now docker`。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/",
+        "checkedAt": "2026-09-19",
+        "note": "清华 docker-ce 帮助页：该镜像不是 Docker Hub，只提供软件包。"
+      },
+      {
+        "url": "https://docs.docker.com/docker-hub/mirror/",
+        "checkedAt": "2026-09-19",
+        "note": "Docker 官方 registry mirror 说明。"
+      }
+    ]
+  },
+  {
+    "id": "docker-ce-https-and-key-errors",
+    "ecosystemId": "docker-ce",
+    "title": "取 GPG 公钥或 apt update 时 HTTPS 相关报错",
+    "problem": "curl 报 `SSL certificate problem`，或 apt update 报证书不受信任。",
+    "steps": [
+      {
+        "title": "先装证书与下载工具",
+        "content": "`sudo apt-get install -y ca-certificates curl`。最小化系统没装 ca-certificates 时，curl 与 apt 都无法校验 HTTPS。"
+      },
+      {
+        "title": "确认公钥文件真的写进去了",
+        "content": "`ls -l /etc/apt/keyrings/docker.gpg` 应存在且非空；`gpg --dearmor` 需要 gpg（来自 gnupg 包）。"
+      },
+      {
+        "title": "Signed-By 路径必须与文件一致",
+        "content": "仓库文件里写的是 /etc/apt/keyrings/docker.gpg；如果你放在别处，两处都要同步修改，否则 apt 会报签名无法校验。"
+      },
+      {
+        "title": "镜像站不提供公钥时",
+        "content": "本向导固定从官方 download.docker.com 取公钥（文件很小）；公钥获取失败时先排查到官方站的网络，再考虑改用其它方式导入。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://docs.docker.com/engine/install/ubuntu/",
+        "checkedAt": "2026-09-19",
+        "note": "Docker CE 官方安装文档中的 GPG 公钥步骤。"
+      }
+    ]
+  }
+]

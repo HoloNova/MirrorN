@@ -1,0 +1,214 @@
+{
+  "id": "docker-ce",
+  "name": "Docker CE / apt 仓库",
+  "packageManager": "apt",
+  "description": "在 Ubuntu 上从镜像下载 Docker CE 软件包（docker-ce、containerd、buildx、compose 插件）。只换软件仓库，不涉及镜像拉取加速。",
+  "prerequisites": [
+    "这是「Docker CE 软件仓库」的换源，用于安装或升级 docker-ce 等包；它**不是** Docker Hub 镜像加速——拉取镜像慢请用「Docker Hub / 镜像加速」。",
+    "只覆盖 Ubuntu LTS（24.04 / 22.04 / 20.04）与 amd64 架构。其它发行版或架构请按 Docker 官方文档安装。",
+    "需要 sudo 权限。GPG 公钥仍从官方 download.docker.com 获取（文件很小），软件包从镜像下载。",
+    "命令里的 `apt-get install -y ca-certificates curl` 必须在切换仓库前成功执行：最小化系统缺少 ca-certificates 时，apt 与 curl 都无法校验 HTTPS 证书（先确认系统能用自带源完成这一步）。",
+    "如果系统里已经存在 /etc/apt/sources.list.d/docker.sources 或 docker.list，请只保留一份并先备份，避免同一仓库配置两次导致校验冲突。",
+    "Docker 守护进程属于系统服务：容器里只能验证仓库与包来源，守护进程能否正常启动需要在你自己的系统上确认。"
+  ],
+  "aliases": ["docker", "docker ce", "docker-ce", "docker换源", "docker安装", "容器", "containerd"],
+  "supports": [
+    {
+      "ecosystemId": "docker-ce",
+      "mirrorId": "docker-official",
+      "repositoryUrl": "https://download.docker.com/linux/ubuntu",
+      "supportsPublish": false,
+      "sources": [
+        {
+          "url": "https://docs.docker.com/engine/install/ubuntu/",
+          "checkedAt": "2026-09-19",
+          "note": "Docker CE 官方安装文档：包名、GPG 公钥来源与仓库结构。"
+        }
+      ]
+    },
+    {
+      "ecosystemId": "docker-ce",
+      "mirrorId": "tsinghua",
+      "repositoryUrl": "https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/ubuntu",
+      "supportsPublish": false,
+      "sources": [
+        {
+          "url": "https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/",
+          "checkedAt": "2026-09-19",
+          "note": "清华镜像站 docker-ce 帮助页：明确说明该镜像不是 Docker Hub，并给出 deb822 仓库写法与 GPG 公钥步骤。"
+        }
+      ]
+    },
+    {
+      "ecosystemId": "docker-ce",
+      "mirrorId": "aliyun",
+      "repositoryUrl": "https://mirrors.aliyun.com/docker-ce/linux/ubuntu",
+      "supportsPublish": false,
+      "sources": [
+        {
+          "url": "https://developer.aliyun.com/mirror/docker-ce",
+          "checkedAt": "2026-09-19",
+          "note": "阿里云 docker-ce 镜像页：仓库路径与安装步骤。"
+        }
+      ]
+    },
+    {
+      "ecosystemId": "docker-ce",
+      "mirrorId": "tencent",
+      "repositoryUrl": "https://mirrors.tencent.com/docker-ce/linux/ubuntu",
+      "supportsPublish": false,
+      "sources": [
+        {
+          "url": "https://mirrors.tencent.com/help/",
+          "checkedAt": "2026-09-19",
+          "note": "腾讯云软件源的帮助页索引；docker-ce 目录结构已核对（dists/noble、dists/jammy、dists/focal 均存在）。"
+        }
+      ]
+    }
+  ],
+  "guides": [
+    {
+      "id": "docker-ce-ubuntu-2404-bash",
+      "os": "linux",
+      "shell": "bash",
+      "distribution": "ubuntu",
+      "version": "24.04",
+      "variables": ["mirrorUrl"],
+      "persistent": {
+        "label": "安装/切换 Docker CE 仓库（Ubuntu 24.04）",
+        "command": "# 1) 安装依赖并信任 Docker 官方 GPG 公钥（公钥很小，仍取官方地址）\nsudo apt-get update && sudo apt-get install -y ca-certificates curl\nsudo install -m 0755 -d /etc/apt/keyrings\ncurl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg\nsudo chmod a+r /etc/apt/keyrings/docker.gpg\n\n# 2) 写入使用镜像的仓库文件（只替换仓库地址，不改动 Docker 的其它配置）\nprintf '%s\\n' 'Types: deb' 'URIs: {{mirrorUrl}}' 'Suites: noble' 'Components: stable' 'Signed-By: /etc/apt/keyrings/docker.gpg' | sudo tee /etc/apt/sources.list.d/docker.sources\n\n# 3) 安装 Docker CE（先 update 再安装，避免索引与包版本不匹配）\nsudo apt-get update\nsudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin\n",
+        "note": "仓库文件里写死了发行版代号 noble（24.04），与所选版本一致；只影响 docker-ce 的软件包来源。"
+      },
+      "configFile": {
+        "path": "/etc/apt/sources.list.d/docker.sources",
+        "format": "text",
+        "content": "# MirrorN 生成：Ubuntu 24.04（noble）的 Docker CE 仓库使用镜像\n# 只替换 Docker CE 软件仓库；拉取镜像慢属于 Docker Hub 加速，是另一件事。\nTypes: deb\nURIs: {{mirrorUrl}}\nSuites: noble\nComponents: stable\nSigned-By: /etc/apt/keyrings/docker.gpg\n",
+        "instructions": "这是 Docker CE 的仓库文件。已经装过 Docker 时，先备份再替换即可（不要把 Docker 官方仓库文件和镜像文件同时启用）。",
+        "backup": "sudo cp -a /etc/apt/sources.list.d/docker.sources /etc/apt/sources.list.d/docker.sources.mirrorn.bak"
+      },
+      "verification": {
+        "command": "sudo apt-get update && apt-get --print-uris -y install docker-ce | head -n 3",
+        "expected": "apt update 没有报错，且打印出的 docker-ce 下载地址以所选镜像的域名开头。",
+        "note": "这条命令只查询下载地址、不下载软件包；确认无误后再执行步骤 2 里的安装命令。"
+      },
+      "restore": {
+        "command": "sudo rm -f /etc/apt/sources.list.d/docker.sources && sudo apt-get update",
+        "expected": "Docker CE 仓库配置被移除，apt 回到系统自带仓库；已安装的 docker 包不会被卸载。",
+        "note": "如果要卸载 Docker 本身，用 `sudo apt-get purge docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`（会删除本地容器与镜像）。"
+      },
+      "sources": [
+        {
+          "url": "https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/",
+          "checkedAt": "2026-09-19",
+          "note": "清华镜像站 docker-ce 帮助页：明确说明该镜像不是 Docker Hub，并给出 deb822 仓库写法与 GPG 公钥步骤。"
+        },
+        {
+          "url": "https://docs.docker.com/engine/install/ubuntu/",
+          "checkedAt": "2026-09-19",
+          "note": "Docker CE 官方安装文档：包名、GPG 公钥来源与仓库结构。"
+        }
+      ]
+    },
+    {
+      "id": "docker-ce-ubuntu-2204-bash",
+      "os": "linux",
+      "shell": "bash",
+      "distribution": "ubuntu",
+      "version": "22.04",
+      "variables": ["mirrorUrl"],
+      "persistent": {
+        "label": "安装/切换 Docker CE 仓库（Ubuntu 22.04）",
+        "command": "# 1) 安装依赖并信任 Docker 官方 GPG 公钥（公钥很小，仍取官方地址）\nsudo apt-get update && sudo apt-get install -y ca-certificates curl\nsudo install -m 0755 -d /etc/apt/keyrings\ncurl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg\nsudo chmod a+r /etc/apt/keyrings/docker.gpg\n\n# 2) 写入使用镜像的仓库文件（只替换仓库地址，不改动 Docker 的其它配置）\nprintf '%s\\n' 'Types: deb' 'URIs: {{mirrorUrl}}' 'Suites: jammy' 'Components: stable' 'Signed-By: /etc/apt/keyrings/docker.gpg' | sudo tee /etc/apt/sources.list.d/docker.sources\n\n# 3) 安装 Docker CE（先 update 再安装，避免索引与包版本不匹配）\nsudo apt-get update\nsudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin\n",
+        "note": "仓库文件里写死了发行版代号 jammy（22.04），与所选版本一致；只影响 docker-ce 的软件包来源。"
+      },
+      "configFile": {
+        "path": "/etc/apt/sources.list.d/docker.sources",
+        "format": "text",
+        "content": "# MirrorN 生成：Ubuntu 22.04（jammy）的 Docker CE 仓库使用镜像\n# 只替换 Docker CE 软件仓库；拉取镜像慢属于 Docker Hub 加速，是另一件事。\nTypes: deb\nURIs: {{mirrorUrl}}\nSuites: jammy\nComponents: stable\nSigned-By: /etc/apt/keyrings/docker.gpg\n",
+        "instructions": "这是 Docker CE 的仓库文件。已经装过 Docker 时，先备份再替换即可（不要把 Docker 官方仓库文件和镜像文件同时启用）。",
+        "backup": "sudo cp -a /etc/apt/sources.list.d/docker.sources /etc/apt/sources.list.d/docker.sources.mirrorn.bak"
+      },
+      "verification": {
+        "command": "sudo apt-get update && apt-get --print-uris -y install docker-ce | head -n 3",
+        "expected": "apt update 没有报错，且打印出的 docker-ce 下载地址以所选镜像的域名开头。",
+        "note": "这条命令只查询下载地址、不下载软件包；确认无误后再执行步骤 2 里的安装命令。"
+      },
+      "restore": {
+        "command": "sudo rm -f /etc/apt/sources.list.d/docker.sources && sudo apt-get update",
+        "expected": "Docker CE 仓库配置被移除，apt 回到系统自带仓库；已安装的 docker 包不会被卸载。",
+        "note": "如果要卸载 Docker 本身，用 `sudo apt-get purge docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`（会删除本地容器与镜像）。"
+      },
+      "sources": [
+        {
+          "url": "https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/",
+          "checkedAt": "2026-09-19",
+          "note": "清华镜像站 docker-ce 帮助页：明确说明该镜像不是 Docker Hub，并给出 deb822 仓库写法与 GPG 公钥步骤。"
+        },
+        {
+          "url": "https://docs.docker.com/engine/install/ubuntu/",
+          "checkedAt": "2026-09-19",
+          "note": "Docker CE 官方安装文档：包名、GPG 公钥来源与仓库结构。"
+        }
+      ]
+    },
+    {
+      "id": "docker-ce-ubuntu-2004-bash",
+      "os": "linux",
+      "shell": "bash",
+      "distribution": "ubuntu",
+      "version": "20.04",
+      "variables": ["mirrorUrl"],
+      "persistent": {
+        "label": "安装/切换 Docker CE 仓库（Ubuntu 20.04）",
+        "command": "# 1) 安装依赖并信任 Docker 官方 GPG 公钥（公钥很小，仍取官方地址）\nsudo apt-get update && sudo apt-get install -y ca-certificates curl\nsudo install -m 0755 -d /etc/apt/keyrings\ncurl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg\nsudo chmod a+r /etc/apt/keyrings/docker.gpg\n\n# 2) 写入使用镜像的仓库文件（只替换仓库地址，不改动 Docker 的其它配置）\nprintf '%s\\n' 'Types: deb' 'URIs: {{mirrorUrl}}' 'Suites: focal' 'Components: stable' 'Signed-By: /etc/apt/keyrings/docker.gpg' | sudo tee /etc/apt/sources.list.d/docker.sources\n\n# 3) 安装 Docker CE（先 update 再安装，避免索引与包版本不匹配）\nsudo apt-get update\nsudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin\n",
+        "note": "仓库文件里写死了发行版代号 focal（20.04），与所选版本一致；只影响 docker-ce 的软件包来源。"
+      },
+      "configFile": {
+        "path": "/etc/apt/sources.list.d/docker.sources",
+        "format": "text",
+        "content": "# MirrorN 生成：Ubuntu 20.04（focal）的 Docker CE 仓库使用镜像\n# 只替换 Docker CE 软件仓库；拉取镜像慢属于 Docker Hub 加速，是另一件事。\nTypes: deb\nURIs: {{mirrorUrl}}\nSuites: focal\nComponents: stable\nSigned-By: /etc/apt/keyrings/docker.gpg\n",
+        "instructions": "这是 Docker CE 的仓库文件。已经装过 Docker 时，先备份再替换即可（不要把 Docker 官方仓库文件和镜像文件同时启用）。",
+        "backup": "sudo cp -a /etc/apt/sources.list.d/docker.sources /etc/apt/sources.list.d/docker.sources.mirrorn.bak"
+      },
+      "verification": {
+        "command": "sudo apt-get update && apt-get --print-uris -y install docker-ce | head -n 3",
+        "expected": "apt update 没有报错，且打印出的 docker-ce 下载地址以所选镜像的域名开头。",
+        "note": "这条命令只查询下载地址、不下载软件包；确认无误后再执行步骤 2 里的安装命令。"
+      },
+      "restore": {
+        "command": "sudo rm -f /etc/apt/sources.list.d/docker.sources && sudo apt-get update",
+        "expected": "Docker CE 仓库配置被移除，apt 回到系统自带仓库；已安装的 docker 包不会被卸载。",
+        "note": "如果要卸载 Docker 本身，用 `sudo apt-get purge docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`（会删除本地容器与镜像）。"
+      },
+      "sources": [
+        {
+          "url": "https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/",
+          "checkedAt": "2026-09-19",
+          "note": "清华镜像站 docker-ce 帮助页：明确说明该镜像不是 Docker Hub，并给出 deb822 仓库写法与 GPG 公钥步骤。"
+        },
+        {
+          "url": "https://docs.docker.com/engine/install/ubuntu/",
+          "checkedAt": "2026-09-19",
+          "note": "Docker CE 官方安装文档：包名、GPG 公钥来源与仓库结构。"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/",
+      "checkedAt": "2026-09-19",
+      "note": "清华镜像站 docker-ce 帮助页：明确说明该镜像不是 Docker Hub，并给出 deb822 仓库写法与 GPG 公钥步骤。"
+    },
+    {
+      "url": "https://docs.docker.com/engine/install/ubuntu/",
+      "checkedAt": "2026-09-19",
+      "note": "Docker CE 官方安装文档：包名、GPG 公钥来源与仓库结构。"
+    },
+    {
+      "url": "https://docs.docker.com/engine/daemon/",
+      "checkedAt": "2026-09-19",
+      "note": "Docker 官方 daemon.json 字段说明。"
+    }
+  ]
+}

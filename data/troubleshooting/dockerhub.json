@@ -1,0 +1,69 @@
+[
+  {
+    "id": "dockerhub-daemon-json-invalid",
+    "ecosystemId": "dockerhub",
+    "title": "改完 daemon.json 后 docker 起不来（invalid character / unexpected end of JSON）",
+    "problem": "重启 docker 失败，`systemctl status docker` 显示 daemon.json 解析错误。",
+    "steps": [
+      {
+        "title": "先看具体报错",
+        "content": "`journalctl -u docker -n 50 --no-pager` 会指出 daemon.json 的语法问题；常见原因是漏了逗号、多写了逗号或用了单引号。"
+      },
+      {
+        "title": "用工具校验 JSON",
+        "content": "`sudo python3 -m json.tool /etc/docker/daemon.json` 或 `jq . /etc/docker/daemon.json` 都能直接指出错误位置。"
+      },
+      {
+        "title": "用备份恢复",
+        "content": "本向导的命令在修改前会生成 /etc/docker/daemon.json.mirrorn.bak，直接 `sudo cp -a` 回去再重启即可。"
+      },
+      {
+        "title": "确保只合并不覆盖",
+        "content": "daemon.json 里可能还有 data-root、log-driver、insecure-registries 等设置；整份覆盖会丢掉它们，务必用合并方式修改。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://docs.docker.com/engine/daemon/",
+        "checkedAt": "2026-09-19",
+        "note": "Docker 官方 daemon.json 说明。"
+      }
+    ]
+  },
+  {
+    "id": "dockerhub-mirror-not-effective",
+    "ecosystemId": "dockerhub",
+    "title": "配置了加速地址但 docker pull 没有变化",
+    "problem": "daemon.json 里写了 registry-mirrors，拉取镜像仍然很慢或直接失败。",
+    "steps": [
+      {
+        "title": "确认配置真的生效",
+        "content": "`docker info --format '{{json .RegistryConfig.Mirrors}}'` 应该输出你填写的地址。为空说明没读到配置：检查文件路径、JSON 语法，以及是否重启过 docker。"
+      },
+      {
+        "title": "只对 Docker Hub 生效",
+        "content": "registry-mirrors 只作用于 docker.io。ghcr.io、quay.io、registry.k8s.io、私有仓库等不受影响，需要各自单独配置。"
+      },
+      {
+        "title": "加速地址本身可能已经失效",
+        "content": "公共加速地址经常变更或下线，且可能只缓存了部分镜像。本向导不内置任何地址，就是因为无法保证长期可用；请用你信任来源提供的地址，并自己验证。"
+      },
+      {
+        "title": "想想是不是认证或镜像名的问题",
+        "content": "私有镜像、限流（toomanyrequests）与加速无关；可以先 `docker pull docker.io/library/hello-world` 看基础镜像是否正常。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://docs.docker.com/docker-hub/mirror/",
+        "checkedAt": "2026-09-19",
+        "note": "Docker 官方 registry mirror 说明。"
+      },
+      {
+        "url": "https://docs.docker.com/engine/daemon/",
+        "checkedAt": "2026-09-19",
+        "note": "Docker 官方 daemon.json 说明。"
+      }
+    ]
+  }
+]

@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch src/index.ts --port 8787",
     "build": "tsc -p tsconfig.build.json",
+    "build:bundle": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/server.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run"
   },

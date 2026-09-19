@@ -1,0 +1,145 @@
+[
+  {
+    "id": "apt-unsupported-distribution",
+    "ecosystemId": "apt",
+    "title": "系统不是列表里的 Ubuntu LTS（或不是 amd64）",
+    "problem": "在 Debian、CentOS 或 arm64 的设备上套用了本向导的 sources.list / deb822 内容，apt update 报 404 或找不到仓库。",
+    "steps": [
+      {
+        "title": "先确认发行版与版本",
+        "content": "执行 `lsb_release -ds`。本向导只覆盖 Ubuntu 24.04、22.04、20.04；Debian、CentOS、openEuler 等发行版的仓库结构完全不同，不要套用。"
+      },
+      {
+        "title": "确认架构",
+        "content": "执行 `dpkg --print-architecture`。如果是 arm64、armhf、ppc64el、riscv64，软件包在 ubuntu-ports 仓库，需要把地址里的 /ubuntu 换成 /ubuntu-ports，请参考 ubuntu-ports 帮助页。"
+      },
+      {
+        "title": "确认代号与仓库目录",
+        "content": "版本代号（noble/jammy/focal）必须与系统一致。用错代号会得到 404 或 'Release file ... does not have a Release file'。"
+      },
+      {
+        "title": "不要混用两种格式",
+        "content": "同一个仓库不要同时写在 /etc/apt/sources.list 和 /etc/apt/sources.list.d/*.sources 里，否则 apt 会报重复配置或校验冲突。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://ubuntu.com/server/docs/package-management",
+        "checkedAt": "2026-09-19",
+        "note": "Ubuntu 官方软件源文档。"
+      },
+      {
+        "url": "https://mirrors.tuna.tsinghua.edu.cn/help/ubuntu-ports/",
+        "checkedAt": "2026-09-19",
+        "note": "非 x86 架构使用的 ubuntu-ports 仓库帮助页。"
+      }
+    ]
+  },
+  {
+    "id": "apt-update-failed-after-switch",
+    "ecosystemId": "apt",
+    "title": "换源后 apt update 报错：404、Hash Sum mismatch、Release file 过期",
+    "problem": "执行 `sudo apt update` 时出现 Failed to fetch、404、Hash Sum mismatch，或提示 Release file 的日期在未来。",
+    "steps": [
+      {
+        "title": "先判断是不是镜像正在同步",
+        "content": "镜像站同步上游有延迟：刚发布的更新在镜像上可能还没有索引。等几分钟再试，或临时换回官方源对比。"
+      },
+      {
+        "title": "确认代号没写错",
+        "content": "打开 /etc/apt/sources.list 或 /etc/apt/sources.list.d/ubuntu.sources，检查 `Suites:`/行长里的代号是否与 `lsb_release -cs` 输出一致。"
+      },
+      {
+        "title": "Hash Sum mismatch 时清缓存重试",
+        "content": "执行 `sudo rm -rf /var/lib/apt/lists/*` 后重新 `sudo apt update`。这只会删除索引缓存，不会影响已安装的软件包。"
+      },
+      {
+        "title": "Release 文件时间在未来",
+        "content": "通常是本机时间不准（尤其是虚拟机）。用 `timedatectl` 检查并校准系统时间，再重试。"
+      },
+      {
+        "title": "一直失败就恢复原配置",
+        "content": "用步骤 4 的还原命令回到操作前的文件，确认系统本身没问题后再决定是否换源。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://manpages.debian.org/bookworm/apt/apt-get.8.en.html",
+        "checkedAt": "2026-09-19",
+        "note": "apt-get 手册中的 update 与校验相关说明。"
+      },
+      {
+        "url": "https://mirrors.tuna.tsinghua.edu.cn/help/ubuntu/",
+        "checkedAt": "2026-09-19",
+        "note": "清华镜像站 Ubuntu 帮助页：安全更新默认走官方源的说明。"
+      }
+    ]
+  },
+  {
+    "id": "apt-security-updates-missing",
+    "ecosystemId": "apt",
+    "title": "安全更新没有走镜像，或找不到 -security 仓库",
+    "problem": "换源后发现安全更新仍然从 security.ubuntu.com 下载，或者把 security 行改成镜像后更新失败。",
+    "steps": [
+      {
+        "title": "这是预期行为",
+        "content": "本向导生成的配置里，安全更新（<代号>-security）仍然指向官方 security.ubuntu.com：镜像站同步有延迟，官方源更及时。这也是清华镜像帮助页的默认建议。"
+      },
+      {
+        "title": "确认 apt 能看到两个来源",
+        "content": "执行 `apt-cache policy | head -n 20`，可以看到归档仓库来自镜像、security 来自官方主机。"
+      },
+      {
+        "title": "确实要全部走镜像时",
+        "content": "把 security 行的地址改成镜像地址（向导的配置文件内容里给了注释写法），然后 `sudo apt update`。生产环境不建议这样做。"
+      },
+      {
+        "title": "报 GPG / 签名错误时",
+        "content": "先把 security 行改回官方地址确认系统本身正常；签名相关的问题通常来自混用了多个仓库文件或 keyring 路径写错。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://mirrors.tuna.tsinghua.edu.cn/help/ubuntu/",
+        "checkedAt": "2026-09-19",
+        "note": "清华镜像站 Ubuntu 帮助页：安全更新默认走官方源的说明。"
+      },
+      {
+        "url": "https://ubuntu.com/server/docs/package-management",
+        "checkedAt": "2026-09-19",
+        "note": "Ubuntu 官方软件源文档。"
+      }
+    ]
+  },
+  {
+    "id": "apt-ca-certificates-missing",
+    "ecosystemId": "apt",
+    "title": "换源后报 Certificate verification failed（证书不受信任）",
+    "problem": "apt update 提示 `Certificate verification failed: The certificate issuer is unknown` 或 `Could not handshake`。",
+    "steps": [
+      {
+        "title": "确认系统有没有根证书",
+        "content": "执行 `dpkg -l ca-certificates`。官方 Docker 镜像、部分云厂商最小化镜像默认不装这个包，所有 HTTPS 源都会失败。"
+      },
+      {
+        "title": "先用自带源装上证书包",
+        "content": "系统自带的 sources.list 通常是 http 地址，可以正常下载：`sudo apt-get update && sudo apt-get install -y ca-certificates`。装好后再切换到 HTTPS 镜像。"
+      },
+      {
+        "title": "确认时间正确",
+        "content": "`timedatectl` 显示的时间偏差过大会让所有证书校验失败。虚拟机从休眠恢复后常见。"
+      },
+      {
+        "title": "仍然失败时回到 HTTP 或换镜像",
+        "content": "可以临时把地址改回 http（镜像站的 http 地址通常仍可用），或换一个镜像站，再排查网络里的 TLS 中间人代理。"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://ubuntu.com/server/docs/package-management",
+        "checkedAt": "2026-09-19",
+        "note": "Ubuntu 官方软件源文档；ca-certificates 是 HTTPS 源的必要依赖。"
+      }
+    ]
+  }
+]

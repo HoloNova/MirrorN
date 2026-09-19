@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { mockStatusUnavailable } from './api-mocks';
+
 const SEARCH_INPUT = 'input[role="combobox"]';
 
 /**
@@ -55,18 +57,37 @@ test('搜索到镜像后给出该站可配置的生态入口', async ({ page }) 
   await selectResultByKeyboard(page, '清华大学开源软件镜像站');
 
   const chips = page.locator('.hit-chips .chip');
-  await expect(chips.first()).toContainText('Python / pip');
-  await chips.first().click();
+  // 清华同时提供 pip、apt 与 Docker CE 仓库，入口按生态顺序列出。
+  await expect(chips).toHaveCount(3);
+  await expect(chips.nth(0)).toContainText('Ubuntu / apt');
+  await expect(chips.nth(1)).toContainText('Docker CE / apt 仓库');
+  await expect(chips.nth(2)).toContainText('Python / pip');
+
+  await chips.nth(2).click();
 
   await expect(page).toHaveURL(/#\/ecosystems\/pip$/);
 });
 
 test('搜索 → 选择生态 → 切换来源 → 查看验证说明', async ({ page }) => {
+  // 这个用例要进向导页，而向导会请求状态接口：显式模拟“后端可用但没有数据”，
+  // 这样控制台不会出现未拦截请求的 404 噪声。
+  await mockStatusUnavailable(page);
+
   const errors = collectPageErrors(page);
-  const apiRequests: string[] = [];
+
+  // 搜索本身绝不能触发测速：进入生态页之前不应该有任何指向镜像站的请求。
+  // （向导挂载后测速是预期行为，所以跳转到生态页时停止记录。）
+  const probeRequests: string[] = [];
+  let recording = true;
   page.on('request', (request) => {
-    if (request.url().includes('/api/')) {
-      apiRequests.push(request.url());
+    if (!recording || request.url().startsWith('http://127.0.0.1:')) {
+      return;
+    }
+    probeRequests.push(request.url());
+  });
+  page.on('framenavigated', (frame) => {
+    if (frame === page.mainFrame() && frame.url().includes('#/ecosystems/')) {
+      recording = false;
     }
   });
 
@@ -88,7 +109,7 @@ test('搜索 → 选择生态 → 切换来源 → 查看验证说明', async ({
   await expect(page.locator('#step3-title')).toBeVisible();
   await expect(page.locator('.command-block code').first()).toContainText('pip config get');
 
-  expect(apiRequests).toEqual([]);
+  expect(probeRequests).toEqual([]);
   expect(errors).toEqual([]);
 });
 

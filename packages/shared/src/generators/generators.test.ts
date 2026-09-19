@@ -95,6 +95,20 @@ const ecosystemFixture = {
   sources: [source],
 };
 
+function makeVariant(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: 'variant',
+    os: 'linux',
+    shell: 'bash',
+    variables: ['mirrorUrl'],
+    persistent: { label: '全局生效', command: 'tool config set index {{mirrorUrl}}' },
+    verification: { command: 'tool config get index', expected: '输出应包含地址。' },
+    restore: { command: 'tool config unset index', expected: '用户级配置被移除。' },
+    sources: [source],
+    ...overrides,
+  };
+}
+
 function makeEcosystem(overrides: Record<string, unknown> = {}): Ecosystem {
   return EcosystemSchema.parse({ ...ecosystemFixture, ...overrides });
 }
@@ -109,13 +123,124 @@ function expectSuccess(result: GuideResult) {
 describe('listPlatforms', () => {
   it('returns only the platforms that have templates, in a stable order', () => {
     expect(listPlatforms(makeEcosystem())).toEqual([
-      { os: 'windows', shells: ['powershell'] },
-      { os: 'linux', shells: ['bash'] },
+      { os: 'windows', shells: ['powershell'], versions: [] },
+      { os: 'linux', shells: ['bash'], versions: [] },
+    ]);
+  });
+
+  it('reports the versions declared for a platform, in data order, without duplicates', () => {
+    const ecosystem = makeEcosystem({
+      guides: [
+        makeVariant({
+          id: 'apt-ubuntu-2404-bash',
+          distribution: 'ubuntu',
+          version: '24.04',
+        }),
+        makeVariant({
+          id: 'apt-ubuntu-2204-bash',
+          distribution: 'ubuntu',
+          version: '22.04',
+        }),
+        makeVariant({
+          id: 'apt-ubuntu-2404-zsh',
+          shell: 'zsh',
+          distribution: 'ubuntu',
+          version: '24.04',
+        }),
+      ],
+    });
+
+    expect(listPlatforms(ecosystem)).toEqual([
+      { os: 'linux', shells: ['bash', 'zsh'], versions: ['24.04', '22.04'] },
     ]);
   });
 });
 
 describe('generateGuide', () => {
+  it('selects the template that matches the requested distribution version', () => {
+    const ecosystem = makeEcosystem({
+      guides: [
+        makeVariant({
+          id: 'linux-2404',
+          distribution: 'ubuntu',
+          version: '24.04',
+          persistent: { label: '全局生效', command: 'write 24.04 sources' },
+        }),
+        makeVariant({
+          id: 'linux-2204',
+          distribution: 'ubuntu',
+          version: '22.04',
+          persistent: { label: '全局生效', command: 'write 22.04 sources' },
+        }),
+      ],
+    });
+
+    const newer = expectSuccess(
+      generateGuide({ ecosystem, mirror, os: 'linux', shell: 'bash', version: '24.04' }),
+    );
+    expect(newer.platform).toMatchObject({ version: '24.04', distribution: 'ubuntu' });
+    expect(newer.commands[0]?.command).toBe('write 24.04 sources');
+
+    const older = expectSuccess(
+      generateGuide({ ecosystem, mirror, os: 'linux', shell: 'bash', version: '22.04' }),
+    );
+    expect(older.commands[0]?.command).toBe('write 22.04 sources');
+  });
+
+  it('refuses to guess a version, and says which ones exist', () => {
+    const ecosystem = makeEcosystem({
+      guides: [
+        makeVariant({ id: 'linux-2404', distribution: 'ubuntu', version: '24.04' }),
+        makeVariant({ id: 'linux-2204', distribution: 'ubuntu', version: '22.04' }),
+      ],
+    });
+
+    const result = generateGuide({ ecosystem, mirror, os: 'linux', shell: 'bash' });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) {
+      return;
+    }
+    expect(result.reason).toBe('ambiguous-platform');
+    expect(result.message).toContain('24.04');
+    expect(result.message).toContain('22.04');
+  });
+
+  it('reports an unsupported version instead of falling back to another one', () => {
+    const ecosystem = makeEcosystem({
+      guides: [makeVariant({ id: 'linux-2404', distribution: 'ubuntu', version: '24.04' })],
+    });
+
+    const result = generateGuide({
+      ecosystem,
+      mirror,
+      os: 'linux',
+      shell: 'bash',
+      version: '20.04',
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) {
+      return;
+    }
+    expect(result.reason).toBe('unsupported-platform');
+    expect(result.message).toContain('20.04');
+  });
+
+  it('ignores the version field when the data is not versioned', () => {
+    const guide = expectSuccess(
+      generateGuide({
+        ecosystem: makeEcosystem(),
+        mirror,
+        os: 'windows',
+        shell: 'powershell',
+        version: 'ignored',
+      }),
+    );
+
+    expect(guide.platform.version).toBeUndefined();
+  });
+
   it('renders real values from data instead of template placeholders', () => {
     const guide = expectSuccess(
       generateGuide({

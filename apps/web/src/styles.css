@@ -1150,3 +1150,195 @@ h3 {
     white-space: normal;
   }
 }
+
+/* ── 探测状态：徽标、刷新按钮、搜索里的估算值 ───────────────────── */
+
+.probe-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.probe-timestamp {
+  color: var(--text-dim);
+  font-size: 11.5px;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: #c2c9d2;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 12px;
+}
+
+.icon-button:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.icon-button .is-spinning {
+  animation: probe-spin 1s linear infinite;
+}
+
+@keyframes probe-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.probe-badge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  color: var(--text-dim);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+.probe-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 999px;
+  background: #6b7280;
+}
+
+.probe-badge.tone-good .probe-dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.12);
+}
+
+.probe-badge.tone-good .probe-label {
+  color: #d3f7f0;
+}
+
+.probe-badge.tone-warn .probe-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12);
+}
+
+.probe-badge.tone-warn .probe-label {
+  color: #fbd6a2;
+}
+
+.probe-detail {
+  color: var(--text-dim);
+}
+
+.probe-recommended {
+  padding: 1px 8px;
+  border: 1px solid rgba(94, 234, 212, 0.45);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.probe-note {
+  margin-top: 12px;
+}
+
+/* 同步状态：与测量徐标同样的小字号行，但带具体的状态点颜色。 */
+.sync-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  color: var(--text-dim);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+.sync-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 2px;
+  background: #6b7280;
+}
+
+.sync-status[data-tone='ok'] .sync-dot {
+  background: var(--accent);
+}
+
+.sync-status[data-tone='ok'] .sync-text {
+  color: #d3f7f0;
+}
+
+.sync-status[data-tone='pending'] .sync-dot {
+  background: #38bdf8;
+}
+
+.sync-status[data-tone='pending'] .sync-text {
+  color: #bfe6fb;
+}
+
+.sync-status[data-tone='bad'] .sync-dot {
+  background: #f87171;
+}
+
+.sync-status[data-tone='bad'] .sync-text {
+  color: #fbc4c4;
+}
+
+.sync-detail {
+  color: var(--text-dim);
+}
+
+.hit-latency {
+  margin-left: 8px;
+  padding: 1px 7px;
+  border: 1px solid rgba(94, 234, 212, 0.28);
+  border-radius: 999px;
+  color: #9fe8dc;
+  font-size: 10.5px;
+}
+
+/* 生态数据来源与官方文档：放在“开始前请确认”面板底部，用于给出官方文档入口。 */
+.source-links {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.source-links-label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.source-links ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.source-links li {
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.source-links a {
+  color: var(--accent);
+  word-break: break-all;
+}
+
+.source-note {
+  display: block;
+  color: var(--text-muted);
+}

@@ -8,9 +8,9 @@
     "node": ">=20.19.0"
   },
   "scripts": {
-    "dev": "pnpm validate:data && concurrently --kill-others-on-fail --names web,server --prefix-colors cyan,magenta \"pnpm --filter @mirrorn/web dev\" \"pnpm --filter @mirrorn/server dev\"",
-    "dev:web": "pnpm validate:data && pnpm --filter @mirrorn/web dev",
-    "dev:server": "pnpm build:shared && pnpm --filter @mirrorn/server dev",
+    "dev": "node scripts/require-free-port.mjs web server && pnpm validate:data && concurrently --names web,server --prefix-colors cyan,magenta \"pnpm --filter @mirrorn/web dev\" \"pnpm --filter @mirrorn/server dev\"",
+    "dev:web": "node scripts/require-free-port.mjs web && pnpm validate:data && pnpm --filter @mirrorn/web dev",
+    "dev:server": "node scripts/require-free-port.mjs server && pnpm build:shared && pnpm --filter @mirrorn/server dev",
     "build:shared": "pnpm --filter @mirrorn/shared build",
     "build:web": "pnpm validate:data && pnpm --filter @mirrorn/web build",
     "build": "pnpm validate:data && pnpm --filter @mirrorn/server build && pnpm --filter @mirrorn/web build",
@@ -30,6 +30,7 @@
     "@playwright/test": "^1.63.0",
     "@types/node": "^22.10.5",
     "concurrently": "^9.1.2",
+    "esbuild": "^0.28.2",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vue": "^9.32.0",

@@ -1,0 +1,71 @@
+# MirrorN 静态站点（追加到 /etc/caddy/Caddyfile 的片段）
+#
+# 站点：https://mirror.campuslink.vip
+# 内容：pnpm build:web 的产物（apps/web/dist），由 scripts/deploy-static.sh 同步到
+#       /srv/mirror.campuslink.vip/current
+#
+# 与 pi.campuslink.vip 的区别（有意为之）：
+#   1. 本站点是公开工具站，**不接 Authelia 鉴权**；
+#   2. 本站点启用 encode：内容全是静态文件，压缩收益明显，且没有 SSE 流（pi 站点因
+#      text/event-stream 会被 encode 的默认 Content-Type 匹配破坏，故那边刻意不启用）；
+#   3. 本站点用 file_server 直接读磁盘，不 reverse_proxy 到任何开发服务器
+#      （5173/5174 只绑 127.0.0.1）；/api 反代的是**生产**后端服务（systemd 单元 mirrorn-api），
+#      不是开发进程。后端起不来时页面仍然完整可用，只是同步状态显示“未知”。
+#
+# 路由：前端使用 hash 模式，服务端只会收到 "/"，因此**不需要 try_files 回退规则**。
+#
+# 已知坑（来自 pi 站点的维护记录）：改完配置请以 caddy 用户校验，不要用 root 直接
+# validate —— root 会预建 /var/log/caddy/*.log（root 属主 0600），导致 caddy 无法启动：
+#   cp deploy/Caddyfile.mirror /tmp/check.caddy
+#   sed -i 's#/var/log/caddy/mirror.log#/tmp/mirror-validate.log#' /tmp/check.caddy
+#   su -s /bin/bash caddy -c 'caddy validate --config /tmp/check.caddy --adapter caddyfile'
+
+mirror.campuslink.vip {
+	# ---- 1) 后端 API：同域反代到本机服务（只监听 127.0.0.1）----
+	# 为什么同域：前端因此不需要跨域配置，也不需要给后端加 CORS；
+	# 为什么用 handle 而不是 handle_path：后端路由本身就带 /api 前缀。
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8788
+	}
+
+	# ---- 2) 静态产物 ----
+	handle {
+		root * /srv/mirror.campuslink.vip/current
+		file_server
+	}
+
+	encode zstd gzip
+
+	# 构建产物文件名带内容 hash，可以长期缓存；index.html 必须每次校验，
+	# 否则新版本发布后用户会一直拿到旧的 asset 引用。
+	@hashed path /assets/*
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+
+	@entry path / /index.html
+	header @entry Cache-Control "no-cache"
+
+	@icon path /favicon.svg
+	header @icon Cache-Control "public, max-age=86400"
+
+	# 与 pi.campuslink.vip 保持一致的安全响应头。
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy no-referrer
+		-Server
+	}
+
+	# 注意：本站点目前不设置 CSP。阶段 4 的测速由浏览器直连镜像站，
+	# 若以后要加 CSP，connect-src 必须包含数据里声明的 6 个探针主机：
+	#   https://pypi.org https://registry.npmjs.org https://mirrors.tuna.tsinghua.edu.cn
+	#   https://mirrors.aliyun.com https://registry.npmmirror.com https://mirrors.tencent.com
+	# 否则测速会全部失败（PLAN 6.3 要求把这条写进文档）。同源的 /api 不需要额外配置。
+
+	log {
+		output file /var/log/caddy/mirror.log {
+			roll_size 10MiB
+			roll_keep 5
+		}
+	}
+}

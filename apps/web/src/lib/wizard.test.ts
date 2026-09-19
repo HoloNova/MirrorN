@@ -219,6 +219,62 @@ describe('createGuideWizard', () => {
   });
 });
 
+describe('recommended mirror selection', () => {
+  it('uses the recommended mirror until the user chooses one', () => {
+    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
+    expect(wizard.mirrors.value[0]?.id).toBe('pypi-official');
+
+    wizard.applyRecommendation('tsinghua');
+
+    expect(wizard.mirrorId.value).toBe('tsinghua');
+    expect(wizard.mirrorPinned.value).toBe(false);
+    const guide = wizard.guide.value;
+    expect(guide.ok && guide.guide.commands[0].command).toContain(
+      'https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/',
+    );
+  });
+
+  it('keeps updating the default while the user has not touched the list', () => {
+    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
+
+    wizard.applyRecommendation('aliyun');
+    wizard.applyRecommendation('tsinghua');
+
+    expect(wizard.mirrorId.value).toBe('tsinghua');
+  });
+
+  it('never replaces a mirror the user selected manually', () => {
+    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
+
+    wizard.setMirror('aliyun');
+    expect(wizard.mirrorPinned.value).toBe(true);
+
+    wizard.applyRecommendation('tsinghua');
+
+    expect(wizard.mirrorId.value).toBe('aliyun');
+    const guide = wizard.guide.value;
+    expect(guide.ok && guide.guide.commands[0].command).toContain(
+      'https://mirrors.aliyun.com/pypi/simple/',
+    );
+  });
+
+  it('ignores a recommendation that is not part of the current candidates', () => {
+    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
+
+    wizard.applyRecommendation('mirror-that-does-not-exist');
+
+    expect(wizard.mirrorId.value).toBe('pypi-official');
+  });
+
+  it('keeps the user selection when there is no recommendation at all', () => {
+    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
+
+    wizard.applyRecommendation(undefined);
+
+    expect(wizard.mirrorId.value).toBe('pypi-official');
+  });
+});
+
 describe('step navigation', () => {
   it('blocks moving to the next step when the selection cannot generate a guide', () => {
     const wizard = createGuideWizard({ ...ecosystem, guides: [] } as unknown as Ecosystem, {
@@ -249,5 +305,106 @@ describe('step navigation', () => {
 
     wizard.goToStep(1);
     expect(wizard.step.value).toBe(1);
+  });
+});
+
+describe('createGuideWizard 的发行版版本选择', () => {
+  /** 带三个 Ubuntu LTS 版本的示例生态：两个用一行式、一个用 deb822。 */
+  const versionedEcosystem: Ecosystem = EcosystemSchema.parse({
+    id: 'apt',
+    name: 'Ubuntu / apt',
+    packageManager: 'apt',
+    description: '示例生态。',
+    prerequisites: ['只覆盖列出的 Ubuntu LTS。'],
+    aliases: ['ubuntu'],
+    supports: [
+      {
+        ecosystemId: 'apt',
+        mirrorId: 'tsinghua',
+        repositoryUrl: 'https://mirrors.tuna.tsinghua.edu.cn/ubuntu/',
+        sources: [source],
+      },
+    ],
+    guides: [
+      {
+        id: 'apt-ubuntu-2404-bash',
+        os: 'linux',
+        shell: 'bash',
+        distribution: 'ubuntu',
+        version: '24.04',
+        variables: ['mirrorUrl'],
+        persistent: { label: '换源', command: 'write deb822 {{mirrorUrl}}' },
+        verification: { command: 'apt update', expected: '包含镜像地址。' },
+        restore: { command: 'restore', expected: '已还原。' },
+        sources: [source],
+      },
+      {
+        id: 'apt-ubuntu-2204-bash',
+        os: 'linux',
+        shell: 'bash',
+        distribution: 'ubuntu',
+        version: '22.04',
+        variables: ['mirrorUrl'],
+        persistent: { label: '换源', command: 'write sources.list {{mirrorUrl}}' },
+        verification: { command: 'apt update', expected: '包含镜像地址。' },
+        restore: { command: 'restore', expected: '已还原。' },
+        sources: [source],
+      },
+    ],
+    sources: [source],
+  });
+
+  it('把数据里的版本顺序作为默认选择，并在命令里体现所选版本', () => {
+    const wizard = createGuideWizard(versionedEcosystem, { detectedOs: 'linux' });
+
+    expect(wizard.versions.value).toEqual(['24.04', '22.04']);
+    expect(wizard.version.value).toBe('24.04');
+    expect(wizard.versionLabel.value).toBe('ubuntu 24.04');
+    expect(wizard.guide.value.ok && wizard.guide.value.guide.commands[0]?.command).toBe(
+      'write deb822 https://mirrors.tuna.tsinghua.edu.cn/ubuntu/',
+    );
+
+    wizard.setVersion('22.04');
+
+    expect(wizard.version.value).toBe('22.04');
+    expect(wizard.guide.value.ok && wizard.guide.value.guide.commands[0]?.command).toBe(
+      'write sources.list https://mirrors.tuna.tsinghua.edu.cn/ubuntu/',
+    );
+  });
+
+  it('系统没有按版本区分的模板时，不显示版本选择器', () => {
+    const wizard = createGuideWizard(ecosystem, { detectedOs: 'windows', detectedShell: 'cmd' });
+
+    expect(wizard.versions.value).toEqual([]);
+    expect(wizard.version.value).toBeUndefined();
+    expect(wizard.versionLabel.value).toBeUndefined();
+  });
+
+  it('切换到没有版本维度的系统时清空版本，切回来时重新落到默认版本', () => {
+    const mixed: Ecosystem = EcosystemSchema.parse({
+      ...versionedEcosystem,
+      guides: [
+        ...versionedEcosystem.guides,
+        {
+          id: 'apt-windows-powershell',
+          os: 'windows',
+          shell: 'powershell',
+          variables: ['mirrorUrl'],
+          persistent: { label: '换源', command: 'Set-Item {{mirrorUrl}}' },
+          verification: { command: 'Get-Item', expected: '包含地址。' },
+          restore: { command: 'Remove-Item', expected: '已移除。' },
+          sources: [source],
+        },
+      ],
+    });
+
+    const wizard = createGuideWizard(mixed, { detectedOs: 'linux' });
+    expect(wizard.version.value).toBe('24.04');
+
+    wizard.setOs('windows');
+    expect(wizard.version.value).toBeUndefined();
+
+    wizard.setOs('linux');
+    expect(wizard.version.value).toBe('24.04');
   });
 });

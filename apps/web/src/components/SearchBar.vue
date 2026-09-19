@@ -7,13 +7,22 @@ import type { Ecosystem } from '@mirrorn/shared';
 
 import { getCatalog } from '../lib/ecosystems';
 import { isEditableElement, moveIndex, resolveSearchKey, shouldFocusSearch } from '../lib/keys';
+import { createProbeCache, selectCachedResults } from '../lib/probeCache';
 import { createSearchIndex, MAX_RESULTS, type MirrorHit, type SearchHit } from '../lib/search';
+import { toProbeTargets } from '../composables/useMirrorProbes';
 
 const emit = defineEmits<{ 'update:active': [boolean] }>();
 
 const router = useRouter();
 const catalog = getCatalog();
 const index = createSearchIndex(catalog);
+
+/**
+ * 搜索只展示缓存里的测量值，不发起新的探测：每次键入都全量扫描会浪费带宽，
+ * 也会让结果列表在输入过程中不停变化。真正发起测量的是生态向导页。
+ */
+const probeCache = createProbeCache();
+const probeTargets = toProbeTargets(catalog.mirrors);
 
 const query = ref('');
 const activeIndex = ref(-1);
@@ -27,6 +36,35 @@ const showResults = computed(() => hasQuery.value);
 const activeHit = computed(() => hits.value[activeIndex.value]);
 
 const ecosystemById = computed(() => new Map(catalog.ecosystems.map((item) => [item.id, item])));
+
+const cachedProbes = computed(() => {
+  const mirrorIds = new Set(
+    hits.value.filter((hit) => hit.kind === 'mirror').map((hit) => hit.mirrorId),
+  );
+  const selected = selectCachedResults(probeCache.read(), probeTargets, Date.now());
+
+  for (const mirrorId of [...selected.keys()]) {
+    if (!mirrorIds.has(mirrorId)) {
+      selected.delete(mirrorId);
+    }
+  }
+
+  return selected;
+});
+
+/** 过期的测量值不参与展示：搜索卡片太窄，说不清“可能已过期”只会造成误导。 */
+function cachedLatency(mirrorId: string): string | undefined {
+  const cached = cachedProbes.value.get(mirrorId);
+  if (
+    !cached ||
+    cached.stale ||
+    cached.result.status !== 'ok' ||
+    cached.result.durationMs === null
+  ) {
+    return undefined;
+  }
+  return `≈ ${cached.result.durationMs} ms`;
+}
 
 function ecosystemLabel(id: string): string {
   return ecosystemById.value.get(id)?.name ?? id;
@@ -204,6 +242,13 @@ defineExpose({ focus: () => inputRef.value?.focus() });
           <div class="hit-main">
             <div>
               <span class="hit-title">{{ hit.title }}</span>
+              <span
+                v-if="hit.kind === 'mirror' && cachedLatency(hit.mirrorId)"
+                class="hit-latency"
+                title="响应耗时（估算）：此前在向导里测得的来源主机响应时间，不代表下载速度"
+              >
+                {{ cachedLatency(hit.mirrorId) }}
+              </span>
               <span v-if="hit.matchedTerms.length > 0" class="hit-terms">
                 {{ hit.matchedTerms.join(' / ') }}
               </span>
@@ -235,7 +280,8 @@ defineExpose({ focus: () => inputRef.value?.focus() });
       <CornerDownLeft :size="12" aria-hidden="true" />
       <span
         >回车选择，上下键移动，Esc 退出。最多显示
-        {{ MAX_RESULTS }} 条结果，搜索完全在本地进行。</span
+        {{ MAX_RESULTS }}
+        条结果，搜索完全在本地进行；右侧的毫秒数来自此前在向导里的响应耗时估算。</span
       >
     </p>
   </div>

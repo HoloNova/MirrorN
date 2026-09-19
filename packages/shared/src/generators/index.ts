@@ -39,6 +39,14 @@ export const GUIDE_MODE_LABELS: Record<GuideMode, string> = {
 export interface PlatformOption {
   os: OperatingSystem;
   shells: ShellKind[];
+  /**
+   * 该平台下需要用户选择的发行版版本（例如 Ubuntu 的 24.04 / 22.04）。
+   *
+   * 为什么要有这个维度：同一套系统与终端的命令会因为发行版版本不同而不同
+   * （apt 的 sources.list 与 deb822 格式、仓库代号都随版本变化）。
+   * 数据里没有按版本区分时为**空数组**，界面不展示版本选择器。
+   */
+  versions: string[];
 }
 
 export interface GeneratedCommand {
@@ -112,36 +120,54 @@ export interface GuideRequest {
   mirror: Mirror;
   os: OperatingSystem;
   shell: ShellKind;
+  /**
+   * 发行版版本（例如 `24.04`）。
+   *
+   * 当该（系统, 终端）组合下的模板按版本区分时必须提供，否则会返回
+   * `ambiguous-platform`；不按版本区分的模板忽略这个字段。
+   */
+  version?: string;
 }
 
 function uniqueSorted<T extends string>(values: T[], order: readonly T[]): T[] {
   return [...new Set(values)].sort((left, right) => order.indexOf(left) - order.indexOf(right));
 }
 
-/** 数据里实际存在模板的系统与终端组合，用于只向用户展示可用选项。 */
+function isDefined<T>(value: T | undefined): value is T {
+  return value !== undefined;
+}
+
+/** 数据里实际存在模板的系统、终端与版本组合，用于只向用户展示可用选项。 */
 export function listPlatforms(ecosystem: Ecosystem): PlatformOption[] {
-  const byOs = new Map<OperatingSystem, ShellKind[]>();
+  const byOs = new Map<OperatingSystem, { shells: ShellKind[]; versions: string[] }>();
 
   for (const guide of ecosystem.guides) {
-    const shells = byOs.get(guide.os) ?? [];
-    shells.push(guide.shell);
-    byOs.set(guide.os, shells);
+    const entry = byOs.get(guide.os) ?? { shells: [], versions: [] };
+    entry.shells.push(guide.shell);
+    if (guide.version !== undefined) {
+      entry.versions.push(guide.version);
+    }
+    byOs.set(guide.os, entry);
   }
 
-  return uniqueSorted([...byOs.keys()], OS_ORDER).map((os) => ({
-    os,
-    shells: uniqueSorted(byOs.get(os) ?? [], SHELL_ORDER),
-  }));
+  return uniqueSorted([...byOs.keys()], OS_ORDER).map((os) => {
+    const entry = byOs.get(os) ?? { shells: [], versions: [] };
+    return {
+      os,
+      shells: uniqueSorted(entry.shells, SHELL_ORDER),
+      // 版本在数据里的顺序就是展示顺序（数据按新到旧排列）；不做语义化排序猜测。
+      versions: [...new Set(entry.versions)],
+    };
+  });
 }
 
 export function describePlatforms(ecosystem: Ecosystem): string {
   return listPlatforms(ecosystem)
-    .map(
-      (option) =>
-        `${OPERATING_SYSTEM_LABELS[option.os]}/${option.shells
-          .map((shell) => SHELL_LABELS[shell])
-          .join('、')}`,
-    )
+    .map((option) => {
+      const shells = option.shells.map((shell) => SHELL_LABELS[shell]).join('、');
+      const versions = option.versions.length > 0 ? `（${option.versions.join('、')}）` : '';
+      return `${OPERATING_SYSTEM_LABELS[option.os]}/${shells}${versions}`;
+    })
     .join('，');
 }
 
@@ -164,7 +190,7 @@ function pickVariant(candidates: GuideVariant[]): GuideVariant | undefined {
 }
 
 export function generateGuide(request: GuideRequest): GuideResult {
-  const { ecosystem, mirror, os, shell } = request;
+  const { ecosystem, mirror, os, shell, version } = request;
 
   const support = ecosystem.supports.find((item) => item.mirrorId === mirror.id);
   if (!support) {
@@ -175,8 +201,10 @@ export function generateGuide(request: GuideRequest): GuideResult {
     };
   }
 
-  const candidates = ecosystem.guides.filter((guide) => guide.os === os && guide.shell === shell);
-  if (candidates.length === 0) {
+  const platformGuides = ecosystem.guides.filter(
+    (guide) => guide.os === os && guide.shell === shell,
+  );
+  if (platformGuides.length === 0) {
     const available = describePlatforms(ecosystem);
     return {
       ok: false,
@@ -187,14 +215,37 @@ export function generateGuide(request: GuideRequest): GuideResult {
     };
   }
 
+  // 只有当该平台确实按版本区分模板时才用版本过滤，否则版本字段会被忽略。
+  const versions = [...new Set(platformGuides.map((guide) => guide.version).filter(isDefined))];
+  const candidates =
+    versions.length > 0 && version !== undefined
+      ? platformGuides.filter((guide) => guide.version === version)
+      : platformGuides;
+
+  if (versions.length > 0 && version === undefined) {
+    return {
+      ok: false,
+      reason: 'ambiguous-platform',
+      message: `${OPERATING_SYSTEM_LABELS[os]}/${SHELL_LABELS[shell]} 需要先确定具体系统版本：${versions.join('、')}。`,
+    };
+  }
+
+  if (versions.length > 0 && candidates.length === 0) {
+    return {
+      ok: false,
+      reason: 'unsupported-platform',
+      message: `${ecosystem.name} 没有 ${OPERATING_SYSTEM_LABELS[os]}/${SHELL_LABELS[shell]} 的 ${version} 版本模板。可用版本：${versions.join('、')}。`,
+    };
+  }
+
   const variant = pickVariant(candidates);
   if (!variant) {
     return {
       ok: false,
       reason: 'ambiguous-platform',
-      message: `${OPERATING_SYSTEM_LABELS[os]}/${SHELL_LABELS[shell]} 对应多个模板（${candidates
-        .map((guide) => guide.id)
-        .join('、')}），需要先确定具体系统版本。`,
+      message: `${OPERATING_SYSTEM_LABELS[os]}/${SHELL_LABELS[shell]}${
+        version === undefined ? '' : `（${version}）`
+      } 对应多个模板（${candidates.map((guide) => guide.id).join('、')}），无法确定该用哪一个。`,
     };
   }
 

@@ -70,7 +70,8 @@ describe('search index', () => {
     const aliyun = index.search('阿里云').find((hit) => hit.id === 'mirror:aliyun');
 
     expect(aliyun?.kind).toBe('mirror');
-    expect(aliyun?.kind === 'mirror' && aliyun.ecosystemIds).toEqual(['pip']);
+    // 阿里云同时提供 pip、apt 与 Docker CE 仓库，搜索结果必须反映镜像实际服务的生态。
+    expect(aliyun?.kind === 'mirror' && aliyun.ecosystemIds).toEqual(['apt', 'docker-ce', 'pip']);
   });
 
   it('caps the result list', () => {

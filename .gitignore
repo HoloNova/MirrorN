@@ -1,7 +1,9 @@
+apps/server/.data/
 node_modules/
 dist/
 coverage/
 .vite/
+/.pi/
 test-results/
 playwright-report/
 blob-report/
