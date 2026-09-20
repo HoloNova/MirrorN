@@ -5,11 +5,11 @@ import { useRouter } from 'vue-router';
 
 import type { Ecosystem } from '@mirrorn/shared';
 
+import { toProbeTargets } from '../composables/useMirrorProbes';
 import { getCatalog } from '../lib/ecosystems';
 import { isEditableElement, moveIndex, resolveSearchKey, shouldFocusSearch } from '../lib/keys';
 import { createProbeCache, selectCachedResults } from '../lib/probeCache';
 import { createSearchIndex, MAX_RESULTS, type MirrorHit, type SearchHit } from '../lib/search';
-import { toProbeTargets } from '../composables/useMirrorProbes';
 
 const emit = defineEmits<{ 'update:active': [boolean] }>();
 
@@ -19,7 +19,7 @@ const index = createSearchIndex(catalog);
 
 /**
  * 搜索只展示缓存里的测量值，不发起新的探测：每次键入都全量扫描会浪费带宽，
- * 也会让结果列表在输入过程中不停变化。真正发起测量的是生态向导页。
+ * 也会让结果列表在输入过程中不停变化。真正发起测量的是首页的测量入口与生态页。
  */
 const probeCache = createProbeCache();
 const probeTargets = toProbeTargets(catalog.mirrors);
@@ -52,7 +52,7 @@ const cachedProbes = computed(() => {
   return selected;
 });
 
-/** 过期的测量值不参与展示：搜索卡片太窄，说不清“可能已过期”只会造成误导。 */
+/** 过期的测量值不参与展示：搜索卡片太窄，说不清"可能已过期"只会造成误导。 */
 function cachedLatency(mirrorId: string): string | undefined {
   const cached = cachedProbes.value.get(mirrorId);
   if (
@@ -184,9 +184,9 @@ defineExpose({ focus: () => inputRef.value?.focus() });
 </script>
 
 <template>
-  <div class="search" :class="{ 'is-active': showResults }">
+  <div class="search">
     <div class="search-field">
-      <Search :size="18" class="search-icon" aria-hidden="true" />
+      <Search :size="16" class="search-icon" aria-hidden="true" />
       <input
         ref="inputRef"
         v-model="query"
@@ -210,7 +210,7 @@ defineExpose({ focus: () => inputRef.value?.focus() });
         aria-label="清空搜索"
         @click="clearQuery"
       >
-        <X :size="16" aria-hidden="true" />
+        <X :size="15" aria-hidden="true" />
       </button>
       <kbd v-else class="search-hint" aria-hidden="true">/</kbd>
     </div>
@@ -232,31 +232,24 @@ defineExpose({ focus: () => inputRef.value?.focus() });
           :id="`search-hit-${hit.id}`"
           :key="hit.id"
           class="search-hit"
-          :class="{ 'is-active': position === activeIndex }"
           role="option"
           :aria-selected="position === activeIndex"
           tabindex="-1"
           @mouseenter="activeIndex = position"
           @click="activate(hit)"
         >
-          <div class="hit-main">
-            <div>
-              <span class="hit-title">{{ hit.title }}</span>
-              <span
-                v-if="hit.kind === 'mirror' && cachedLatency(hit.mirrorId)"
-                class="hit-latency"
-                title="响应耗时（估算）：此前在向导里测得的来源主机响应时间，不代表下载速度"
-              >
-                {{ cachedLatency(hit.mirrorId) }}
-              </span>
-              <span v-if="hit.matchedTerms.length > 0" class="hit-terms">
-                {{ hit.matchedTerms.join(' / ') }}
-              </span>
-            </div>
+          <span class="hit-row">
+            <span class="hit-title">{{ hit.title }}</span>
+            <span v-if="hit.kind === 'mirror' && cachedLatency(hit.mirrorId)" class="hit-latency">
+              {{ cachedLatency(hit.mirrorId) }}
+            </span>
+            <span v-if="hit.matchedTerms.length > 0" class="hit-terms">
+              {{ hit.matchedTerms.join(' / ') }}
+            </span>
             <span class="hit-subtitle">{{ hit.subtitle }}</span>
-          </div>
+          </span>
 
-          <div v-if="hit.kind === 'mirror' && expandedMirrorId === hit.mirrorId" class="hit-chips">
+          <span v-if="hit.kind === 'mirror' && expandedMirrorId === hit.mirrorId" class="hit-chips">
             <span class="hit-chips-label">选择要配置的生态：</span>
             <button
               v-for="ecosystem in ecosystemsFor(hit)"
@@ -267,10 +260,10 @@ defineExpose({ focus: () => inputRef.value?.focus() });
             >
               {{ ecosystem.name }}
             </button>
-          </div>
-          <span v-else-if="hit.kind === 'mirror'" class="hit-hint">
-            {{ ecosystemLabel(hit.ecosystemIds[0]) }} 等 {{ hit.ecosystemIds.length }} 个生态 ·
-            回车展开
+          </span>
+          <span v-else-if="hit.kind === 'mirror'" class="search-footnote">
+            {{ ecosystemLabel(hit.ecosystemIds[0]) }} 等
+            {{ hit.ecosystemIds.length }} 个生态，回车展开
           </span>
         </div>
       </template>
@@ -281,7 +274,7 @@ defineExpose({ focus: () => inputRef.value?.focus() });
       <span
         >回车选择，上下键移动，Esc 退出。最多显示
         {{ MAX_RESULTS }}
-        条结果，搜索完全在本地进行；右侧的毫秒数来自此前在向导里的响应耗时估算。</span
+        条结果，搜索完全在本地进行；毫秒数来自此前测量过的结果，不代表下载速度。</span
       >
     </p>
   </div>

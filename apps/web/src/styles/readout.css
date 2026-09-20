@@ -1,0 +1,165 @@
+/*
+ * 读数条与状态标记 —— 本站唯一“花力气”的元素。
+ *
+ * 为什么把分量压在这里：这个产品真正独特的动作是“在你的浏览器里测出哪个源对你快”。
+ * 所以页面上最该被记住的应当是测量结果本身，而不是配色或卡片。规则：
+ *
+ *   · 有数据 = 实心刻度（长度按得分比例），无数据 = 45° 剖面线；
+ *   · 毫秒数用等宽数字右对齐，方便同一列里直接比大小；
+ *   · 颜色只有四档语义（绿/琥珀/红/中性灰），不用色相表达“好看程度”。
+ *
+ * 剖面线是技术制图里“此处无数据/被剖开”的惯例，用它替代“灰色药丸 + 未知”这种说法，
+ * 既不占文字，也不会被误读成一个具体状态。
+ */
+
+.readout {
+  --tier-color: var(--ink-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--ink-2);
+  font-size: var(--size-small);
+  white-space: nowrap;
+}
+
+.readout-track {
+  position: relative;
+  width: var(--readout-track);
+  height: 10px;
+  border: var(--rule) solid var(--track-line);
+  background-color: var(--surface);
+  background-image: repeating-linear-gradient(135deg, var(--hatch-line) 0 1px, transparent 1px 5px);
+}
+
+.readout-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: calc(var(--value, 0) * 100%);
+  background: var(--tier-color);
+  /* 只在测量结果更新时过渡：宽度的变化本身就是“刚刚测出来了”的反馈。 */
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+.readout-value {
+  min-width: 4.5em;
+  font-family: var(--font-mono);
+  font-size: var(--size-micro);
+  font-variant-numeric: tabular-nums;
+}
+
+.readout-value .unit {
+  color: var(--ink-3);
+}
+
+.readout[data-state='measured'] .readout-track {
+  /* 有测量结果时去掉剖面线：线上没有线，就表示“这里是量出来的”。 */
+  background-image: none;
+}
+
+.readout[data-state='measured'][data-tier='fast'] {
+  --tier-color: var(--ok);
+}
+
+.readout[data-state='measured'][data-tier='fair'] {
+  --tier-color: var(--warn);
+}
+
+.readout[data-state='measured'][data-tier='slow'] {
+  --tier-color: var(--bad);
+}
+
+.readout[data-state='pending'] .readout-track {
+  background-image: repeating-linear-gradient(135deg, var(--ink-3) 0 1px, transparent 1px 6px);
+  animation: hatch-drift 1.1s linear infinite;
+}
+
+.readout[data-state='pending'] .readout-value {
+  color: var(--ink-3);
+}
+
+.readout[data-state='failed'] .readout-value {
+  color: var(--bad);
+}
+
+.readout[data-state='stale'] .readout-value {
+  color: var(--ink-3);
+}
+
+@keyframes hatch-drift {
+  to {
+    background-position: 12px 0;
+  }
+}
+
+/* ── 同步状态：与读数条同构的一行小字 ───────────────────────────────── */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--ink-3);
+}
+
+.status[data-tone='ok'] .status-dot {
+  background: var(--ok);
+}
+
+.status[data-tone='ok'] .status-text {
+  color: var(--ok);
+}
+
+.status[data-tone='pending'] .status-dot {
+  background: var(--warn);
+}
+
+.status[data-tone='pending'] .status-text {
+  color: var(--warn);
+}
+
+.status[data-tone='bad'] .status-dot {
+  background: var(--bad);
+}
+
+.status[data-tone='bad'] .status-text {
+  color: var(--bad);
+}
+
+.status-detail {
+  color: var(--ink-3);
+}
+
+/* ── 推荐标记：一根刻度加文字，不是彩色药丸 ─────────────────────────── */
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--struct);
+  font-size: var(--size-micro);
+}
+
+.mark::before {
+  width: 6px;
+  height: 6px;
+  background: var(--struct);
+  content: '';
+}
+
+/* 类别标签（官方/高校/商业/社区）：像印章一样的小方框，不用胶囊。 */
+.kind {
+  padding: 1px var(--space-1);
+  border: var(--rule) solid var(--line);
+  border-radius: var(--radius-xs);
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+  line-height: 1.5;
+}

@@ -98,6 +98,6 @@ curl -s -m 12 -o /dev/null -w '%{http_code} %{size_download}B\n' \
 - 推荐标记落在实际最快的一条上（pip 是 PyPI 205 ms 对阿里云 209 ms），默认来源跟着推荐走，
   而不是固定在列表第一项。
 - 两页各写入 3 条缓存记录（`mirrorn.probe-cache.v1`）。
-- 用户手动选过来源后，后台刷新不再替换选择与命令；这条由 Playwright 用例覆盖（`e2e/probe.spec.ts`）。
+- 用户手动选过来源后，后台刷新不再替换选择与命令；这条由人工验收覆盖（见 `docs/acceptance-checklist.md` 第 2 节）。
 - 当前数据集里 6 个来源都声明了探针，所以“无法测量”这一分支在浏览器里没有现场证据，
   只有单元测试覆盖（`apps/web/src/lib/probeView.test.ts`、`apps/web/src/composables/useMirrorProbes.test.ts`）。

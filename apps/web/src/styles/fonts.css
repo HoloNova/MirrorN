@@ -1,0 +1,52 @@
+/*
+ * 字体自托管。
+ *
+ * 为什么不用第三方字体 CDN：Google Fonts 在校园网/境内网络下经常不可达，而本项目是纯静态
+ * 站点，字体请求失败会直接改变首屏排版；同时它也是本站唯一不必要的第三方请求。
+ *
+ * 为什么只取 latin 子集：中文用系统字体（PingFang SC / HarmonyOS Sans / Noto Sans CJK /
+ * 微软雅黑）。中文 Web 字体单字重就是几 MB，而本站首页讲的正是“响应耗时”，为了排版去下载
+ * 几 MB 字体是自相矛盾的；代价是中文的字形由用户系统决定，所以中文字重只使用 400/500/600
+ * 这三档系统普遍存在的值。
+ *
+ * 为什么是 IBM Plex：它的拉丁字形是工程-技术语感（本站内容全部是终端命令、地址与毫秒数），
+ * 并且与等宽的 IBM Plex Mono 是同一套设计，数字与代码并排时基线一致。
+ */
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  /* 变量字重 100–700，界面只用到 400/500/600。 */
+  font-weight: 100 700;
+  font-display: swap;
+  src: url('@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2')
+    format('woff2-variations');
+  /*
+   * 除 latin 基础区外补几个排版会真正用到的符号：≈ ≥ ≤ ≠ × → 与破折号。
+   * 这些字符若不在子集里，会按字形回退到中文字体，字重与拉丁部分不一致。
+   */
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+00D7, U+0304, U+0308,
+    U+0329, U+2000-206F, U+2013-2014, U+2192, U+2191, U+2193, U+2248, U+2260, U+2264-2265, U+20AC,
+    U+2122, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/*
+ * 等宽只用到 400（命令正文）与 500（命令标题、读数数字）。命令块里出现中文时，
+ * 这几个字体文件里没有 CJK 字形，浏览器会逐字回退到中文字体，不需要额外处理。
+ */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2') format('woff2');
+}

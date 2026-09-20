@@ -1,32 +1,21 @@
 <script setup lang="ts">
-import { ChevronDown } from '@lucide/vue';
+import { ChevronRight } from '@lucide/vue';
 
 import type { Troubleshooting } from '@mirrorn/shared';
 
+/** 排错条目：正文太长，用折叠承载；折叠里同样给出依据与核对日期。 */
 defineProps<{ entries: Troubleshooting[] }>();
 </script>
 
 <template>
-  <section
-    v-if="entries.length > 0"
-    class="troubleshooting"
-    aria-labelledby="troubleshooting-title"
-  >
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">排错</p>
-        <h2 id="troubleshooting-title">常见问题</h2>
-      </div>
-      <span class="count-label">{{ entries.length }} 条</span>
-    </div>
-
-    <details v-for="entry in entries" :key="entry.id" class="trouble-card">
+  <div v-if="entries.length > 0" class="troubleshooting">
+    <details v-for="entry in entries" :key="entry.id" class="disclosure">
       <summary>
-        <span class="trouble-title">{{ entry.title }}</span>
-        <ChevronDown :size="16" class="trouble-chevron" aria-hidden="true" />
+        <span>{{ entry.title }}</span>
+        <ChevronRight :size="16" class="disclosure-chevron" aria-hidden="true" />
       </summary>
-      <div class="trouble-body">
-        <p class="trouble-problem">{{ entry.problem }}</p>
+      <div class="disclosure-body">
+        <p>{{ entry.problem }}</p>
         <ol class="trouble-steps">
           <li v-for="step in entry.steps" :key="step.title">
             <span class="trouble-step-title">{{ step.title }}</span>
@@ -43,9 +32,9 @@ defineProps<{ entries: Troubleshooting[] }>();
             rel="noreferrer noopener"
             >{{ source.url }}</a
           >
-          <span class="trouble-checked">核对于 {{ entry.sources[0].checkedAt }}</span>
+          <span>核对于 {{ entry.sources[0].checkedAt }}</span>
         </p>
       </div>
     </details>
-  </section>
+  </div>
 </template>

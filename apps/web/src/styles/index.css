@@ -1,0 +1,16 @@
+/*
+ * 样式入口。顺序有意义：字体 → 原子变量 → 主题（只覆盖语义色）→ 基础层 → 组件层。
+ * 组件层放在最后，保证它们的类选择器不会被元素级样式反过来影响。
+ */
+
+@import './fonts.css';
+@import './tokens.css';
+@import './themes/survey.css';
+@import './themes/carbon.css';
+@import './base.css';
+@import './doc.css';
+@import './readout.css';
+@import './command.css';
+@import './controls.css';
+@import './search.css';
+@import './home.css';

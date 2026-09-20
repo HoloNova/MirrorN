@@ -45,7 +45,7 @@ pnpm dev:server
 - 后端环境变量（都有安全默认值）：`MIRRORN_HOST`、`MIRRORN_PORT`、`MIRRORN_DATA_DIR`、`MIRRORN_SNAPSHOT_DIR`、`MIRRORN_SYNC_ENABLED`、`MIRRORN_SYNC_INTERVAL_MS`、`MIRRORN_SYNC_STALE_AFTER_MS`、`MIRRORN_FETCH_TIMEOUT_MS`、`MIRRORN_MAX_RESPONSE_BYTES`、`MIRRORN_TRUSTED_PROXY`（默认 `false`）、`MIRRORN_FINGERPRINT_SECRET`（不配置就不提供指纹）。含义与理由见 `docs/deployment.md`。
 - `pnpm dev`、`pnpm dev:web`、`pnpm build` 和 `pnpm build:web` 都会先执行数据校验，避免未校验的数据进入页面。
 - 后端崩溃不会再连带结束前端 dev server（这样页面仍然可用，报错也看得见）；按 Ctrl+C 两者一起退出。
-- **同一时间只跑一个 vite dev server**：多个实例共用 `apps/web/node_modules/.vite` 依赖预打包缓存，后启动的实例重建缓存时会让已打开的页面加载失败（表现为白屏或一直转圈）。端口预检会在碰到缓存之前就把这种情况挡住；e2e 用自己的缓存目录（`node_modules/.vite-e2e`），与 dev 完全隔离。
+- **同一时间只跑一个 vite dev server**：多个实例共用 `apps/web/node_modules/.vite` 依赖预打包缓存，后启动的实例重建缓存时会让已打开的页面加载失败（表现为白屏或一直转圈）。端口预检会在碰到缓存之前就把这种情况挡住。
 
 ### 为什么 dev 固定后端端口
 
@@ -92,23 +92,16 @@ docker compose ps                             # healthy = /api/health 通过
 
 ## 手动验收
 
-启动 `pnpm dev:web` 后，按下面顺序检查（括号内是预期结果）：
+界面行为不做自动化测试，由人工在浏览器里核对。完整清单（含本次改动受影响的界面与优先回归点）见
+`docs/acceptance-checklist.md`；本地起站：
 
-1. 打开 <http://127.0.0.1:5173>（大搜索框居中，下方是 npm 与 pip 两张生态卡片）。
-2. 按 `/` 键（焦点进入搜索框），输入 `tuna`（出现清华大学镜像站结果；按 Enter 展开它支持的生态入口）。
-3. 输入 `pip` 后按回车（进入 pip 向导，显示前置条件与四个步骤）。
-4. 切成 `Linux` 与 `Bash`，点“下一步”（列出官方、清华、阿里云三个来源，每个来源带一行测量状态：先是“测试中”，随后变成“响应耗时（估算） … ms · 响应完成，内容未验证”）。
-5. 等三项都测完（数据里没有探针的来源会显示“无法测量”）：最快的一项带“推荐”标记并被默认选中；如果手动点过别的来源，之后重新测量不会替换它，并会提示这一点。
-6. 点“重新测量”（重新发起一轮测量，时间戳更新；浏览器报告离线时按钮不可用）。
-7. 点“清华大学”（命令变为 `python3 -m pip install --index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/ <包名>`）。
-8. 依次查看“全局生效”和“配置文件”（前者是 `pip config set`，后者给出 `~/.config/pip/pip.conf` 并提示合并而不是覆盖）。
-9. 点两次“下一步”到步骤 3 与 4（分别给出验证命令与还原命令，并说明页面不会执行命令）。
-10. 回到首页搜 `tuna`（镜像结果右侧出现 `≈ … ms`，来自刚才向导里的缓存值；搜索本身不发起任何请求）。
-11. 展开底部排错卡片（每条带来源链接与核对日期）。
-12. 回到首页搜 `ubuntu`，进入 `Ubuntu / apt`：步骤 1 多出“发行版版本”，选 `24.04` 后步骤 2 的配置文件是 deb822（`/etc/apt/sources.list.d/ubuntu.sources`，`Types:`/`URIs:`/`Suites:`），选 `22.04` 变成 `sources.list` 一行式；两种情况下 `-security` 都指向官方 `security.ubuntu.com`。
-13. 搜 `docker`：`Docker CE / apt 仓库` 给的是 `/etc/apt/sources.list.d/docker.sources`；`Docker Hub / 镜像加速` 给的是 `daemon.json` 的**合并**命令（含备份与还原），并且不含任何写死的加速地址。
+```bash
+pnpm dev:web        # 打开 http://127.0.0.1:5173
+```
 
-浏览器控制台应当没有错误。测量数字只表示“浏览器请求来源站上审核过的小资源所用的时间”，受 DNS、连接复用和缓存影响，不是下载速度，也不能证明仓库内容正常。当前尚未实现的部分：资源中心与 LLM（首版之后）。
+最短路径：首页按 `/` 搜索 `pip` → 回车进入文档 → 顶部参数条切系统与终端 → 第 1 节点“清华大学” → 第 2 节
+复制命令 → 看第 3、4 节的验证与还原；控制台应当没有错误。测量数字只表示“浏览器请求来源站上审核过的
+小资源所用的时间”，受 DNS、连接复用和缓存影响，不是下载速度，也不能证明仓库内容正常。
 
 ## 质量检查
 
@@ -118,22 +111,21 @@ pnpm lint
 pnpm test
 pnpm validate:data
 pnpm build
-pnpm test:e2e
 ```
 
-`pnpm test` 是各包的单元测试；`pnpm test:e2e` 需要系统已安装 Chrome，会先做数据校验再启动开发服务器。
+`pnpm test` 是各包的单元测试（纯逻辑，跑在 Node 里，不渲染界面）。
 
-CI（`.github/workflows/ci.yml`）会依次跑格式检查、lint、类型检查、数据校验、单元测试、构建与 E2E，并在另一个 job 里执行 `docker compose up --build` 与健康检查。模板生成的命令在真实环境里的执行记录（apt、Docker、pip、npm）以及**尚未覆盖的缺口**见 `docs/validation-matrix.md`。
+CI（`.github/workflows/ci.yml`）会依次跑格式检查、lint、类型检查、数据校验、单元测试与构建，并在另一个 job 里执行 `docker compose up --build` 与健康检查。界面行为不在 CI 里自动验证，由人工在浏览器里验收（检查清单见 `docs/acceptance-checklist.md`）。模板生成的命令在真实环境里的执行记录（apt、Docker、pip、npm）以及**尚未覆盖的缺口**见 `docs/validation-matrix.md`。
 
 `pnpm validate:data` 会校验 `data/` 下的 JSON、镜像与生态引用、HTTPS 地址以及命令模板变量；数据目录为空、引用了不存在的镜像，或某个生态没有排错条目时都会以非零状态退出。
 
 ## 页面结构
 
 - `/#/`：生态目录与搜索框：`/` 或 Ctrl/Cmd+K 唤起，上下键选择，Enter 确认，Esc 清空。
-- `/#/ecosystems/:id`：该生态的四步配置向导（系统与终端 → 镜像与配置方式 → 验证 → 恢复与还原），下方附排错卡片。
+- `/#/ecosystems/:id`：该生态的配置文档（一次呈现：选择来源 → 配置命令 → 验证 → 恢复与还原 → 常见问题），顶部参数条常驻。
 - 其他路径：未找到页面。
 
-阶段 2 已完成：向导只展示仓库中审核过的模板，命令由 `@mirrorn/shared/generators` 渲染，页面不会执行任何命令，也不会读取或写入你的配置。
+阶段 2 已完成：页面只展示仓库中审核过的模板，命令由 `@mirrorn/shared/generators` 渲染，页面不会执行任何命令，也不会读取或写入你的配置。
 
 当前收录 5 个生态：`pip`、`npm`、`apt`（Ubuntu LTS）、`docker-ce`（Docker CE 软件仓库）、`dockerhub`（Docker Hub 加速配置）。apt 与 Docker CE 按 Ubuntu 版本区分配置格式，Docker Hub 加速只提供合并/验证/还原方式，不内置第三方加速地址（理由见 `docs/decisions.md`）。
 
@@ -145,15 +137,14 @@ CI（`.github/workflows/ci.yml`）会依次跑格式检查、lint、类型检查
 
 ## 目录
 
-- `apps/web`：Vue 3 + Vite 前端，包含首页搜索、四步配置向导，以及浏览器端测速与推荐（`src/lib/probe*.ts`、`src/lib/recommend.ts`、`src/composables/useMirrorProbes.ts`）。
+- `apps/web`：Vue 3 + Vite 前端，包含首页搜索、配置文档（文档形态）、可切换主题，以及浏览器端测速与推荐（`src/lib/probe*.ts`、`src/lib/recommend.ts`、`src/composables/useMirrorProbes.ts`）。
 - `apps/server`：Node.js + Hono 后端：健康检查、上游同步状态聚合（`/api/mirrors`）、网络指纹（`/api/net-fingerprint`），可选同时托管前端产物（`MIRRORN_STATIC_DIR`）。
 - `packages/shared`：Zod schema、共享类型、数据集校验函数，以及零运行时依赖的命令生成器（`@mirrorn/shared/generators`）、测速契约（`@mirrorn/shared/probe`）和同步状态契约（`@mirrorn/shared/sync`）。
 - `data`：声明式镜像、生态与排错数据；镜像的 `aliases` 与生态的 `aliases` 供搜索使用，镜像的 `probe` 供测速使用，社区 PR 可直接扩充。
-- `docs`：上游来源记录（`upstream.md`）、命令核对记录（`command-validation.md`）、探针实测记录（`probe-validation.md`）、真实执行记录与缺口（`validation-matrix.md`）、部署与回滚（`deployment.md`）、许可与署名（`licenses.md`）和架构取舍（`decisions.md`）。
+- `docs`：上游来源记录（`upstream.md`）、命令核对记录（`command-validation.md`）、探针实测记录（`probe-validation.md`）、真实执行记录与缺口（`validation-matrix.md`）、界面人工验收清单（`acceptance-checklist.md`）、部署与回滚（`deployment.md`）、界面系统说明（`design-system.md`）、许可与署名（`licenses.md`）和架构取舍（`decisions.md`）。
 - `deploy`：公开部署用的 Caddy 站点配置片段、systemd 单元与后端环境模板（配合 `scripts/deploy-static.sh`、`scripts/deploy-api.sh`，见 `docs/deployment.md`）。
 - `Dockerfile` / `docker-compose.yml`：容器部署（单镜像同时提供 API 与静态页面，见上文与 `docs/validation-matrix.md`）。
 - `.github/workflows/ci.yml`：CI 质量门禁与容器部署校验。
-- `e2e`：Playwright 端到端测试，覆盖键盘搜索流程、动效降级、窄屏布局、测速与推荐、同步状态降级、apt 版本切换与 Docker 两项配置；使用系统已安装的 Chrome，不额外下载浏览器。
 - `MAIN.md`：完整产品与技术规划。
 - `PLAN.md`：分阶段实施计划。
 

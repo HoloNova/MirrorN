@@ -4,8 +4,36 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="MirrorN 智能镜像导航与开发环境配置平台" />
+    <meta name="theme-color" content="#f3f5f4" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>MirrorN · 镜像导航</title>
+    <title>MirrorN · 镜像导航与依赖换源指南</title>
+    <script>
+      /*
+       * 首屏主题：样式生效前就写好 <html data-theme>，否则会先闪一下默认主题。
+       * 静态部署没有 SSR，等 JS bundle 跑完再上色一定会闪，所以这段必须内联。
+       *
+       * 内联脚本不能 import，只能重复 src/lib/theme.ts 的规则；两处必须一致：
+       *   themes 的键 = 注册表里的主题 id，值 = 各自的 metaColor；未存过选择时用 survey。
+       * theme.test.ts 会读取本文件校验两者同步，改主题时别只改一边。
+       */
+      (function () {
+        var themes = { survey: '#f3f5f4', carbon: '#0e1418' };
+        var stored = null;
+        try {
+          stored = window.localStorage.getItem('mirrorn.theme');
+        } catch (error) {
+          stored = null;
+        }
+        var choice = stored === 'system' || themes[stored] ? stored : 'survey';
+        var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var theme = choice === 'system' ? (dark ? 'carbon' : 'survey') : choice;
+        document.documentElement.setAttribute('data-theme', theme);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) {
+          meta.setAttribute('content', themes[theme]);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>

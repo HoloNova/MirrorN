@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { EcosystemSchema, MirrorSchema, type Ecosystem, type Mirror } from '@mirrorn/shared';
 import { PACKAGE_NAME_PLACEHOLDER } from '@mirrorn/shared/generators';
 
-import { createGuideWizard } from './wizard';
+import { createGuideParams } from './guideParams';
 
 const source = { url: 'https://example.com/source', checkedAt: '2026-09-18' };
 
@@ -126,70 +126,70 @@ const ecosystem: Ecosystem = EcosystemSchema.parse({
   sources: [source],
 });
 
-function makeWizard(
+function makeParams(
   options: {
     detectedOs?: 'windows' | 'macos' | 'linux';
     detectedShell?: 'powershell' | 'cmd' | 'bash' | 'zsh';
   } = {},
 ) {
-  return createGuideWizard(ecosystem, options);
+  return createGuideParams(ecosystem, options);
 }
 
-describe('createGuideWizard', () => {
+describe('createGuideParams', () => {
   it('falls back to a supported platform when the detected one has no template', () => {
-    const wizard = makeWizard({ detectedOs: 'macos', detectedShell: 'zsh' });
+    const params = makeParams({ detectedOs: 'macos', detectedShell: 'zsh' });
 
-    expect(wizard.os.value).toBe('windows');
-    expect(wizard.shell.value).toBe('powershell');
+    expect(params.os.value).toBe('windows');
+    expect(params.shell.value).toBe('powershell');
   });
 
   it('keeps the detected platform when a template exists', () => {
-    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
+    const params = makeParams({ detectedOs: 'linux', detectedShell: 'bash' });
 
-    expect(wizard.os.value).toBe('linux');
-    expect(wizard.shell.value).toBe('bash');
+    expect(params.os.value).toBe('linux');
+    expect(params.shell.value).toBe('bash');
   });
 
   it('corrects the shell when the user switches to another system', () => {
-    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
+    const params = makeParams({ detectedOs: 'linux', detectedShell: 'bash' });
 
-    wizard.setOs('windows');
-    expect(wizard.shells.value).toEqual(['powershell', 'cmd']);
-    expect(wizard.shell.value).toBe('powershell');
+    params.setOs('windows');
+    expect(params.shells.value).toEqual(['powershell', 'cmd']);
+    expect(params.shell.value).toBe('powershell');
   });
 
   it('only exposes shells that exist for the selected system', () => {
-    const wizard = makeWizard({ detectedOs: 'windows', detectedShell: 'cmd' });
-    wizard.setOs('windows');
-    wizard.setShell('cmd');
-    expect(wizard.shell.value).toBe('cmd');
+    const params = makeParams({ detectedOs: 'windows', detectedShell: 'cmd' });
+    params.setOs('windows');
+    params.setShell('cmd');
+    expect(params.shell.value).toBe('cmd');
 
-    wizard.setOs('linux');
-    expect(wizard.shells.value).toEqual(['bash']);
-    expect(wizard.shell.value).toBe('bash');
+    params.setOs('linux');
+    expect(params.shells.value).toEqual(['bash']);
+    expect(params.shell.value).toBe('bash');
   });
 
   it('regenerates the command when another mirror is selected', () => {
-    const wizard = makeWizard({ detectedOs: 'windows', detectedShell: 'powershell' });
+    const params = makeParams({ detectedOs: 'windows', detectedShell: 'powershell' });
 
-    wizard.setMirror('tsinghua');
-    expect(wizard.guide.value.ok && wizard.guide.value.guide.commands[0].command).toBe(
+    params.setMirror('tsinghua');
+    expect(params.guide.value.ok && params.guide.value.guide.commands[0].command).toBe(
       `python -m pip install --index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/ ${PACKAGE_NAME_PLACEHOLDER}`,
     );
 
-    wizard.setMirror('aliyun');
-    expect(wizard.guide.value.ok && wizard.guide.value.guide.commands[0].command).toBe(
+    params.setMirror('aliyun');
+    expect(params.guide.value.ok && params.guide.value.guide.commands[0].command).toBe(
       `python -m pip install --index-url https://mirrors.aliyun.com/pypi/simple/ ${PACKAGE_NAME_PLACEHOLDER}`,
     );
   });
 
   it('never mixes shell syntax across systems', () => {
-    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
+    const params = makeParams({ detectedOs: 'linux', detectedShell: 'bash' });
 
-    wizard.setOs('windows');
-    wizard.setShell('cmd');
+    params.setOs('windows');
+    params.setShell('cmd');
 
-    const guide = wizard.guide.value;
+    const guide = params.guide.value;
     expect(guide.ok).toBe(true);
     expect(guide.ok && guide.guide.platform.shell).toBe('cmd');
     expect(guide.ok && guide.guide.platform.os).toBe('windows');
@@ -197,118 +197,78 @@ describe('createGuideWizard', () => {
   });
 
   it('exposes a failure reason instead of a command for unsupported selections', () => {
-    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
-    const noTemplates = createGuideWizard({ ...ecosystem, guides: [] } as unknown as Ecosystem, {
+    const params = makeParams({ detectedOs: 'linux', detectedShell: 'bash' });
+    const noTemplates = createGuideParams({ ...ecosystem, guides: [] } as unknown as Ecosystem, {
       mirrors,
       detectedOs: 'linux',
       detectedShell: 'bash',
     });
 
-    expect(wizard.guide.value.ok).toBe(true);
+    expect(params.guide.value.ok).toBe(true);
     expect(noTemplates.guide.value.ok).toBe(false);
     expect(noTemplates.guide.value.ok === false && noTemplates.guide.value.reason).toBe(
       'unsupported-platform',
     );
   });
-
-  it('selects a mode that the current platform actually supports', () => {
-    const wizard = makeWizard({ detectedOs: 'windows', detectedShell: 'powershell' });
-
-    expect(wizard.mode.value).toBe('temporary');
-    expect(wizard.modes.value).toContain('persistent');
-  });
 });
 
 describe('recommended mirror selection', () => {
   it('uses the recommended mirror until the user chooses one', () => {
-    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
-    expect(wizard.mirrors.value[0]?.id).toBe('pypi-official');
+    const params = makeParams({ detectedOs: 'linux', detectedShell: 'bash' });
+    expect(params.mirrors.value[0]?.id).toBe('pypi-official');
 
-    wizard.applyRecommendation('tsinghua');
+    params.applyRecommendation('tsinghua');
 
-    expect(wizard.mirrorId.value).toBe('tsinghua');
-    expect(wizard.mirrorPinned.value).toBe(false);
-    const guide = wizard.guide.value;
+    expect(params.mirrorId.value).toBe('tsinghua');
+    expect(params.mirrorPinned.value).toBe(false);
+    const guide = params.guide.value;
     expect(guide.ok && guide.guide.commands[0].command).toContain(
       'https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/',
     );
   });
 
   it('keeps updating the default while the user has not touched the list', () => {
-    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
+    const params = makeParams({ detectedOs: 'linux', detectedShell: 'bash' });
 
-    wizard.applyRecommendation('aliyun');
-    wizard.applyRecommendation('tsinghua');
+    params.applyRecommendation('aliyun');
+    params.applyRecommendation('tsinghua');
 
-    expect(wizard.mirrorId.value).toBe('tsinghua');
+    expect(params.mirrorId.value).toBe('tsinghua');
   });
 
   it('never replaces a mirror the user selected manually', () => {
-    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
+    const params = makeParams({ detectedOs: 'linux', detectedShell: 'bash' });
 
-    wizard.setMirror('aliyun');
-    expect(wizard.mirrorPinned.value).toBe(true);
+    params.setMirror('aliyun');
+    expect(params.mirrorPinned.value).toBe(true);
 
-    wizard.applyRecommendation('tsinghua');
+    params.applyRecommendation('tsinghua');
 
-    expect(wizard.mirrorId.value).toBe('aliyun');
-    const guide = wizard.guide.value;
+    expect(params.mirrorId.value).toBe('aliyun');
+    const guide = params.guide.value;
     expect(guide.ok && guide.guide.commands[0].command).toContain(
       'https://mirrors.aliyun.com/pypi/simple/',
     );
   });
 
   it('ignores a recommendation that is not part of the current candidates', () => {
-    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
+    const params = makeParams({ detectedOs: 'linux', detectedShell: 'bash' });
 
-    wizard.applyRecommendation('mirror-that-does-not-exist');
+    params.applyRecommendation('mirror-that-does-not-exist');
 
-    expect(wizard.mirrorId.value).toBe('pypi-official');
+    expect(params.mirrorId.value).toBe('pypi-official');
   });
 
   it('keeps the user selection when there is no recommendation at all', () => {
-    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
+    const params = makeParams({ detectedOs: 'linux', detectedShell: 'bash' });
 
-    wizard.applyRecommendation(undefined);
+    params.applyRecommendation(undefined);
 
-    expect(wizard.mirrorId.value).toBe('pypi-official');
+    expect(params.mirrorId.value).toBe('pypi-official');
   });
 });
 
-describe('step navigation', () => {
-  it('blocks moving to the next step when the selection cannot generate a guide', () => {
-    const wizard = createGuideWizard({ ...ecosystem, guides: [] } as unknown as Ecosystem, {
-      detectedOs: 'linux',
-      detectedShell: 'bash',
-    });
-
-    expect(wizard.canProceed.value).toBe(false);
-    wizard.next();
-    expect(wizard.step.value).toBe(1);
-  });
-
-  it('allows walking through all four steps with a valid selection', () => {
-    const wizard = makeWizard({ detectedOs: 'linux', detectedShell: 'bash' });
-
-    wizard.goToStep(2);
-    expect(wizard.canProceed.value).toBe(true);
-
-    wizard.next();
-    wizard.next();
-    expect(wizard.step.value).toBe(4);
-
-    wizard.next();
-    expect(wizard.step.value).toBe(4);
-
-    wizard.previous();
-    expect(wizard.step.value).toBe(3);
-
-    wizard.goToStep(1);
-    expect(wizard.step.value).toBe(1);
-  });
-});
-
-describe('createGuideWizard 的发行版版本选择', () => {
+describe('createGuideParams 的发行版版本选择', () => {
   /** 带三个 Ubuntu LTS 版本的示例生态：两个用一行式、一个用 deb822。 */
   const versionedEcosystem: Ecosystem = EcosystemSchema.parse({
     id: 'apt',
@@ -355,29 +315,29 @@ describe('createGuideWizard 的发行版版本选择', () => {
   });
 
   it('把数据里的版本顺序作为默认选择，并在命令里体现所选版本', () => {
-    const wizard = createGuideWizard(versionedEcosystem, { detectedOs: 'linux' });
+    const params = createGuideParams(versionedEcosystem, { detectedOs: 'linux' });
 
-    expect(wizard.versions.value).toEqual(['24.04', '22.04']);
-    expect(wizard.version.value).toBe('24.04');
-    expect(wizard.versionLabel.value).toBe('ubuntu 24.04');
-    expect(wizard.guide.value.ok && wizard.guide.value.guide.commands[0]?.command).toBe(
+    expect(params.versions.value).toEqual(['24.04', '22.04']);
+    expect(params.version.value).toBe('24.04');
+    expect(params.versionLabel.value).toBe('ubuntu 24.04');
+    expect(params.guide.value.ok && params.guide.value.guide.commands[0]?.command).toBe(
       'write deb822 https://mirrors.tuna.tsinghua.edu.cn/ubuntu/',
     );
 
-    wizard.setVersion('22.04');
+    params.setVersion('22.04');
 
-    expect(wizard.version.value).toBe('22.04');
-    expect(wizard.guide.value.ok && wizard.guide.value.guide.commands[0]?.command).toBe(
+    expect(params.version.value).toBe('22.04');
+    expect(params.guide.value.ok && params.guide.value.guide.commands[0]?.command).toBe(
       'write sources.list https://mirrors.tuna.tsinghua.edu.cn/ubuntu/',
     );
   });
 
   it('系统没有按版本区分的模板时，不显示版本选择器', () => {
-    const wizard = createGuideWizard(ecosystem, { detectedOs: 'windows', detectedShell: 'cmd' });
+    const params = createGuideParams(ecosystem, { detectedOs: 'windows', detectedShell: 'cmd' });
 
-    expect(wizard.versions.value).toEqual([]);
-    expect(wizard.version.value).toBeUndefined();
-    expect(wizard.versionLabel.value).toBeUndefined();
+    expect(params.versions.value).toEqual([]);
+    expect(params.version.value).toBeUndefined();
+    expect(params.versionLabel.value).toBeUndefined();
   });
 
   it('切换到没有版本维度的系统时清空版本，切回来时重新落到默认版本', () => {
@@ -398,13 +358,13 @@ describe('createGuideWizard 的发行版版本选择', () => {
       ],
     });
 
-    const wizard = createGuideWizard(mixed, { detectedOs: 'linux' });
-    expect(wizard.version.value).toBe('24.04');
+    const params = createGuideParams(mixed, { detectedOs: 'linux' });
+    expect(params.version.value).toBe('24.04');
 
-    wizard.setOs('windows');
-    expect(wizard.version.value).toBeUndefined();
+    params.setOs('windows');
+    expect(params.version.value).toBeUndefined();
 
-    wizard.setOs('linux');
-    expect(wizard.version.value).toBe('24.04');
+    params.setOs('linux');
+    expect(params.version.value).toBe('24.04');
   });
 });

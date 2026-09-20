@@ -1,0 +1,140 @@
+/*
+ * 基础层：只在元素级别定音（字体、字号、行高、焦点、选中态），不写具体组件。
+ * 组件样式全部通过类名表达，避免元素选择器和类选择器互相打架。
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* 锚点跳转要停在粘性参数条下方，否则章节标题会被遮住。顶栏不吸顶，所以不计入。 */
+  scroll-padding-top: calc(var(--params-height) + var(--space-5));
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink-2);
+  font-family: var(--font-sans);
+  font-size: var(--size-body);
+  font-weight: 400;
+  line-height: var(--leading-body);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * 中文排版的可读性靠三件事：足够松的行高（--leading-body）、略窄的行宽（--measure）、
+ * 以及不要用细字重。系统中文字体没有 300 字重，写细了会由浏览器合成，笔画发虚。
+ */
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 600;
+  line-height: var(--leading-heading);
+}
+
+h1 {
+  font-size: var(--size-h1);
+  /* 拉丁字面在大字号下需要略微收紧，中文几乎无感，因此只收一点点。 */
+  letter-spacing: -0.012em;
+}
+
+h2 {
+  font-size: var(--size-h2);
+}
+
+h3 {
+  font-size: var(--size-h3);
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--struct);
+  text-decoration-color: var(--struct-line);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+a:hover {
+  text-decoration-color: currentColor;
+}
+
+code,
+kbd,
+samp {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* 数字必须等宽：毫秒数、耗时、更新时刻会在同一列里比较。 */
+.ms,
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+::selection {
+  background: var(--selection);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  /* 只在这一处定义焦点样式，组件不再各写一套。 */
+}
+
+hr {
+  height: 1px;
+  margin: 0;
+  border: 0;
+  background: var(--line);
+}
+
+/* 供屏幕阅读器保留的文本：进度、状态变化这类信息不能只靠颜色和图形传达。 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

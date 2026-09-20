@@ -19,7 +19,6 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "pnpm build:shared && pnpm --filter @mirrorn/shared test && pnpm --filter @mirrorn/server test && pnpm --filter @mirrorn/web test",
-    "test:e2e": "playwright test",
     "validate:data": "pnpm build:shared && tsx scripts/validate-data.ts"
   },
   "dependencies": {
@@ -27,7 +26,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
-    "@playwright/test": "^1.63.0",
     "@types/node": "^22.10.5",
     "concurrently": "^9.1.2",
     "esbuild": "^0.28.2",

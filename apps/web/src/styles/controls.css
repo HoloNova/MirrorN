@@ -1,0 +1,157 @@
+/*
+ * 控件：按钮、镜像选择行、徽标。
+ *
+ * 主按钮的配色用 --struct 与 --bg 互配，这样同一份 CSS 在浅色与深色主题下都成立
+ * （深色主题的 --struct 是亮色，--bg 是深色，于是按钮变成亮底深字），不需要为主题写例外。
+ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px var(--space-4);
+  border: var(--rule) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--size-small);
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    background var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.btn:hover {
+  border-color: var(--ink-3);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  border-color: var(--line);
+  color: var(--ink-3);
+  background: transparent;
+}
+
+.btn-primary {
+  border-color: var(--struct);
+  background: var(--struct);
+  color: var(--bg);
+}
+
+.btn-primary:hover {
+  border-color: var(--struct);
+  opacity: 0.9;
+}
+
+.btn-quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--ink-2);
+}
+
+.btn-quiet:hover {
+  border-color: transparent;
+  background: var(--scrim);
+  color: var(--ink);
+}
+
+.btn-icon {
+  padding: 6px var(--space-2);
+}
+
+.icon-spin {
+  animation: icon-spin 900ms linear infinite;
+}
+
+@keyframes icon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── 镜像选择：整行可点，当前项用左侧刻度标记 ───────────────────────── */
+
+.mirror-list {
+  border: var(--rule) solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.mirror-option {
+  display: grid;
+  width: 100%;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-bottom: var(--rule) solid var(--line);
+  border-left: 2px solid transparent;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.mirror-option:last-child {
+  border-bottom: 0;
+}
+
+.mirror-option:hover {
+  background: var(--surface-hover);
+}
+
+.mirror-option[aria-pressed='true'] {
+  border-left-color: var(--struct);
+  background: var(--struct-soft);
+}
+
+.mirror-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mirror-name {
+  color: var(--ink);
+  font-size: var(--size-body);
+  font-weight: 500;
+}
+
+.mirror-top-end {
+  display: flex;
+  margin-left: auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mirror-url {
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: var(--size-micro);
+  overflow-wrap: anywhere;
+}
+
+.mirror-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+/* ── 分段选择（系统/终端/版本/主题） ────────────────────────────────── */
+
+.field-label {
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.actions-hint {
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+}

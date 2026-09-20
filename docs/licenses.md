@@ -36,11 +36,10 @@
 | typescript-eslint      | 8.70.0  | MIT        | https://github.com/typescript-eslint/typescript-eslint |
 | globals                | 15.15.0 | MIT        | https://github.com/sindresorhus/globals                |
 | prettier               | 3.9.7   | MIT        | https://github.com/prettier/prettier                   |
-| @playwright/test       | 1.63.0  | Apache-2.0 | https://github.com/microsoft/playwright                |
 | concurrently           | 9.2.4   | MIT        | https://github.com/open-cli-tools/concurrently         |
 | @types/node            | 22.20.3 | MIT        | https://github.com/DefinitelyTyped/DefinitelyTyped     |
 
-MIT / ISC 类依赖需要在分发时保留版权声明；Apache-2.0（fuse.js、TypeScript、Playwright）还需要保留其 NOTICE（如有）。当前交付形态是**构建产物 + 源码同仓**，依赖的许可文本随 `node_modules` 分发或由使用者自行安装，不额外打包许可文件。
+MIT / ISC 类依赖需要在分发时保留版权声明；Apache-2.0（fuse.js、TypeScript）还需要保留其 NOTICE（如有）。当前交付形态是**构建产物 + 源码同仓**，依赖的许可文本随 `node_modules` 分发或由使用者自行安装，不额外打包许可文件。
 
 ## 三、数据来源与署名
 

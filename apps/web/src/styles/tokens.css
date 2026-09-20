@@ -1,0 +1,76 @@
+/*
+ * 第一层：与主题无关的原子变量（字族、字号、间距、动效）。
+ *
+ * 分层的意义：主题只允许覆盖第二层（语义色，见 themes/*.css）。组件里出现 #rrggbb 或
+ * rgba(...) 字面量就意味着这个组件没法跟随主题，应当改成引用语义变量。
+ */
+
+:root {
+  /* ── 字族 ─────────────────────────────────────────────────────────── */
+  --font-latin: 'IBM Plex Sans', 'Helvetica Neue', Arial;
+  --font-cjk:
+    'PingFang SC', 'HarmonyOS Sans SC', 'Source Han Sans SC', 'Noto Sans CJK SC', 'Microsoft YaHei',
+    'Hiragino Sans GB';
+  --font-sans: var(--font-latin), var(--font-cjk), sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* ── 字号与行高 ───────────────────────────────────────────────────── */
+  /* 中文行高比英文更宽松：CJK 字面更满，1.5 会显得挤。正文用 1.8。 */
+  --size-display: 40px;
+  --size-h1: 28px;
+  --size-h2: 20px;
+  --size-h3: 16px;
+  --size-body: 15px;
+  --size-small: 13px;
+  --size-micro: 12px;
+  --size-code: 13px;
+  --leading-tight: 1.2;
+  --leading-heading: 1.4;
+  --leading-body: 1.8;
+  --leading-small: 1.65;
+
+  /* ── 间距（4 的倍数，只此一列，避免每处各写一个魔法数字） ─────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* ── 描边与圆角 ───────────────────────────────────────────────────── */
+  /* 圆角刻意小：本站的语感来自细线与刻度，不是软卡片。 */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
+  --rule: 1px;
+
+  /* ── 版式宽度 ─────────────────────────────────────────────────────── */
+  /*
+   * 正文行宽。中文一行 35–40 字最舒服，15px 下约等于 600px，比英文站点惯用的
+   * 65–75 字符窄得多；命令块可以更宽，因为它们按列对齐。
+   */
+  --measure: 620px;
+  /* 命令块与来源列表的宽度上限：比正文宽（按列对齐），但不放满整屏，
+     否则复制按钮会离命令本身太远，眼睛要横跨半屏。 */
+  --measure-wide: 780px;
+  --shell-max: 1160px;
+  --rail-width: 208px;
+  --readout-track: 56px;
+
+  /* ── 动效 ─────────────────────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+
+  /* 粘性头部的高度，供 scroll-margin-top 与 top 偏移共用，避免两处各写一个数。 */
+  --topbar-height: 60px;
+  --params-height: 56px;
+}

@@ -4,9 +4,6 @@ dist/
 coverage/
 .vite/
 /.pi/
-test-results/
-playwright-report/
-blob-report/
 .env
 .env.*
 !.env.example

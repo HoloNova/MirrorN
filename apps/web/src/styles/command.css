@@ -1,0 +1,110 @@
+/*
+ * 命令块。
+ *
+ * 为什么不做成深色“终端皮肤”：一页文档里会出现 3–4 个命令块，每个都做成黑底白字会把页面
+ * 切成一段段重块，而且本站的命令是给用户抄进终端的，不是终端自己的输出——它应当像
+ * 印刷手册里被框起来的代码，而不是一块屏幕。深色留给深色主题。
+ *
+ * 颜色仍然只表达语义：复制成功是绿，复制失败是红。
+ */
+
+.command {
+  border: var(--rule) solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--code-surface);
+}
+
+.command-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--rule) solid var(--line);
+}
+
+.command-label {
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+}
+
+.command-body {
+  margin: 0;
+  padding: var(--space-4);
+  overflow-x: auto;
+  color: var(--code-ink);
+  font-family: var(--font-mono);
+  font-size: var(--size-code);
+  font-variant-ligatures: none;
+  line-height: 1.7;
+  white-space: pre;
+  tab-size: 2;
+}
+
+.command-note {
+  padding: var(--space-2) var(--space-3);
+  border-top: var(--rule) solid var(--line);
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+  line-height: var(--leading-small);
+}
+
+/* 复制反馈：同一个按钮上就地变化，不弹 toast，不改变布局。 */
+.copy {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 3px var(--space-2);
+  border: var(--rule) solid var(--line);
+  border-radius: var(--radius-xs);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: var(--size-micro);
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    background var(--duration-fast) var(--ease-standard);
+}
+
+.copy:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.copy[data-state='copied'] {
+  border-color: var(--ok);
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.copy[data-state='failed'] {
+  border-color: var(--bad);
+  background: var(--bad-soft);
+  color: var(--bad);
+}
+
+.command-msg {
+  padding: var(--space-2) var(--space-3);
+  border-top: var(--rule) solid var(--line);
+  font-size: var(--size-micro);
+}
+
+.command-msg[data-tone='ok'] {
+  color: var(--ok);
+}
+
+.command-msg[data-tone='bad'] {
+  color: var(--bad);
+}
+
+/*
+ * 占位符：命令里 <包名> 这类需要用户自己替换的部分必须一眼看出来。
+ * 复制出去的文本仍然是原样的尖括号内容，这里只做视觉标记。
+ */
+.ph {
+  padding: 0 2px;
+  border-bottom: 1px dashed var(--struct-line);
+  background: var(--struct-soft);
+  color: var(--struct);
+}
