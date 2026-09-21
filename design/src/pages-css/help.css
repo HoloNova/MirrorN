@@ -1,0 +1,141 @@
+/* 帮助：左侧文档目录 + Markdown 正文 */
+.docs {
+  display: grid;
+  gap: 0 44px;
+  margin-top: 26px;
+  grid-template-columns: var(--rail-width, 208px) minmax(0, 1fr);
+}
+
+.docs .toc {
+  position: sticky;
+  top: 24px;
+  display: flex;
+  height: fit-content;
+  flex-direction: column;
+}
+
+.docs .toc a {
+  position: relative;
+  padding: 7px 0 7px 14px;
+  color: var(--ink-2);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.docs .toc a .no {
+  margin-right: 8px;
+  color: var(--ink-3);
+  font-size: 12px;
+}
+
+.docs .toc a[aria-current='true'] {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.docs .toc a[aria-current='true']::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 2px;
+  height: 18px;
+  background: var(--accent);
+  content: '';
+  transform: translateY(-50%);
+}
+
+.docs .doc-body {
+  min-width: 0;
+  max-width: 60em;
+}
+
+.docs h2 {
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--ink);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.docs h2 .no {
+  margin-right: 10px;
+  color: var(--ink-3);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.docs h2 + p {
+  margin-top: 0;
+}
+
+.docs h3 {
+  margin: 26px 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.docs p {
+  margin: 0 0 12px;
+  color: var(--ink-2);
+}
+
+.docs strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.docs ul {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  color: var(--ink-2);
+}
+
+.docs li + li {
+  margin-top: 4px;
+}
+
+.docs code {
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.docs .footline {
+  margin-top: 26px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 1023px) {
+  .docs {
+    gap: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .docs .toc {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    margin-bottom: 22px;
+    gap: 4px;
+  }
+
+  .docs .toc a {
+    padding: 6px 10px;
+    white-space: nowrap;
+  }
+
+  .docs .toc a[aria-current='true']::before {
+    top: auto;
+    bottom: 0;
+    left: 10px;
+    width: 16px;
+    height: 2px;
+    transform: none;
+  }
+}

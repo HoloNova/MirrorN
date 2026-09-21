@@ -1,10 +1,12 @@
 import {
+  PROBE_CONSECUTIVE_FAILURE_LIMIT,
   PROBE_LIMITS,
   type ProbeLimits,
   type ProbeResult,
   type ProbeTarget,
 } from '@mirrorn/shared/probe';
 
+import { aggregateAttempts } from './probeAggregate';
 import { runProbe, type ProbeAttempt, type ProbeRunOverrides } from './probe';
 
 export interface ProbeRoundHandlers {
@@ -36,11 +38,14 @@ export interface ProbeSchedulerOptions extends ProbeRunOverrides {
 /**
  * 探测轮次调度器：负责并发上限、同一探针的请求去重、新一轮取代旧轮次。
  *
- * 两处容易混淆的语义在这里说明：
+ * 三处容易混淆的语义在这里说明：
  * 1. 「同一探针进行中的请求去重」跨轮次生效。新一轮开始时不重复发起已经在跑的探针，
  *    而是复用同一个请求；因此新一轮不会取消自己还要用的请求。
  * 2. 「新一轮取消旧任务」针对的是新一轮不再需要的探针。旧轮次的回调在这一刻失效，
  *    即使它的结果随后才返回，也不会被当成当前结果。
+ * 3. 「一个候选一个并发名额，名额内连续尝试」。对外并发数因此与尝试次数无关：
+ *    任何时刻在跑的请求仍然只有 `concurrency` 个，改用多个名额并发跑同一候选会让
+ *    对镜像站的瞬时压力随尝试次数放大（建连也互相抢带宽，测出来的值反而不代表真实链路）。
  */
 export function createProbeScheduler(options: ProbeSchedulerOptions = {}): ProbeScheduler {
   const limits: ProbeLimits = { ...PROBE_LIMITS, ...options.limits };
@@ -65,6 +70,38 @@ export function createProbeScheduler(options: ProbeSchedulerOptions = {}): Probe
       running -= 1;
       waiting.shift()?.();
     }
+  }
+
+  /**
+   * 对一个候选连续尝试若干次并聚合。停止条件有两个：达到计划次数，或者连续失败到达上限
+   * （避免对一个不可达的来源白等满三倍超时预算）。取消会立刻终止循环，不产生结果。
+   */
+  async function attemptTarget(
+    target: ProbeTarget,
+    controller: AbortController,
+  ): Promise<ProbeAttempt> {
+    const attempts: ProbeAttempt[] = [];
+    let consecutiveFailures = 0;
+
+    for (let index = 0; index < limits.attemptsPerTarget; index += 1) {
+      // 排队后被取消、或在两次尝试之间被取消：都不再发请求。
+      if (controller.signal.aborted) {
+        return { outcome: 'cancelled' };
+      }
+
+      const attempt = await runProbe(target, controller.signal, options);
+      if (attempt.outcome === 'cancelled') {
+        return attempt;
+      }
+
+      attempts.push(attempt);
+      consecutiveFailures = attempt.result.status === 'ok' ? 0 : consecutiveFailures + 1;
+      if (consecutiveFailures >= PROBE_CONSECUTIVE_FAILURE_LIMIT) {
+        break;
+      }
+    }
+
+    return aggregateAttempts(target, attempts);
   }
 
   function startRound(targets: ProbeTarget[], handlers: ProbeRoundHandlers = {}): ProbeRound {
@@ -114,7 +151,7 @@ export function createProbeScheduler(options: ProbeSchedulerOptions = {}): Probe
               if (controller.signal.aborted) {
                 return { outcome: 'cancelled' };
               }
-              return runProbe(target, controller.signal, options);
+              return attemptTarget(target, controller);
             });
             const started = { promise, controller };
             inFlight.set(probeId, started);

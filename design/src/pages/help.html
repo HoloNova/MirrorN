@@ -1,0 +1,107 @@
+<div class="shell" data-page="help">
+  <aside class="rail">
+    <a id="brand-home" class="brand" href="#home">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="0" y="0" width="16" height="16" fill="#101318" />
+        <rect x="0" y="0" width="8" height="16" fill="#2049e6" />
+        <rect x="7" y="0" width="1" height="16" fill="#fcfcfb" />
+      </svg>
+      MirrorN
+    </a>
+    <nav class="nav">
+      <a id="nav-home" href="#home">首页</a>
+      <a id="nav-sites" href="#sites">站点</a>
+      <a id="nav-help" href="#help" aria-current="page">帮助</a>
+    </nav>
+    <div class="rail-foot">
+      <span class="mode"><i></i>同步状态在线</span>
+      <div class="themes">
+        <button type="button" aria-pressed="true">浅色</button>
+        <button type="button" aria-pressed="false">深色</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <main class="content">
+      <div class="head">
+        <h1>帮助</h1>
+        <span class="stamp">2 篇</span>
+      </div>
+
+      <div class="docs">
+        <nav class="toc">
+          <a id="doc-usage" href="#help/usage" aria-current="true"
+            ><span class="no num">01</span>怎么用</a
+          >
+          <a id="doc-probe" href="#help/probe"><span class="no num">02</span>测速是怎么算的</a>
+        </nav>
+
+        <article class="doc-body">
+          <h2><span class="no num">01</span>怎么用</h2>
+          <p>
+            三步：在首页搜索你正在用的东西（例如
+            <code>pip</code>、<code>apt</code>），在文档里选一个来源，然后复制命令自己执行。
+          </p>
+
+          <h3>1. 找到对应的文档</h3>
+          <p>首页的搜索框支持生态名、镜像站名和常见别名，例如「清华」「tuna」「pypi」都能搜到。</p>
+
+          <h3>2. 选来源</h3>
+          <p>
+            文档第 01
+            节按你本机的响应耗时排序。带「推荐」的那个通常是本机最快的，标着「状态未知」的来源表示它没有公开同步状态文件，不代表它不同步。
+          </p>
+
+          <h3>3. 复制命令</h3>
+          <p>配置方式有三种：</p>
+          <ul>
+            <li><strong>瞬态执行</strong>：只对这一次命令生效，不改任何文件。</li>
+            <li><strong>持久写入</strong>：写进当前用户的配置文件，只影响这个用户。</li>
+            <li>
+              <strong>配置文件</strong>：改系统级配置文件（例如
+              <code>/etc/apt/sources.list.d/ubuntu.sources</code>），需要 <code>sudo</code>。
+            </li>
+          </ul>
+          <p>页面只给出命令和你需要自己执行的步骤，不会修改你的电脑。</p>
+
+          <h3>4. 改坏了怎么退</h3>
+          <p>每篇文档的第 04 节是恢复与还原，包括改回官方默认的命令。</p>
+
+          <h2 id="probe"><span class="no num">02</span>测速是怎么算的</h2>
+          <p>页面上的数字是「响应耗时（估算）」，单位毫秒。它不是下载速度，也不是 ping。</p>
+          <ul>
+            <li>
+              测的是你的浏览器直连该镜像站上一个小资源的往返时间（从发起请求到拿到响应的第一个字节）。
+            </li>
+            <li>每个来源连续测 3 次，取最快两次的平均值，尽量避免网络抖动。</li>
+            <li>同时最多测 3 个来源，其余排队。</li>
+            <li>某次请求超过 1500 ms 记为超时；连续失败 2 次就停止测这个来源。</li>
+            <li>
+              第一次访问某个站点的请求包含 DNS、TCP、TLS
+              建连时间，会比后续几次慢，所以取最快两次能把它排除掉。
+            </li>
+            <li>
+              浏览器不允许页面读取跨域请求的连接耗时（需要对方响应头允许），所以建连时间无法单独扣除。
+            </li>
+          </ul>
+          <p>
+            为什么是「估算」：这个数字受你本机网络、运营商路由、镜像站当时的负载影响，只适合用来比较同一时刻不同来源之间的相对快慢，不适合当作绝对带宽。
+          </p>
+
+          <h3>同步状态是从哪来的</h3>
+          <p>
+            只来自镜像站自己公开的状态文件（例如清华的
+            <code>tunasync.json</code
+            >）。没有公开状态文件的站点一律显示「状态未知」，页面不会用推测的值。
+          </p>
+
+          <p class="footline">
+            <span>测速口径在「01 怎么用」之后单独成篇，改口径会同时改这一页。</span>
+            <span>最后更新 2026-09-21</span>
+          </p>
+        </article>
+      </div>
+    </main>
+  </div>
+</div>

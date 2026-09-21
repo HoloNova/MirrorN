@@ -1,0 +1,341 @@
+/*
+ * 外壳层：两种页面形态共用的一套骨骼。
+ *
+ *   data-layout="app"  首页 / 站点 / 帮助。左侧常驻导航栏（172px），内容独占右侧。
+ *   data-layout="doc"  生态文档。没有全局侧边栏——文档自己有页内目录栏，再加一列
+ *                      全局导航会再吃掉一份宽度，命令块只剩一半。
+ *
+ * 两种形态的导航都 `position: sticky`：滚到哪儿都能点。
+ *
+ * 宽度规则：容器满宽，只留随视口变化的留白（clamp），不设固定最大宽度。
+ * 需要限制行宽的地方用相对量（标题 em、Markdown 正文 ch、清单 --measure-table）。
+ *
+ * 形态由路由的 meta.layout 决定（见 router.ts），组件不根据路径字符串猜。
+ */
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.shell-inner {
+  width: 100%;
+  padding-inline: clamp(var(--space-4), 3.2vw, var(--space-16));
+}
+
+.shell-main {
+  flex: 1;
+  padding-bottom: var(--space-20);
+}
+
+/* ── 左侧导航（app 形态） ─────────────────────────────────────────────── */
+
+.shell[data-layout='app'] {
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.shell[data-layout='app'] .shell-aside {
+  position: sticky;
+  z-index: 30;
+  top: 0;
+  height: 100vh;
+  flex: 0 0 var(--nav-width);
+  border-right: var(--rule) solid var(--line);
+  background: var(--bg);
+}
+
+.shell[data-layout='app'] .shell-body {
+  display: flex;
+  min-width: 0;
+  min-height: 100vh;
+  flex: 1;
+  flex-direction: column;
+}
+
+.side-nav {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  padding: var(--space-5) 0 var(--space-4);
+}
+
+.side-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 var(--space-5) var(--space-6);
+  color: var(--ink);
+  font-size: var(--size-body);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+/*
+ * 品牌标记：一个方块，左半结构蓝、右半墨色，中间留 1px 底色缝。
+ * 它和读数条上的刻度是同一个形状语言（方块 + 切分），因此不用字母方块。
+ */
+.brand-mark {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  background: linear-gradient(
+    to right,
+    var(--struct) 0 7px,
+    var(--bg) 7px 8px,
+    var(--ink) 8px 16px
+  );
+}
+
+.side-list {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  list-style: none;
+}
+
+.side-link {
+  position: relative;
+  display: block;
+  padding: var(--space-2) var(--space-5);
+  color: var(--ink-2);
+  font-size: var(--size-small);
+  text-decoration: none;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background var(--duration-fast) var(--ease-standard);
+}
+
+.side-link:hover {
+  color: var(--ink);
+}
+
+/* 当前模块：左侧一根 2px 蓝色刻度（与页内目录、读数条同一根刻度）。 */
+.side-nav .router-link-active {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.side-nav .router-link-active::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 2px;
+  height: 18px;
+  background: var(--struct);
+  content: '';
+  transform: translateY(-50%);
+}
+
+.side-foot {
+  display: flex;
+  margin-top: auto;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0 var(--space-5);
+}
+
+/* ── 数据模式（本地数据 / 同步状态在线） ───────────────────────────────── */
+
+.data-mode {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+}
+
+.data-mode::before {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  background: var(--ok);
+  content: '';
+}
+
+/* 本地数据模式没有实时同步：点也改成琥珀色，避免“绿色=在线”的误读。 */
+.data-mode[data-state='local']::before {
+  background: var(--warn);
+}
+
+/* ── 顶栏（doc 形态） ─────────────────────────────────────────────────── */
+
+.topbar {
+  position: sticky;
+  z-index: 30;
+  top: 0;
+  height: var(--topbar-height);
+  border-bottom: var(--rule) solid var(--line);
+  /* 不透明背景：正文从下面穿过时细线不能被透视打断。 */
+  background: var(--bg);
+}
+
+.topbar .shell-inner {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.topbar .brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--ink);
+  font-size: var(--size-body);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.top-nav {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/*
+ * 顶栏导航项撑满顶栏高度，当前项的 2px 横线落在顶栏底边上（而不是文字下方），
+ * 与左侧导航的竖刻度是同一种“当前位置”标记。
+ */
+.top-link {
+  position: relative;
+  display: flex;
+  height: 100%;
+  padding: 0 var(--space-2);
+  align-items: center;
+  color: var(--ink-2);
+  font-size: var(--size-small);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.top-link:hover {
+  color: var(--ink);
+}
+
+.top-nav .router-link-active {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.top-nav .router-link-active::after {
+  position: absolute;
+  right: var(--space-2);
+  bottom: 0;
+  left: var(--space-2);
+  height: 2px;
+  background: var(--struct);
+  content: '';
+}
+
+.topbar-end {
+  display: flex;
+  margin-left: auto;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* ── 窄屏 ─────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .shell[data-layout='app'] {
+    flex-direction: column;
+  }
+
+  .shell[data-layout='app'] .shell-aside {
+    z-index: 30;
+    width: 100%;
+    height: auto;
+    flex: 0 0 auto;
+    border-right: 0;
+    border-bottom: var(--rule) solid var(--line);
+  }
+
+  .side-nav {
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .side-brand {
+    padding: 0;
+  }
+
+  .side-list {
+    flex-direction: row;
+    gap: var(--space-1);
+  }
+
+  .side-link {
+    padding: var(--space-1) var(--space-2);
+    white-space: nowrap;
+  }
+
+  /* 横排时当前模块的刻度转到文字下方。 */
+  .side-nav .router-link-active::before {
+    top: auto;
+    bottom: 0;
+    left: var(--space-2);
+    width: 12px;
+    height: 2px;
+    transform: none;
+  }
+
+  .side-foot {
+    margin: 0 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 0;
+  }
+
+  .topbar {
+    height: auto;
+  }
+
+  .topbar .shell-inner {
+    height: auto;
+    flex-wrap: wrap;
+    padding-block: var(--space-3);
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .top-nav {
+    height: auto;
+  }
+
+  .top-link {
+    height: auto;
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .topbar-end {
+    gap: var(--space-3);
+  }
+}
+
+@media (max-width: 720px) {
+  .shell-main {
+    padding-bottom: var(--space-12);
+  }
+
+  .side-nav {
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+  }
+
+  .side-link {
+    padding: var(--space-1);
+  }
+
+  .side-nav .router-link-active::before {
+    left: 0;
+  }
+}

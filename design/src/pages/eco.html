@@ -1,0 +1,234 @@
+<div class="shell doc" data-page="eco">
+  <header class="topbar">
+    <a id="brand-home" class="brand" href="#home">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="0" y="0" width="16" height="16" fill="#101318" />
+        <rect x="0" y="0" width="8" height="16" fill="#2049e6" />
+        <rect x="7" y="0" width="1" height="16" fill="#fcfcfb" />
+      </svg>
+      MirrorN
+    </a>
+    <nav class="nav">
+      <a id="nav-home" href="#home">首页</a>
+      <a id="nav-sites" href="#sites">站点</a>
+      <a id="nav-help" href="#help">帮助</a>
+    </nav>
+    <span class="mode"><i></i>同步状态在线</span>
+    <div class="themes">
+      <button type="button" aria-pressed="true">浅色</button>
+      <button type="button" aria-pressed="false">深色</button>
+    </div>
+  </header>
+
+  <div class="params">
+    <div class="param">
+      <span class="k">系统</span>
+      <span class="v">Ubuntu</span>
+    </div>
+    <div class="param">
+      <span class="k">终端</span>
+      <span class="v">bash</span>
+    </div>
+    <div class="param">
+      <span class="k">版本</span>
+      <span class="v">24.04</span>
+    </div>
+    <div class="param">
+      <span class="k">来源</span>
+      <span class="v">自动选择</span>
+      <span class="rec">清华大学开源软件镜像站</span>
+    </div>
+  </div>
+
+  <div class="doc">
+    <nav class="toc">
+      <a id="toc-sources" href="#sources" aria-current="true"
+        ><span class="no num">01</span>选择来源</a
+      >
+      <a id="toc-config" href="#config"><span class="no num">02</span>配置命令</a>
+      <a id="toc-verify" href="#verify"><span class="no num">03</span>验证配置</a>
+      <a id="toc-restore" href="#restore"><span class="no num">04</span>恢复与还原</a>
+      <a id="toc-faq" href="#faq"><span class="no num">05</span>常见问题</a>
+    </nav>
+
+    <main class="doc-body">
+      <div class="doc-head">
+        <h1>apt<span class="owner">Ubuntu / apt</span></h1>
+        <p class="lede">
+          Ubuntu 的系统级软件源。按版本给对应配置格式：22.04 / 20.04 用 sources.list，24.04 用
+          deb822。
+        </p>
+      </div>
+
+      <section id="sources" class="sec">
+        <h2><span class="no num">01</span>选择来源</h2>
+        <section class="rank">
+          <div class="row head">
+            <span>来源</span>
+            <span>性质</span>
+            <span>读数刻度</span>
+            <span class="col-r">耗时</span>
+            <span>分档</span>
+            <span>同步状态</span>
+          </div>
+          <div class="row body win">
+            <span class="name"
+              ><span class="t">清华大学开源软件镜像站</span><span class="chip-rec">推荐</span></span
+            >
+            <span class="tag-cell"><span class="tag">高校</span></span>
+            <span class="bar-cell"><span class="bar" style="width: 6%"></span></span>
+            <span class="ms">18<span class="u">ms</span></span>
+            <span class="tier fast">快</span>
+            <span class="sync"><i></i>已同步<small>12 分钟前</small></span>
+          </div>
+          <div class="row body">
+            <span class="name"><span class="t">阿里云开发者镜像站</span></span>
+            <span class="tag-cell"><span class="tag">商业</span></span>
+            <span class="bar-cell"><span class="bar" style="width: 10.33%"></span></span>
+            <span class="ms">31<span class="u">ms</span></span>
+            <span class="tier fast">快</span>
+            <span class="sync unknown"><i></i>状态未知</span>
+          </div>
+          <div class="row body">
+            <span class="name"><span class="t">腾讯云软件源</span></span>
+            <span class="tag-cell"><span class="tag">商业</span></span>
+            <span class="bar-cell"><span class="bar" style="width: 24.67%"></span></span>
+            <span class="ms">74<span class="u">ms</span></span>
+            <span class="tier fair">一般</span>
+            <span class="sync unknown"><i></i>状态未知</span>
+          </div>
+          <div class="row body">
+            <span class="name"><span class="t">Ubuntu 官方归档</span></span>
+            <span class="tag-cell"><span class="tag">官方</span></span>
+            <span class="bar-cell"><span class="bar" style="width: 71%"></span></span>
+            <span class="ms">213<span class="u">ms</span></span>
+            <span class="tier slow">偏慢</span>
+            <span class="sync plain">官方</span>
+          </div>
+          <div class="row axis">
+            <span></span>
+            <span></span>
+            <span class="axis-cell">
+              <span class="first" style="left: 0">0</span>
+              <span class="minor" style="left: 16.67%">50</span>
+              <span style="left: 33.33%">100</span>
+              <span class="minor" style="left: 50%">150</span>
+              <span style="left: 66.67%">200</span>
+              <span class="minor" style="left: 83.33%">250</span>
+              <span class="last" style="left: 100%">300 ms</span>
+            </span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </section>
+      </section>
+
+      <section id="config" class="sec">
+        <h2><span class="no num">02</span>配置命令</h2>
+
+        <div class="modes" role="tablist">
+          <button id="mode-once" class="mode-tab" type="button">瞬态执行</button>
+          <button id="mode-persist" class="mode-tab" type="button">持久写入</button>
+          <button id="mode-file" class="mode-tab" aria-selected="true" type="button">
+            配置文件
+          </button>
+        </div>
+
+        <figure class="cmd">
+          <figcaption>
+            <span>/etc/apt/sources.list.d/ubuntu.sources</span>
+            <button class="copy" type="button">复制</button>
+          </figcaption>
+          <pre class="code-block">
+Types: deb
+URIs: https://mirrors.tuna.tsinghua.edu.cn/ubuntu/
+Suites: noble noble-updates noble-backports
+Components: main restricted universe multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg</pre>
+        </figure>
+
+        <div class="diff">
+          <div class="diff-head">
+            <span class="num">官方默认 → 镜像配置</span>
+            <span class="num">改 1 行</span>
+          </div>
+          <div class="code">
+            <div class="minus">
+              <span class="marker">−</span><span>URIs: http://archive.ubuntu.com/ubuntu/</span>
+            </div>
+            <div class="plus">
+              <span class="marker">+</span
+              ><span>URIs: https://mirrors.tuna.tsinghua.edu.cn/ubuntu/</span>
+            </div>
+          </div>
+        </div>
+
+        <figure class="cmd">
+          <figcaption>
+            <span>在你的终端执行</span>
+            <button class="copy" type="button">复制</button>
+          </figcaption>
+          <pre class="code-block">
+sudo curl -o /etc/apt/sources.list.d/ubuntu.sources \
+  https://mirror.campuslink.vip/files/ubuntu-24.04-tuna.sources</pre>
+        </figure>
+      </section>
+
+      <section id="verify" class="sec">
+        <h2><span class="no num">03</span>验证配置</h2>
+        <figure class="cmd">
+          <figcaption>
+            <span>在你的终端执行</span>
+            <button class="copy" type="button">复制</button>
+          </figcaption>
+          <pre class="code-block">apt policy</pre>
+        </figure>
+        <p class="expect">
+          第一行应该出现 <code>https://mirrors.tuna.tsinghua.edu.cn/ubuntu</code>。
+        </p>
+      </section>
+
+      <section id="restore" class="sec">
+        <h2><span class="no num">04</span>恢复与还原</h2>
+        <figure class="cmd">
+          <figcaption>
+            <span>还原成官方默认</span>
+            <button class="copy" type="button">复制</button>
+          </figcaption>
+          <pre class="code-block">
+sudo cp /etc/apt/sources.list.d/ubuntu.sources.bak \
+  /etc/apt/sources.list.d/ubuntu.sources
+sudo apt update</pre>
+        </figure>
+      </section>
+
+      <section id="faq" class="sec">
+        <h2><span class="no num">05</span>常见问题</h2>
+        <div class="qa">
+          <p class="q">apt update 报 GPG 签名错误</p>
+          <ol class="steps">
+            <li>确认 <code>Signed-By</code> 指向的 keyring 文件存在。</li>
+            <li>重新执行第 03 节的验证命令，看第一行是不是镜像地址。</li>
+          </ol>
+        </div>
+        <div class="qa">
+          <p class="q">换源后 apt 变更慢，或者卡住</p>
+          <ol class="steps">
+            <li>回到第 01 节，换一个响应耗时更短的来源。</li>
+            <li>如果四个来源都超过 200 ms，先确认本机网络本身是否正常。</li>
+          </ol>
+        </div>
+      </section>
+
+      <p class="footline">
+        <span
+          >数字是响应耗时估算，不是下载速度。<a id="footline-help" href="#help/probe"
+            >口径见帮助</a
+          ></span
+        >
+        <span>数据核对于 2026-09-19</span>
+      </p>
+    </main>
+  </div>
+</div>

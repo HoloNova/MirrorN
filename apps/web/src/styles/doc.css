@@ -1,162 +1,52 @@
 /*
- * 文档壳：页头、粘性参数条、目录栏与章节。
+ * 生态文档页（doc 形态）：参数条 + 页内目录 + 章节。
  *
- * 这一层决定本站的基本结构：一列正文（左侧目录 + 右侧内容 + 顶部常驻参数），
- * 而不是把内容切成一张张卡片。参数条常驻是因为所有命令都由它派生——改了系统或来源，
- * 下面的命令要一起变，这个因果关系必须在视觉上一直成立。
+ * 三层结构各有分工：
+ *   参数条  sticky 在顶栏下面，决定这一页显示哪些命令（系统 / 终端 / 版本 / 来源）；
+ *   目录栏  固定在左列，标出当前读到第几节；
+ *   章节    01–05 一次全部渲染，不因为没点“下一步”而消失。
+ *
+ * 顶部规则线（2px 墨色）是这一页的结构信号：每个章节都从一条实线开始，滚到哪儿都能看出
+ * “这是新的一节”，比留白更省纵向空间。
  */
 
-/* ── 外壳 ───────────────────────────────────────────────────────────── */
-
-.shell {
-  display: flex;
-  min-height: 100vh;
-  flex-direction: column;
-}
-
-.shell-inner {
-  width: min(var(--shell-max), calc(100% - var(--space-12)));
-  margin: 0 auto;
-}
-
-.shell-main {
-  flex: 1;
-  padding-bottom: var(--space-20);
-}
-
-/* ── 顶栏 ───────────────────────────────────────────────────────────── */
-
-.topbar {
-  height: var(--topbar-height);
-  border-bottom: var(--rule) solid var(--line);
-  background: var(--bg);
-}
-
-.topbar .shell-inner {
-  display: flex;
-  height: 100%;
-  align-items: center;
-  gap: var(--space-6);
-}
-
-.brand {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--space-2);
-  color: var(--ink);
-  font-size: var(--size-body);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  text-decoration: none;
-}
-
-/* 品牌标记用一个实心刻度，不用字母方块——它同时是读数条上的那根刻度。 */
-.brand-mark {
-  width: 10px;
-  height: 3px;
-  background: var(--struct);
-}
-
-.brand-caption {
-  color: var(--ink-3);
-  font-size: var(--size-micro);
-}
-
-.topbar-end {
-  display: flex;
-  margin-left: auto;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.data-mode {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--ink-3);
-  font-size: var(--size-micro);
-}
-
-.data-mode::before {
-  width: 6px;
-  height: 6px;
-  background: var(--ok);
-  content: '';
-}
-
-/* ── 页头 ───────────────────────────────────────────────────────────── */
-
-.doc-head {
-  padding: var(--space-10) 0 var(--space-6);
-}
-
-.crumbs {
-  display: flex;
-  margin-bottom: var(--space-5);
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--ink-3);
-  font-size: var(--size-small);
-}
-
-.crumbs a {
-  color: var(--ink-2);
-  text-decoration: none;
-}
-
-.crumbs a:hover {
-  color: var(--struct);
-}
-
-.doc-title-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-6);
-}
-
-.doc-lede {
-  max-width: var(--measure);
-  margin-top: var(--space-3);
-  color: var(--ink-2);
-}
-
-.doc-meta {
-  flex: none;
-  color: var(--ink-3);
-  font-size: var(--size-micro);
-}
-
-/* ── 粘性参数条 ─────────────────────────────────────────────────────── */
+/* ── 参数条 ───────────────────────────────────────────────────────────── */
 
 .params {
   position: sticky;
   z-index: 20;
-  top: 0;
+  top: var(--topbar-height);
   display: flex;
   align-items: center;
-  gap: var(--space-6);
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
   min-height: var(--params-height);
   padding: var(--space-2) 0;
   border-bottom: var(--rule) solid var(--line);
-  /* 不透明背景：滚动时正文从下面穿过，模糊或半透明会让细线糊掉。 */
+  /* 不透明：正文从下面穿过时不能被看穿。 */
   background: var(--bg);
 }
 
-.params-group {
+.param {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
-.params-group + .params-group {
-  padding-left: var(--space-6);
-  border-left: var(--rule) solid var(--line);
-}
-
-.params-label {
+.param-label {
   color: var(--ink-3);
   font-size: var(--size-micro);
+}
+
+.param-value {
+  color: var(--ink);
+  font-size: var(--size-small);
+  text-decoration: none;
+  border-bottom: var(--rule) solid var(--struct-line);
+}
+
+.param-source {
+  min-width: 0;
 }
 
 .params-end {
@@ -166,473 +56,263 @@
   gap: var(--space-3);
 }
 
-/* 分段控件：用下划线表示当前项，不用填充药丸。内部不画分隔线，否则整个控件会变成
-   一格格的表单字段；一个外层描边 + 下划线已经足够说清“这是一组里选一个”。 */
-.seg {
-  display: inline-flex;
-  border: var(--rule) solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-}
+/* ── 目录栏 + 正文 ─────────────────────────────────────────────────────── */
 
-.seg > button {
-  padding: 6px var(--space-3);
-  border: 0;
-  color: var(--ink-2);
-  font-size: var(--size-small);
-  background: transparent;
-  transition:
-    background var(--duration-fast) var(--ease-standard),
-    color var(--duration-fast) var(--ease-standard);
-}
-
-.seg > button:hover {
-  background: var(--surface-hover);
-  color: var(--ink);
-}
-
-.seg > button[aria-pressed='true'] {
-  color: var(--struct);
-  background: var(--struct-soft);
-  box-shadow: inset 0 -2px 0 var(--struct);
-}
-
-/* ── 正文网格 ───────────────────────────────────────────────────────── */
-
-.doc-body {
+.docs {
   display: grid;
-  grid-template-columns: var(--rail-width) minmax(0, 1fr);
+  padding-top: var(--space-8);
   gap: var(--space-10);
-  padding-top: var(--space-6);
+  grid-template-columns: var(--rail-width) minmax(0, 1fr);
 }
-
-.doc-main {
-  min-width: 0;
-}
-
-/* ── 目录栏 ─────────────────────────────────────────────────────────── */
 
 .toc {
   position: sticky;
-  top: calc(var(--params-height) + var(--space-6));
+  top: calc(var(--sticky-stack) + var(--space-4));
+  display: flex;
+  flex-direction: column;
   align-self: start;
 }
 
-.toc-title {
-  margin-bottom: var(--space-3);
-  color: var(--ink-3);
-  font-size: var(--size-micro);
-}
-
-.toc-list {
-  display: grid;
-  margin: 0;
-  padding: 0;
-  gap: 1px;
-  list-style: none;
-}
-
-.toc-link {
+.toc a {
+  position: relative;
   display: flex;
   align-items: baseline;
   gap: var(--space-2);
   padding: var(--space-1) 0 var(--space-1) var(--space-3);
-  border-left: 2px solid transparent;
-  color: var(--ink-2);
+  color: var(--ink-3);
   font-size: var(--size-small);
   text-decoration: none;
 }
 
-.toc-link:hover {
+.toc a:hover {
   color: var(--ink);
 }
 
-.toc-link[aria-current='true'] {
-  border-left-color: var(--struct);
-  color: var(--struct);
+/* 当前章节：左侧一根 2px 结构色刻度 + 文字转深色。 */
+.toc a[aria-current='true'] {
+  color: var(--ink);
+  font-weight: 600;
 }
 
-.toc-link-num {
-  color: var(--ink-3);
-  font-family: var(--font-mono);
-  font-size: var(--size-micro);
-}
-
-.toc-progress {
-  margin-top: var(--space-6);
-  padding-top: var(--space-4);
-  border-top: var(--rule) solid var(--line);
-  color: var(--ink-3);
-  font-size: var(--size-micro);
-}
-
-.progress-ticks {
-  display: flex;
-  margin-top: var(--space-2);
-  gap: var(--space-1);
-}
-
-.progress-tick {
-  width: var(--space-6);
-  height: 4px;
-  background: var(--track-line);
-}
-
-.progress-tick[data-done='true'] {
+.toc a[aria-current='true']::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 2px;
+  height: 16px;
   background: var(--struct);
+  content: '';
+  transform: translateY(-50%);
 }
 
-/* ── 章节 ───────────────────────────────────────────────────────────── */
-
-.section {
-  padding-top: var(--space-8);
-  border-top: var(--rule) solid var(--line);
-}
-
-/* 正文里第一个章节不需要重复页头下面那条分隔线。 */
-.section.is-first {
-  padding-top: 0;
-  border-top: 0;
-}
-
-.section + .section {
-  margin-top: var(--space-8);
-}
-
-.section-head {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-}
-
-.section-num {
-  color: var(--ink-3);
-  font-family: var(--font-mono);
-  font-size: var(--size-small);
-  font-variant-numeric: tabular-nums;
-}
-
-.section-body {
-  display: grid;
-  gap: var(--space-4);
-  max-width: var(--measure);
-}
-
-/* 命令块与来源列表按列对齐，可比正文宽一些，但仍以 --measure-wide 为上限。 */
-.section-body.is-wide {
-  max-width: var(--measure-wide);
-}
-
-.subsection {
-  display: grid;
-  gap: var(--space-3);
-  margin-top: var(--space-2);
-}
-
-.subsection-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-4);
-}
-
-.subsection-title {
-  color: var(--ink);
-  font-size: var(--size-body);
-  font-weight: 500;
-}
-
-.subsection-note {
-  color: var(--ink-3);
-  font-size: var(--size-small);
-}
-
-/* 来源链接：一条一行太占地方，换行时仍有足够的水平间距，不会连成一串。 */
-.source-list {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-2) var(--space-5);
-}
-
-.source-list a {
-  font-family: var(--font-mono);
-  font-size: var(--size-micro);
-  overflow-wrap: anywhere;
-}
-
-/* ── 清单与键值 ─────────────────────────────────────────────────────── */
-
-.checklist {
-  display: grid;
-  margin: 0;
-  padding: 0;
-  gap: var(--space-2);
-  list-style: none;
-}
-
-.checklist li,
-.check-row {
-  display: grid;
-  grid-template-columns: 14px minmax(0, 1fr);
-  gap: var(--space-3);
-  align-items: start;
-}
-
-/* 清单前的方框：勾选是真实交互（本机进度），不是装饰。 */
-.checklist input,
-.check-row input {
-  width: 14px;
-  height: 14px;
-  margin: 5px 0 0;
-  accent-color: var(--struct);
-}
-
-/* 单条勾选（“我已完成这一节”）与清单共用同一套排版。 */
-.check-row {
-  margin-top: var(--space-2);
-  color: var(--ink-2);
-  font-size: var(--size-small);
-  cursor: pointer;
-}
-
-.kv {
-  display: grid;
-  margin: 0;
-  gap: var(--space-2);
-}
-
-.kv > div {
-  display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
-  gap: var(--space-3);
-}
-
-.kv dt {
-  color: var(--ink-3);
-  font-size: var(--size-small);
-}
-
-.kv dd {
-  margin: 0;
-  color: var(--ink-2);
-  font-size: var(--size-small);
-  overflow-wrap: anywhere;
-}
-
-/* ── 提示条：左侧竖线 + 淡底，不用圆角气泡 ───────────────────────────── */
-
-.note {
-  display: grid;
-  grid-template-columns: 16px minmax(0, 1fr);
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-left: 2px solid var(--line-strong);
-  background: var(--surface-sunk);
-  color: var(--ink-2);
-  font-size: var(--size-small);
-  line-height: var(--leading-small);
-}
-
-.note[data-tone='info'] {
-  border-left-color: var(--struct);
-  background: var(--struct-soft);
-}
-
-.note[data-tone='ok'] {
-  border-left-color: var(--ok);
-  background: var(--ok-soft);
-}
-
-.note[data-tone='warn'] {
-  border-left-color: var(--warn);
-  background: var(--warn-soft);
-}
-
-.note[data-tone='bad'] {
-  border-left-color: var(--bad);
-  background: var(--bad-soft);
-}
-
-.note svg {
-  margin-top: 3px;
-  color: var(--ink-3);
-}
-
-.note[data-tone='info'] svg {
-  color: var(--struct);
-}
-
-.note[data-tone='ok'] svg {
-  color: var(--ok);
-}
-
-.note[data-tone='warn'] svg {
-  color: var(--warn);
-}
-
-.note[data-tone='bad'] svg {
-  color: var(--bad);
-}
-
-.note-title {
-  color: var(--ink);
-  font-weight: 500;
-}
-
-/* ── 判断成功的期望框 ───────────────────────────────────────────────── */
-
-.expect {
-  padding: var(--space-4);
-  border: var(--rule) solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-}
-
-.expect-label {
-  display: block;
-  margin-bottom: var(--space-2);
+.toc-no {
   color: var(--ink-3);
   font-size: var(--size-micro);
 }
 
-.expect p {
-  color: var(--ink-2);
-  font-size: var(--size-small);
-  line-height: var(--leading-small);
+/* ── 正文 ─────────────────────────────────────────────────────────────── */
+
+.doc-body {
+  min-width: 0;
 }
 
-/* ── 折叠（排错库） ─────────────────────────────────────────────────── */
-
-.disclosure {
-  border-bottom: var(--rule) solid var(--line);
-}
-
-.disclosure summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-3) 0;
-  color: var(--ink);
-  font-size: var(--size-body);
-  cursor: pointer;
-  list-style: none;
-}
-
-.disclosure summary::-webkit-details-marker {
-  display: none;
-}
-
-.disclosure summary:hover {
-  color: var(--struct);
-}
-
-.disclosure-chevron {
-  flex: none;
-  color: var(--ink-3);
-  transition: transform var(--duration-base) var(--ease-standard);
-}
-
-.disclosure[open] .disclosure-chevron {
-  transform: rotate(90deg);
-}
-
-.disclosure-body {
-  display: grid;
-  gap: var(--space-4);
+.doc-head {
   padding-bottom: var(--space-5);
 }
 
-/* 排错条目内部的步骤与依据 */
-.trouble-steps {
-  display: grid;
-  margin: 0;
-  padding-left: var(--space-5);
+.doc-head h1 {
+  display: flex;
+  align-items: baseline;
   gap: var(--space-3);
+  font-size: var(--size-h1);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* 生态所属的包管理器 / 工具链：小一号、常规字重，跟在标题后面。 */
+.doc-head .owner {
+  color: var(--ink-3);
+  font-size: var(--size-body);
+  font-weight: 400;
+}
+
+.doc-head .lede {
+  max-width: var(--measure-prose);
+  margin-top: var(--space-3);
   color: var(--ink-2);
   font-size: var(--size-small);
-  line-height: var(--leading-small);
 }
 
-.trouble-step-title {
-  display: block;
+.doc-facts {
+  margin-top: var(--space-4);
+  font-size: var(--size-small);
+}
+
+.doc-facts summary {
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+  cursor: pointer;
+}
+
+.doc-facts summary:hover {
   color: var(--ink);
-  font-weight: 500;
 }
 
-.trouble-step-content {
-  display: block;
+.checklist {
+  display: grid;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  gap: var(--space-1);
+  list-style: none;
 }
 
-.trouble-sources {
+.checklist li {
   display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink-2);
+  font-size: var(--size-small);
+}
+
+.checklist input {
+  width: 14px;
+  height: 14px;
   margin: 0;
+  accent-color: var(--struct);
+}
+
+.doc-sources {
+  display: flex;
+  margin-top: var(--space-3);
   flex-wrap: wrap;
   gap: var(--space-1) var(--space-3);
   color: var(--ink-3);
   font-size: var(--size-micro);
 }
 
-.trouble-sources a {
-  color: var(--struct);
-  overflow-wrap: anywhere;
+.doc-sources a {
+  color: var(--ink-2);
 }
 
-/* ── 页脚 ───────────────────────────────────────────────────────────── */
+/* ── 章节 ─────────────────────────────────────────────────────────────── */
 
-.footer {
-  border-top: var(--rule) solid var(--line);
+.sec {
+  padding-top: var(--space-5);
+  border-top: 2px solid var(--ink);
+}
+
+.sec + .sec {
+  margin-top: var(--space-10);
+}
+
+.sec h2 {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  font-size: var(--size-h2);
+  font-weight: 600;
+}
+
+/* 配置方式的分块：每块的标题行与命令块同宽。 */
+.block + .block {
+  margin-top: var(--space-6);
+}
+
+.block-head {
+  display: flex;
+  max-width: var(--measure-table);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.block-title {
+  color: var(--ink);
+  font-size: var(--size-small);
+  font-weight: 600;
+}
+
+.block-meta {
   color: var(--ink-3);
   font-size: var(--size-micro);
 }
 
-.footer .shell-inner {
-  display: flex;
-  min-height: 56px;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
+/* 验证 / 还原的预期结果：紧跟在命令块下面的一句话。 */
+.expect {
+  max-width: var(--measure-table);
+  margin: var(--space-3) 0;
+  color: var(--ink-2);
+  font-size: var(--size-small);
 }
 
-@media (max-width: 900px) {
-  .doc-body {
-    grid-template-columns: minmax(0, 1fr);
+/* ── 说明行（原本的 note / hint 两种语气） ─────────────────────────────── */
+
+.note {
+  max-width: var(--measure-table);
+  margin: var(--space-3) 0 0;
+  color: var(--ink-2);
+  font-size: var(--size-small);
+}
+
+.note[data-tone='warn'] {
+  color: var(--warn);
+}
+
+.note[data-tone='bad'] {
+  color: var(--bad);
+}
+
+.sec .check-row {
+  margin-top: var(--space-4);
+}
+
+/* ── 窄屏 ─────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  /* 目录栏从左侧一列改成正文上方的一行（横排、可滚动），正文因此拿回全部宽度。 */
+  .docs {
     gap: var(--space-6);
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .toc {
     position: static;
-    padding-bottom: var(--space-4);
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    padding-bottom: var(--space-3);
     border-bottom: var(--rule) solid var(--line);
   }
 
-  .toc-list {
-    grid-auto-flow: column;
-    grid-auto-columns: max-content;
-    overflow-x: auto;
-    gap: var(--space-4);
-  }
-
-  .toc-link {
+  .toc a {
     padding-left: 0;
-    border-left: 0;
-    border-bottom: 2px solid transparent;
   }
 
-  .toc-link[aria-current='true'] {
-    border-bottom-color: var(--struct);
+  .toc a[aria-current='true']::before {
+    display: none;
   }
 
+  .toc a[aria-current='true'] {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--struct);
+    text-underline-offset: 4px;
+  }
+}
+
+@media (max-width: 767px) {
   .params {
-    flex-wrap: wrap;
-    gap: var(--space-3) var(--space-5);
-    padding: var(--space-3) 0;
+    gap: var(--space-2) var(--space-4);
   }
 
-  .params-group + .params-group {
-    padding-left: 0;
-    border-left: 0;
+  .params-end {
+    margin-left: 0;
+  }
+
+  .doc-head h1 {
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-3);
   }
 }

@@ -1,0 +1,108 @@
+/*
+ * 站点页专属：详情页的返回链接、关键信息表、仓库地址表、核对来源。
+ *
+ * 目录表本身复用 styles/table.css 的 `.rows.dir`（同一套列对齐规则）；这里只补详情页多出来的几块。
+ */
+
+.crumbs {
+  display: inline-block;
+  margin-bottom: var(--space-4);
+  color: var(--ink-3);
+  font-size: var(--size-small);
+  text-decoration: none;
+}
+
+.crumbs:hover {
+  color: var(--struct);
+}
+
+.site-head h1 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* ── 关键信息（官方地址 / 覆盖生态 / 探针地址 / 状态文件） ─────────────── */
+
+.kv.wide {
+  max-width: var(--measure-table);
+  margin-top: var(--space-5);
+  gap: var(--space-3);
+}
+
+.kv.wide > div {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 112px minmax(0, 1fr);
+}
+
+.kv.wide dt {
+  font-size: var(--size-small);
+}
+
+.kv.wide dd {
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--size-small);
+}
+
+.kv.wide dd a {
+  color: var(--struct);
+}
+
+/* ── 仓库地址表：生态 / 仓库地址 ───────────────────────────────────────── */
+
+.site-section {
+  margin-top: var(--space-8);
+  padding-top: var(--space-3);
+  border-top: 2px solid var(--ink);
+}
+
+.site-section h2 {
+  margin: var(--space-3) 0 var(--space-4);
+  font-size: var(--size-h3);
+  font-weight: 600;
+}
+
+.rows.site-repos {
+  --col-name: minmax(150px, 0.8fr);
+  --col-url: minmax(240px, 1.6fr);
+}
+
+.rows.site-repos .row {
+  grid-template-columns: var(--col-name) var(--col-url);
+}
+
+/* ── 核对来源（右列） ─────────────────────────────────────────────────── */
+
+.src-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.src-list a {
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: var(--size-micro);
+}
+
+.src-list .hint {
+  display: block;
+  margin-top: 2px;
+}
+
+@media (max-width: 767px) {
+  .kv.wide > div {
+    gap: 2px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rows.site-repos .row {
+    gap: var(--space-1) var(--space-3);
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

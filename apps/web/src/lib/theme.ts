@@ -31,15 +31,15 @@ export const THEMES: readonly ThemeDefinition[] = [
     id: 'survey',
     label: '测绘图',
     scheme: 'light',
-    preview: { surface: '#f3f5f4', accent: '#1b3a57' },
-    metaColor: '#f3f5f4',
+    preview: { surface: '#fcfcfb', accent: '#2049e6' },
+    metaColor: '#fcfcfb',
   },
   {
     id: 'carbon',
     label: '碳黑',
     scheme: 'dark',
-    preview: { surface: '#0e1418', accent: '#7fb3d9' },
-    metaColor: '#0e1418',
+    preview: { surface: '#0f1114', accent: '#6f8cff' },
+    metaColor: '#0f1114',
   },
 ];
 

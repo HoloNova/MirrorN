@@ -90,6 +90,28 @@ async function flush(): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
+/**
+ * 按脚本推进时钟的假 fetch：用来精确控制每一次尝试的耗时。
+ * `steps` 里最后一个值会被重复使用（尝试次数多于脚本长度时）。
+ */
+function createScriptedFetch(steps: Array<number | 'fail'>, clock: { value: number }) {
+  const calls: string[] = [];
+  const fetchImpl = ((input: RequestInfo | URL) => {
+    const index = calls.length;
+    calls.push(String(input));
+    const step = steps[Math.min(index, steps.length - 1)];
+
+    if (step === 'fail') {
+      // 与浏览器里跨域/网络失败一致：抛 TypeError。
+      return Promise.reject(new TypeError('Failed to fetch'));
+    }
+    clock.value += step ?? 0;
+    return Promise.resolve(opaque());
+  }) as typeof fetch;
+
+  return { fetchImpl, calls };
+}
+
 describe('createProbeScheduler', () => {
   it('never runs more requests than the concurrency limit', async () => {
     const fetcher = createControllableFetch();
@@ -230,5 +252,95 @@ describe('createProbeScheduler', () => {
 
     expect(await round.done).toEqual([]);
     expect(onResult).not.toHaveBeenCalled();
+  });
+
+  it('每个候选连续尝试配置的次数，并取最快两次的平均', async () => {
+    const clock = { value: 0 };
+    // 第一次包含建连开销，后两次复用连接；平均值应当忽略 420 ms。
+    const fetcher = createScriptedFetch([420, 120, 150], clock);
+    const scheduler = createProbeScheduler({
+      fetchImpl: fetcher.fetchImpl,
+      monotonicNow: () => clock.value,
+      epochNow: () => 1_000,
+    });
+    const [target] = makeTargets(1);
+    if (!target) {
+      throw new Error('测试数据缺失');
+    }
+
+    const results = await scheduler.startRound([target]).done;
+
+    expect(fetcher.calls).toHaveLength(3);
+    expect(results[0]?.durationMs).toBe(135);
+    expect(results[0]?.attempts).toBe(3);
+    expect(results[0]?.samples).toBe(3);
+  });
+
+  it('连续失败到达上限就不再尝试，不白等满三倍超时预算', async () => {
+    const clock = { value: 0 };
+    const fetcher = createScriptedFetch(['fail', 'fail', 'fail'], clock);
+    const scheduler = createProbeScheduler({
+      fetchImpl: fetcher.fetchImpl,
+      monotonicNow: () => clock.value,
+      epochNow: () => 1_000,
+    });
+    const [target] = makeTargets(1);
+    if (!target) {
+      throw new Error('测试数据缺失');
+    }
+
+    const results = await scheduler.startRound([target]).done;
+
+    expect(fetcher.calls).toHaveLength(2);
+    expect(results[0]).toMatchObject({
+      status: 'failed',
+      durationMs: null,
+      attempts: 2,
+      samples: 0,
+    });
+  });
+
+  it('尝试次数可以配成 1：回到单次测量', async () => {
+    const clock = { value: 0 };
+    const fetcher = createScriptedFetch([420], clock);
+    const scheduler = createProbeScheduler({
+      fetchImpl: fetcher.fetchImpl,
+      monotonicNow: () => clock.value,
+      epochNow: () => 1_000,
+      limits: { attemptsPerTarget: 1 },
+    });
+    const [target] = makeTargets(1);
+    if (!target) {
+      throw new Error('测试数据缺失');
+    }
+
+    const results = await scheduler.startRound([target]).done;
+
+    expect(fetcher.calls).toHaveLength(1);
+    expect(results[0]?.durationMs).toBe(420);
+    expect(results[0]?.attempts).toBe(1);
+  });
+
+  it('多个候选时总并发仍受 concurrency 限制，与尝试次数无关', async () => {
+    const clock = { value: 0 };
+    const fetcher = createControllableFetch();
+    const scheduler = createProbeScheduler({
+      fetchImpl: fetcher.fetchImpl,
+      monotonicNow: () => clock.value,
+      epochNow: () => 1_000,
+      limits: { concurrency: 2, maxCandidates: 4, attemptsPerTarget: 3 },
+    });
+
+    const round = scheduler.startRound(makeTargets(4), {});
+
+    expect(fetcher.pending).toHaveLength(2);
+
+    while (fetcher.pending.length > 0) {
+      fetcher.resolveNext();
+      await flush();
+    }
+    await round.done;
+
+    expect(fetcher.maxActive).toBeLessThanOrEqual(2);
   });
 });

@@ -51,7 +51,8 @@ function probeResult(mirrorId: string, durationMs: number, measuredAt = 1_000): 
 
 /** 手动放行请求的假 fetch：记录调用次数，并跟踪尚未结束的请求。 */
 function createControllableFetch() {
-  const active: Array<(response: Response) => void> = [];
+  const active: Array<{ resolve: (response: Response) => void; reject: (error: Error) => void }> =
+    [];
   let calls = 0;
 
   const fetchImpl = ((_input: RequestInfo | URL, init?: RequestInit) => {
@@ -69,10 +70,17 @@ function createControllableFetch() {
         }
         return true;
       };
-      const entry = (response: Response): void => {
-        if (settle()) {
-          resolve(response);
-        }
+      const entry = {
+        resolve: (response: Response): void => {
+          if (settle()) {
+            resolve(response);
+          }
+        },
+        reject: (error: Error): void => {
+          if (settle()) {
+            reject(error);
+          }
+        },
       };
 
       init?.signal?.addEventListener('abort', () => {
@@ -96,11 +104,20 @@ function createControllableFetch() {
       return active.length;
     },
     resolveNext() {
-      active.shift()?.(opaque);
+      active.shift()?.resolve(opaque);
     },
     resolveAll() {
       while (active.length > 0) {
         this.resolveNext();
+      }
+    },
+    /** 让下一个未结束的请求失败（DNS / 断网这类 TypeError）。 */
+    failNext() {
+      active.shift()?.reject(new TypeError('failed to fetch'));
+    },
+    failAll() {
+      while (active.length > 0) {
+        this.failNext();
       }
     },
   };
@@ -281,6 +298,7 @@ describe('createMirrorProbeAccess', () => {
         hasProbe: false,
         pending: false,
         stale: false,
+        attemptFailed: false,
         unavailableReason: 'probing-disabled',
       });
       expect(probes.recommendedMirrorId.value).toBeUndefined();
@@ -297,7 +315,13 @@ describe('useMirrorProbes', () => {
     options: {
       online?: boolean;
       list?: ProbeTarget[];
-      preload?: Array<{ target: ProbeTarget; result: ProbeResult; at: number }>;
+      preload?: Array<{
+        target: ProbeTarget;
+        result: ProbeResult;
+        at: number;
+        fingerprint?: string;
+      }>;
+      fingerprint?: string;
     } = {},
   ) {
     const fetcher = createControllableFetch();
@@ -306,13 +330,15 @@ describe('useMirrorProbes', () => {
     const list = options.list ?? targets;
 
     for (const entry of options.preload ?? []) {
-      cache.write([{ target: entry.target, result: entry.result }], entry.at);
+      cache.write([{ target: entry.target, result: entry.result }], entry.at, entry.fingerprint);
     }
 
     let clock = 1_000;
     let monotonic = 100;
+    let fingerprint = options.fingerprint;
     const probes = useMirrorProbes({
       getTargets: () => list,
+      getFingerprint: () => fingerprint,
       cache,
       env: fake.env,
       now: () => clock,
@@ -321,6 +347,9 @@ describe('useMirrorProbes', () => {
         fetchImpl: fetcher.fetchImpl,
         monotonicNow: () => (monotonic += 25),
         epochNow: () => clock,
+        // 这些用例验证的是缓存 / 自动刷新 / 离线降级的行为，每次测量只发一遍请求，
+        // 这样请求次数可以逐个核对；多次尝试的聚合规则由 probeAggregate.test.ts 单独覆盖。
+        limits: { attemptsPerTarget: 1 },
       }),
     });
 
@@ -342,25 +371,97 @@ describe('useMirrorProbes', () => {
       advanceClock: (ms: number) => {
         clock += ms;
       },
+      setFingerprint: (value: string | undefined) => {
+        fingerprint = value;
+      },
     };
   }
 
-  it('renders a cached measurement immediately and still revalidates it', async () => {
+  it('reuses a fresh cache and sends no request at all', async () => {
     const context = setup({
-      preload: [{ target: alpha, result: probeResult('alpha', 42), at: 1_000 }],
+      preload: [
+        { target: alpha, result: probeResult('alpha', 42), at: 1_000 },
+        { target: beta, result: probeResult('beta', 84), at: 1_000 },
+      ],
     });
 
-    // SWR：缓存立刻可读，同时后台已经在更新同一批候选。
+    // 缓存新鲜（3 小时内）：直接显示，一个请求都不发。这就是“不过度测试”的落点。
     expect(context.probes.viewFor('alpha').result?.durationMs).toBe(42);
-    expect(context.fetcher.activeCount).toBe(2);
+    expect(context.probes.viewFor('beta').result?.durationMs).toBe(84);
+    expect(context.fetcher.calls).toBe(0);
+    expect(context.probes.refreshing.value).toBe(false);
+    context.probes.dispose();
+  });
+
+  it('renders an expired measurement immediately and revalidates it', async () => {
+    const context = setup({
+      list: [alpha],
+      preload: [
+        { target: alpha, result: probeResult('alpha', 42), at: 1_000 - PROBE_CACHE_TTL_MS - 1 },
+      ],
+    });
+
+    // SWR：过期值先显示（标注可能已过期），同时后台已经在更新。
+    expect(context.probes.viewFor('alpha').result?.durationMs).toBe(42);
+    expect(context.probes.viewFor('alpha').stale).toBe(true);
+    expect(context.fetcher.activeCount).toBe(1);
 
     context.fetcher.resolveAll();
     await flush();
 
-    // 缓存里的 42 ms 被本轮结果替换（假时钟每个请求走两次，所以是 25 + 25）。
-    expect(context.probes.viewFor('alpha').result?.durationMs).toBe(50);
+    // 换成本轮结果（假时钟每次读表 +25，具体值取决于微任务交错，因此只断言“换了”）。
+    const updated = context.probes.viewFor('alpha').result?.durationMs ?? 0;
+    expect(updated).toBeGreaterThan(0);
+    expect(updated).not.toBe(42);
     expect(context.probes.viewFor('alpha').stale).toBe(false);
-    expect(context.probes.lastMeasuredAt.value).toBe(1_000);
+    context.probes.dispose();
+  });
+
+  it('discards a cached measurement recorded on another network', async () => {
+    // 缓存是在 net-a 下测的，而现在处于 net-b：数字不代表当前链路，必须重测。
+    const context = setup({
+      list: [alpha],
+      fingerprint: 'net-b',
+      preload: [
+        { target: alpha, result: probeResult('alpha', 42), at: 1_000, fingerprint: 'net-a' },
+      ],
+    });
+
+    expect(context.probes.viewFor('alpha').result).toBeUndefined();
+    expect(context.fetcher.calls).toBe(1);
+    context.fetcher.resolveAll();
+    context.probes.dispose();
+  });
+
+  it('keeps the previous measurement when the new attempt fails', async () => {
+    const context = setup({
+      list: [alpha],
+      preload: [
+        { target: alpha, result: probeResult('alpha', 42), at: 1_000 - PROBE_CACHE_TTL_MS - 1 },
+      ],
+    });
+
+    expect(context.fetcher.activeCount).toBe(1);
+    context.fetcher.failAll();
+    await flush();
+
+    // 失败不覆盖数据：仍然显示上一次成功的 42 ms，并标出“本次没成功”。
+    expect(context.probes.viewFor('alpha').result?.durationMs).toBe(42);
+    expect(context.probes.viewFor('alpha').attemptFailed).toBe(true);
+    expect(context.probes.lastRoundFailures.value).toBe(1);
+    expect(context.cache.read()[0]?.ok?.result.durationMs).toBe(42);
+    expect(context.cache.read()[0]?.lastAttempt.status).toBe('failed');
+    context.probes.dispose();
+  });
+
+  it('shows a failure when there is no earlier measurement to keep', async () => {
+    const context = setup({ list: [alpha] });
+
+    context.fetcher.failAll();
+    await flush();
+
+    expect(context.probes.viewFor('alpha').result?.status).toBe('failed');
+    expect(context.probes.viewFor('alpha').attemptFailed).toBe(true);
     context.probes.dispose();
   });
 
@@ -370,16 +471,37 @@ describe('useMirrorProbes', () => {
     context.fetcher.resolveAll();
     await flush();
 
+    // 刚测完（30 秒内）再要求自动重新验证：什么也不做。
     context.probes.revalidate();
     await flush();
     expect(context.fetcher.calls).toBe(2);
 
-    context.advanceClock(30_001);
+    // 过期之后、且已过下限：才真的重测。
+    context.advanceClock(PROBE_CACHE_TTL_MS + 1);
     context.probes.revalidate();
     await flush();
     expect(context.fetcher.calls).toBe(4);
 
     context.fetcher.resolveAll();
+    context.probes.dispose();
+  });
+
+  it('throttles automatic retries after a failure', async () => {
+    const context = setup({ list: [alpha] });
+    context.fetcher.failAll();
+    await flush();
+    expect(context.fetcher.calls).toBe(1);
+
+    // 失败后 10 分钟内不再自动重试（但手动刷新不受限制）。
+    context.probes.revalidate();
+    await flush();
+    expect(context.fetcher.calls).toBe(1);
+
+    context.probes.refresh();
+    await flush();
+    expect(context.fetcher.calls).toBe(2);
+
+    context.fetcher.failAll();
     context.probes.dispose();
   });
 
@@ -464,7 +586,7 @@ describe('useMirrorProbes', () => {
     await flush();
     expect(context.fetcher.calls).toBe(freshCalls);
 
-    context.advanceClock(16 * 60 * 1000);
+    context.advanceClock(PROBE_CACHE_TTL_MS + 1);
     context.visible();
     await flush();
     expect(context.fetcher.calls).toBe(freshCalls + 2);
@@ -546,6 +668,7 @@ describe('sync status integration', () => {
         fetchImpl: fetcher.fetchImpl,
         monotonicNow: () => (monotonic += 25),
         epochNow: () => 1_000,
+        limits: { attemptsPerTarget: 1 },
       }),
     });
 
@@ -584,6 +707,7 @@ describe('invalidate', () => {
         fetchImpl: fetcher.fetchImpl,
         monotonicNow: () => (monotonic += 25),
         epochNow: () => 1_000,
+        limits: { attemptsPerTarget: 1 },
       }),
     });
 

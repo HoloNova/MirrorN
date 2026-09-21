@@ -1,14 +1,17 @@
 /*
- * 命令块。
+ * 命令块、改动对照、排错条目。
  *
- * 为什么不做成深色“终端皮肤”：一页文档里会出现 3–4 个命令块，每个都做成黑底白字会把页面
- * 切成一段段重块，而且本站的命令是给用户抄进终端的，不是终端自己的输出——它应当像
- * 印刷手册里被框起来的代码，而不是一块屏幕。深色留给深色主题。
- *
- * 颜色仍然只表达语义：复制成功是绿，复制失败是红。
+ * 命令块是这一站最重要的控件：用户来这儿就是为了复制一行命令。因此它有三条硬规则：
+ *   1. 等宽字体、`pre` 不换行、横向可滚动——命令换行后会看不出来它其实是一行；
+ *   2. 复制按钮就在块内右上角，复制成功与失败都要说出来（失败时给出手动选择的方法）；
+ *   3. 需要用户自己替换的占位符（<包名>）单独上色，避免直接把示例粘进终端。
  */
 
+/* ── 命令块 ───────────────────────────────────────────────────────────── */
+
 .command {
+  overflow: hidden;
+  max-width: var(--measure-table);
   border: var(--rule) solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--code-surface);
@@ -18,76 +21,43 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-2) var(--space-3);
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
   border-bottom: var(--rule) solid var(--line);
 }
 
 .command-label {
   color: var(--ink-3);
+  font-family: var(--font-mono);
   font-size: var(--size-micro);
 }
 
 .command-body {
-  margin: 0;
-  padding: var(--space-4);
   overflow-x: auto;
+  margin: 0;
+  padding: var(--space-3);
   color: var(--code-ink);
   font-family: var(--font-mono);
   font-size: var(--size-code);
-  font-variant-ligatures: none;
-  line-height: 1.7;
-  white-space: pre;
-  tab-size: 2;
+  line-height: 1.75;
+}
+
+/* 占位符：必须显眼，否则用户会把示例包名一起粘进终端。 */
+.command-body .ph {
+  display: inline;
+  color: var(--warn);
+}
+
+.command-note,
+.command-msg {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-top: var(--rule) solid var(--line);
+  font-size: var(--size-micro);
 }
 
 .command-note {
-  padding: var(--space-2) var(--space-3);
-  border-top: var(--rule) solid var(--line);
   color: var(--ink-3);
-  font-size: var(--size-micro);
-  line-height: var(--leading-small);
-}
-
-/* 复制反馈：同一个按钮上就地变化，不弹 toast，不改变布局。 */
-.copy {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 3px var(--space-2);
-  border: var(--rule) solid var(--line);
-  border-radius: var(--radius-xs);
-  background: var(--surface);
-  color: var(--ink-2);
-  font-size: var(--size-micro);
-  transition:
-    border-color var(--duration-fast) var(--ease-standard),
-    color var(--duration-fast) var(--ease-standard),
-    background var(--duration-fast) var(--ease-standard);
-}
-
-.copy:hover {
-  border-color: var(--line-strong);
-  color: var(--ink);
-}
-
-.copy[data-state='copied'] {
-  border-color: var(--ok);
-  background: var(--ok-soft);
-  color: var(--ok);
-}
-
-.copy[data-state='failed'] {
-  border-color: var(--bad);
-  background: var(--bad-soft);
-  color: var(--bad);
-}
-
-.command-msg {
-  padding: var(--space-2) var(--space-3);
-  border-top: var(--rule) solid var(--line);
-  font-size: var(--size-micro);
 }
 
 .command-msg[data-tone='ok'] {
@@ -98,13 +68,160 @@
   color: var(--bad);
 }
 
-/*
- * 占位符：命令里 <包名> 这类需要用户自己替换的部分必须一眼看出来。
- * 复制出去的文本仍然是原样的尖括号内容，这里只做视觉标记。
- */
-.ph {
-  padding: 0 2px;
-  border-bottom: 1px dashed var(--struct-line);
+/* ── 改动对照 ─────────────────────────────────────────────────────────── */
+
+.diff {
+  overflow: hidden;
+  max-width: var(--measure-table);
+  margin: var(--space-4) 0 0;
+  border: var(--rule) solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.diff-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--rule) solid var(--line);
+}
+
+.diff-title {
+  color: var(--ink);
+  font-size: var(--size-small);
+  font-weight: 600;
+}
+
+.diff-meta {
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: var(--size-micro);
+}
+
+.diff-lines {
+  margin: 0;
+  padding: var(--space-2) 0;
+  list-style: none;
+}
+
+.diff-line {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: 1px var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--size-code);
+  line-height: 1.7;
+}
+
+.diff-line code {
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.diff-mark {
+  flex: none;
+  width: 10px;
+  color: var(--ink-3);
+  text-align: center;
+}
+
+/* 被替换掉的那一行：只留一条删除线式的淡色，不抢眼。 */
+.diff-line[data-kind='removed'] {
+  color: var(--ink-3);
+}
+
+/* 换上去的那一行：整行铺结构色底，一眼看出“改成它”。 */
+.diff-line[data-kind='added'] {
   background: var(--struct-soft);
+  color: var(--ink);
+}
+
+.diff-line[data-kind='added'] .diff-mark {
   color: var(--struct);
+}
+
+.diff-foot {
+  padding: var(--space-2) var(--space-3);
+  border-top: var(--rule) solid var(--line);
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+}
+
+/* ── 排错条目 ─────────────────────────────────────────────────────────── */
+
+.troubleshooting {
+  display: grid;
+  max-width: var(--measure-table);
+  gap: var(--space-2);
+}
+
+.disclosure {
+  border: var(--rule) solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.disclosure summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  color: var(--ink);
+  font-size: var(--size-small);
+  cursor: pointer;
+  list-style: none;
+}
+
+.disclosure summary::-webkit-details-marker {
+  display: none;
+}
+
+.disclosure summary:hover {
+  color: var(--struct);
+}
+
+.disclosure-chevron {
+  flex: none;
+  color: var(--ink-3);
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.disclosure[open] .disclosure-chevron {
+  transform: rotate(90deg);
+}
+
+.disclosure-body {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0 var(--space-4) var(--space-4);
+  color: var(--ink-2);
+  font-size: var(--size-small);
+}
+
+.trouble-steps {
+  display: grid;
+  margin: 0;
+  padding-left: var(--space-5);
+  gap: var(--space-2);
+}
+
+.trouble-step-title {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.trouble-step-content {
+  display: block;
+}
+
+.trouble-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  color: var(--ink-3);
+  font-size: var(--size-micro);
 }

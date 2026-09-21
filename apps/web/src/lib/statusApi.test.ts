@@ -1,6 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { createStatusClient, parseFingerprintResponse, parseMirrorsResponse } from './statusApi';
+import {
+  createStatusClient,
+  FINGERPRINT_WAIT_MS,
+  parseFingerprintResponse,
+  parseMirrorsResponse,
+  waitForFingerprint,
+} from './statusApi';
 
 const validResponse = {
   generatedAt: 1_800_000_000_000,
@@ -156,5 +162,46 @@ describe('createStatusClient', () => {
 
     expect(result).toBeUndefined();
     expect(errors[0]).toContain('超过 10 ms');
+  });
+});
+
+describe('waitForFingerprint', () => {
+  it('resolves as soon as the fingerprint check finishes', async () => {
+    let calls = 0;
+    const started = Date.now();
+
+    await waitForFingerprint({
+      checkFingerprint: async (force?: boolean) => {
+        calls += 1;
+        expect(force).toBe(true);
+        return false;
+      },
+    });
+
+    expect(calls).toBe(1);
+    expect(Date.now() - started).toBeLessThan(FINGERPRINT_WAIT_MS);
+  });
+
+  it('gives up after the cap so a slow backend cannot hold up measuring', async () => {
+    vi.useFakeTimers();
+    try {
+      const pending = new Promise<boolean>(() => undefined);
+      const waiting = waitForFingerprint({ checkFingerprint: () => pending }, 50);
+
+      vi.advanceTimersByTime(50);
+      await expect(waiting).resolves.toBeUndefined();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('swallows a rejecting check instead of breaking the caller', async () => {
+    await expect(
+      waitForFingerprint({
+        checkFingerprint: async () => {
+          throw new Error('network down');
+        },
+      }),
+    ).resolves.toBeUndefined();
   });
 });

@@ -1,19 +1,24 @@
 /*
- * 搜索：首页的空态大输入框 + 结果列表。
+ * 搜索：一个输入框 + 结果列表。
  *
- * 结果列表沿用与镜像列表相同的结构（整行可点、当前项左侧刻度），这样“选择”在全站只有一种样子。
+ * 结果列表沿用全站“清单”的语言（hairline 分隔、整行可点、当前项一根左侧刻度），
+ * 不套一层带阴影的卡片：它展开在搜索框正下方，是同一块内容，不是浮窗。
+ *
+ * 首页的搜索态（点一下把框拉到视觉中心、收起测速区）在 home.css 里，因为那是版面行为，
+ * 不是搜索组件自己的事。
  */
 
 .search {
   position: relative;
-  max-width: 620px;
+  width: 100%;
 }
 
 .search-field {
   display: flex;
+  height: 44px;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  padding: 0 var(--space-4);
   border: var(--rule) solid var(--line-strong);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -49,7 +54,8 @@
   color: var(--ink-3);
 }
 
-.search-hint {
+.search-hint,
+.search-keys kbd {
   flex: none;
   padding: 1px var(--space-2);
   border: var(--rule) solid var(--line);
@@ -77,60 +83,47 @@
   color: var(--ink);
 }
 
+/* ── 结果列表 ─────────────────────────────────────────────────────────── */
+
 .search-results {
-  margin-top: var(--space-2);
-  overflow: hidden;
-  border: var(--rule) solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  /* 唯一使用阴影的地方：它浮在内容之上，需要与正文区分开。 */
-  box-shadow: var(--shadow-pop);
+  margin-top: var(--space-3);
+}
+
+/* 分组标签（生态 / 镜像站）：结果按类型分段，而不是混在一起。 */
+.search-group {
+  display: block;
+  padding: var(--space-3) 2px var(--space-1);
+  color: var(--ink-3);
+  font-size: var(--size-micro);
 }
 
 .search-hit {
-  display: grid;
+  display: flex;
   width: 100%;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) 2px;
   border: 0;
   border-bottom: var(--rule) solid var(--line);
-  border-left: 2px solid transparent;
   background: transparent;
   color: inherit;
   text-align: left;
 }
 
-.search-hit:last-child {
-  border-bottom: 0;
-}
-
 .search-hit:hover,
 .search-hit[aria-selected='true'] {
-  border-left-color: var(--struct);
   background: var(--surface-hover);
 }
 
-.hit-row {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-3);
-}
-
+/* 标题固定成一列：一眼能看出哪些是生态、哪些是站点，也不会每行错位。 */
 .hit-title {
+  flex: none;
+  width: 190px;
+  overflow: hidden;
   color: var(--ink);
   font-size: var(--size-body);
-}
-
-.hit-terms {
-  color: var(--ink-3);
-  font-family: var(--font-mono);
-  font-size: var(--size-micro);
-}
-
-.hit-subtitle {
-  margin-left: auto;
-  color: var(--ink-3);
-  font-size: var(--size-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .hit-latency {
@@ -141,11 +134,27 @@
   font-variant-numeric: tabular-nums;
 }
 
+.hit-subtitle {
+  overflow: hidden;
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hit-kind {
+  margin-left: auto;
+  flex: none;
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+}
+
 .hit-chips {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
   flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0 var(--space-2) var(--space-3) 2px;
 }
 
 .hit-chips-label {
@@ -153,35 +162,33 @@
   font-size: var(--size-micro);
 }
 
-.chip {
-  padding: 2px var(--space-3);
-  border: var(--rule) solid var(--struct-line);
-  border-radius: var(--radius-xs);
-  background: var(--struct-soft);
-  color: var(--struct);
-  font-size: var(--size-small);
-}
-
-.chip:hover {
-  border-color: var(--struct);
-}
-
 .search-empty {
-  padding: var(--space-4);
+  padding: var(--space-4) 2px;
   color: var(--ink-3);
   font-size: var(--size-small);
 }
 
-.search-footnote {
+/*
+ * 键盘提示：用真实的 kbd 元素表示按键，而不是在句子里写“回车”“上下键”。
+ * 它只陈述操作，不解释检索是怎么实现的。
+ */
+.search-keys {
   display: flex;
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
   align-items: center;
-  gap: var(--space-2);
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
   color: var(--ink-3);
-  font-size: var(--size-small);
+  font-size: var(--size-micro);
 }
 
-.search-hit .search-footnote {
-  margin-top: var(--space-1);
-  font-size: var(--size-micro);
+@media (max-width: 767px) {
+  .hit-title {
+    width: auto;
+    max-width: 60%;
+  }
+
+  .hit-subtitle {
+    display: none;
+  }
 }

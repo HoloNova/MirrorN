@@ -1,0 +1,435 @@
+/* 生态文档：顶栏 + 参数条 + 页内目录 + 正文（01–05） */
+.doc-shell {
+  display: block;
+}
+
+.shell.doc {
+  display: block;
+  min-height: 100vh;
+}
+
+.topbar {
+  position: sticky;
+  z-index: 30;
+  top: 0;
+  display: flex;
+  height: 60px;
+  align-items: center;
+  gap: 20px;
+  padding: 0 26px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.topbar .brand {
+  padding: 0;
+}
+
+.topbar .nav {
+  flex-direction: row;
+  gap: 2px;
+}
+
+.topbar .nav a {
+  padding: 5px 10px;
+}
+
+.topbar .nav a[aria-current='page']::before {
+  top: auto;
+  bottom: -18px;
+  left: 10px;
+  width: 16px;
+  height: 2px;
+  transform: none;
+}
+
+.topbar .mode {
+  margin-left: auto;
+}
+
+.topbar .themes {
+  display: flex;
+  gap: 4px;
+}
+
+.params {
+  position: sticky;
+  z-index: 20;
+  top: 60px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 22px;
+  padding: 12px 26px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-alt);
+}
+
+.params .param {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.params .k {
+  color: var(--ink-3);
+  font-size: 12px;
+}
+
+.params .v {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.params .rec {
+  margin-left: 2px;
+  color: var(--accent-ink);
+  font-size: 13px;
+}
+
+.params .rec::before {
+  margin-right: 6px;
+  color: var(--line-2);
+  content: '·';
+}
+
+.doc {
+  display: grid;
+  gap: 0 44px;
+  padding: 34px 26px 60px;
+  grid-template-columns: var(--rail-width, 208px) minmax(0, 1fr);
+}
+
+.toc {
+  position: sticky;
+  top: 132px;
+  display: flex;
+  height: fit-content;
+  flex-direction: column;
+}
+
+.toc a {
+  position: relative;
+  padding: 7px 0 7px 14px;
+  color: var(--ink-2);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.toc a .no {
+  margin-right: 8px;
+  color: var(--ink-3);
+  font-size: 12px;
+}
+
+.toc a:hover {
+  color: var(--ink);
+}
+
+.toc a[aria-current='true'] {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.toc a[aria-current='true']::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 2px;
+  height: 18px;
+  background: var(--accent);
+  content: '';
+  transform: translateY(-50%);
+}
+
+.toc a[aria-current='true'] .no {
+  color: var(--accent-ink);
+}
+
+.doc-body {
+  min-width: 0;
+  max-width: 78em;
+}
+
+.doc-head h1 {
+  display: flex;
+  margin: 0;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.doc-head .owner {
+  color: var(--ink-3);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.doc-head .lede {
+  margin: 10px 0 0;
+  max-width: 60em;
+  color: var(--ink-2);
+  font-size: 15px;
+}
+
+.sec {
+  margin-top: 38px;
+  padding-top: 6px;
+  border-top: 2px solid var(--ink);
+}
+
+.sec h2 {
+  display: flex;
+  margin: 14px 0 18px;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.sec h2 .no {
+  color: var(--ink-3);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/* 来源表：列比首页窄一点，适配文档宽度 */
+.rank .row {
+  gap: 14px;
+  grid-template-columns: minmax(150px, 1fr) 48px 220px 74px 44px minmax(104px, 1fr);
+}
+
+.sync.plain i {
+  display: none;
+}
+
+.sync.plain {
+  color: var(--ink-3);
+}
+
+/* 模式切换：三段，选中项用下划线与字重表达 */
+.modes {
+  display: flex;
+  margin-bottom: 16px;
+  gap: 2px;
+  border-bottom: 1px solid var(--line);
+}
+
+.mode-tab {
+  position: relative;
+  padding: 6px 14px 9px;
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.mode-tab:hover {
+  color: var(--ink);
+}
+
+.mode-tab[aria-selected='true'] {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.mode-tab[aria-selected='true']::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: var(--accent);
+  content: '';
+}
+
+/* 命令块 */
+.cmd {
+  margin: 0 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--bg);
+}
+
+.cmd figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-3);
+  font-size: 12px;
+}
+
+.cmd figcaption .num {
+  font-size: 12px;
+}
+
+.copy {
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.copy:hover {
+  color: var(--accent-ink);
+}
+
+.code-block {
+  overflow-x: auto;
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.9;
+  white-space: pre;
+}
+
+/* 改动对照 */
+.diff {
+  margin: 0 0 14px;
+}
+
+.diff-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 6px;
+  color: var(--ink-3);
+  font-size: 12px;
+}
+
+.expect {
+  margin: 12px 0 0;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+.expect code {
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--bg);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+/* 常见问题 */
+.qa + .qa {
+  margin-top: 22px;
+}
+
+.qa .q {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.steps {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--ink-2);
+  font-size: 14px;
+}
+
+.steps code {
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+@media (max-width: 1023px) {
+  .doc {
+    gap: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .toc {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    margin-bottom: 22px;
+    gap: 4px;
+  }
+
+  .toc a {
+    padding: 6px 10px;
+    white-space: nowrap;
+  }
+
+  .toc a[aria-current='true']::before {
+    top: auto;
+    bottom: 0;
+    left: 10px;
+    width: 16px;
+    height: 2px;
+    transform: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .topbar,
+  .params {
+    padding: 10px 16px;
+  }
+
+  .doc {
+    padding: 24px 16px 44px;
+  }
+
+  .doc-head h1 {
+    font-size: 24px;
+  }
+
+  .rank .row {
+    height: auto;
+    margin-left: 0;
+    padding: 10px 0;
+    gap: 6px 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .rank .row.head,
+  .rank .row.axis {
+    display: none;
+  }
+
+  .rank .name {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .rank .tag-cell {
+    display: none;
+  }
+
+  .rank .ms {
+    grid-row: 1;
+    grid-column: 2;
+  }
+
+  .rank .bar-cell {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+
+  .rank .tier {
+    grid-row: 3;
+    grid-column: 1;
+  }
+
+  .rank .sync {
+    justify-content: flex-end;
+    grid-row: 3;
+    grid-column: 2;
+  }
+}

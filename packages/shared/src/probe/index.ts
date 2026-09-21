@@ -35,6 +35,16 @@ export interface ProbeResult {
   opaque: boolean;
   /** 只有能读取响应的 cors 模式才有状态码。 */
   httpStatus?: number;
+  /**
+   * 这个结果由几次请求聚合而来。缺省表示 1 次（旧缓存，或调用方没有启用多次尝试）。
+   *
+   * 为什么需要：首个请求包含 DNS/TCP/TLS 建连，耗时天然高于后续请求，只测一次会把
+   * 建连开销当成网络质量。多次尝试后取稳定值，同时把尝试次数写进结果，界面才能如实
+   * 说明这个数字是怎么来的（见 apps/web/src/lib/probeAggregate.ts）。
+   */
+  attempts?: number;
+  /** 这些尝试里拿到有效耗时的次数。取最快两次平均时，samples 至少是 2。 */
+  samples?: number;
 }
 
 export interface ProbeLimits {
@@ -42,22 +52,47 @@ export interface ProbeLimits {
   timeoutMs: number;
   /** 每轮最多探测的候选数量。 */
   maxCandidates: number;
-  /** 同时进行的请求数量上限。 */
+  /**
+   * 同时进行的请求数量上限。一个候选占一个名额，并在名额内连续尝试：
+   * 这样任何时刻对外的并发请求数都等于这个上限，与尝试次数无关。
+   */
   concurrency: number;
+  /** 每个候选连续发起的请求次数（第一次多数会承担建连开销）。 */
+  attemptsPerTarget: number;
 }
 
-/** 默认上限：一轮最多 6 个候选、并发 3、单请求 1500ms。调用处可以覆盖。 */
+/** 默认上限：一轮最多 6 个候选、并发 3、每个候选尝试 3 次、单请求 1500ms。调用处可以覆盖。 */
 export const PROBE_LIMITS: ProbeLimits = {
   timeoutMs: 1500,
   maxCandidates: 6,
   concurrency: 3,
+  attemptsPerTarget: 3,
 };
 
-/** 缓存有效期：15 分钟内视为有效；过期结果仍可展示，但会立即在后台重新探测。 */
-export const PROBE_CACHE_TTL_MS = 15 * 60 * 1000;
+/**
+ * 一个候选连续失败（超时或请求失败）多少次之后就不再继续尝试，避免对一个不可达的来源
+ * 白等满整个超时预算。成功一次即清零。
+ */
+export const PROBE_CONSECUTIVE_FAILURE_LIMIT = 2;
+
+/**
+ * 缓存有效期：3 小时内视为有效，直接复用本地结果、**一个请求也不发**。
+ *
+ * 为什么是 3 小时而不是几分钟：镜像是别人的服务器，耗时的变化主要来自你这一侧的链路
+ * （出口、无线、运营商），而不是对端。同一网络下反复测既没有新信息，又是对第三方的免费流量
+ * 与请求压力。过期后仍会展示（见 PROBE_CACHE_STALE_LIMIT_MS），只是不参与自动推荐。
+ */
+export const PROBE_CACHE_TTL_MS = 3 * 60 * 60 * 1000;
 
 /** 自动刷新下限：同一批候选 30 秒内不重复自动刷新；手动刷新不受此限制。 */
 export const PROBE_MIN_REFRESH_INTERVAL_MS = 30 * 1000;
+
+/**
+ * 失败后的冷却时间：某来源最近一次测速失败时，这段时间之内不再自动重试它。
+ * 失败本身不覆盖已有结果，但重复去试一个不可达的来源会造成一串超时请求。
+ * 手动刷新不受此限制（用户明确要求时就该真的重试）。
+ */
+export const PROBE_FAILURE_RETRY_MS = 10 * 60 * 1000;
 
 /** 一个探测目标：镜像 + 该镜像在数据中声明的探针。 */
 export interface ProbeTarget {

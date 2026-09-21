@@ -1,0 +1,334 @@
+/*
+ * 清单与排名表：一行一条记录，列对齐。
+ *
+ * 为什么不做卡片墙：这里的内容本来就是一份可比较的清单（来源/耗时/分档/同步状态），
+ * 卡片会把它变成一堆互不相干的方块；清单让同一列的值可以直接上下比较。
+ *
+ * 读数条是这套清单的核心：所有行共用同一把尺（0–300ms），刻度线在每一行的同一个 x 上，
+ * 因此“谁比谁快、快多少”一眼能看出来。行高固定，尺子才落在同一条水平线上。
+ *
+ * 三条对齐规则：
+ *   1. 文本列左对齐，数值列右对齐（数值列紧邻刻度，不会飞到屏幕另一头）。
+ *   2. 短字段列写死宽度，不跟着视口变宽（否则一个“官方”标签会占掉四分之一屏）。
+ *   3. 行宽有上限（--measure-table），不拉满整屏。
+ */
+
+.rows {
+  --col-name: minmax(170px, 1fr);
+  --col-kind: 52px;
+  --col-bar: 340px;
+  --col-ms: 84px;
+  --col-tier: 52px;
+  --col-sync: 156px;
+
+  max-width: var(--measure-table);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: var(--row-height);
+  border: 0;
+  border-bottom: var(--rule) solid var(--line);
+  grid-template-columns:
+    var(--col-name) var(--col-kind) var(--col-bar) var(--col-ms) var(--col-tier)
+    var(--col-sync);
+}
+
+/* 列标签行：只有标签，没有数据，因此更矮、用淡墨。 */
+.row.head {
+  min-height: 30px;
+  border-bottom-color: var(--line-strong);
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+}
+
+.row.body {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+}
+
+/* 可点的那种行（生态文档选来源）才给手型；纯展示的行给手型会误导。 */
+button.row.body {
+  cursor: pointer;
+}
+
+.row.body:hover {
+  background: var(--surface-hover);
+}
+
+/* 当前选中／推荐的那一行：左侧一根 2px 结构色刻度，不用背景色块。 */
+.row.body[data-recommended='true']::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--space-4));
+  width: 2px;
+  background: var(--struct);
+  content: '';
+}
+
+.row-name {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink);
+  font-size: var(--size-body);
+}
+
+.row.body[data-recommended='true'] .row-name {
+  font-weight: 600;
+}
+
+.row-name .text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 没有数据的那一行（本轮没测到）：整行降到淡墨，但同步状态照常显示。 */
+.row.body[data-state='untested'] .row-name,
+.row.body[data-state='unavailable'] .row-name {
+  color: var(--ink-3);
+}
+
+.row-value {
+  font-family: var(--font-mono);
+  font-size: var(--size-small);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ── 刻度尺的标签行 ───────────────────────────────────────────────────── */
+
+.row.axis {
+  min-height: 24px;
+  border-bottom: 0;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+/* 刻度尺只有一根，落在读数条那一列上。 */
+.axis-cell {
+  position: relative;
+  align-self: stretch;
+  border-top: var(--rule) solid var(--line-strong);
+  grid-column: 3;
+}
+
+/* 不传同步状态时（首页）少一列，读数条与耗时列仍然是同一条竖线。 */
+.rows[data-sync='false'] .row,
+.rows[data-sync='false'] .row.axis {
+  grid-template-columns: var(--col-name) var(--col-kind) var(--col-bar) var(--col-ms) var(
+      --col-tier
+    );
+}
+
+.axis-cell span {
+  position: absolute;
+  top: 2px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.axis-cell span.first {
+  transform: none;
+}
+
+.axis-cell span.last {
+  transform: translateX(-100%);
+}
+
+/* 骨架行：测速中还没出结果的位置，用剖面线占位，不写 0。 */
+.row.skeleton .ph {
+  height: 9px;
+}
+
+/* ── 站点目录变体：站点 / 性质 / 官方地址 / 生态数 ─────────────────────── */
+
+.rows.dir {
+  --col-name: minmax(190px, 1.1fr);
+  --col-kind: 56px;
+  --col-url: minmax(220px, 1.4fr);
+  --col-count: 56px;
+}
+
+.rows.dir .row {
+  gap: var(--space-4);
+  grid-template-columns: var(--col-name) var(--col-kind) var(--col-url) var(--col-count);
+}
+
+.rows.dir .row-url {
+  overflow: hidden;
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: var(--size-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rows.dir .row.body:hover .row-url {
+  color: var(--struct);
+}
+
+.rows.dir .row-count {
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: var(--size-small);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ── 同步状态（清单里的一格） ──────────────────────────────────────────── */
+
+.row-sync {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink-2);
+  font-size: var(--size-small);
+  white-space: nowrap;
+}
+
+.row-sync .dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  background: var(--ok);
+}
+
+/* 只有三种语义色：绿=已有数据且成功，琥珀=未知/进行中，红=失败。 */
+.row-sync[data-tone='unknown'] {
+  color: var(--ink-3);
+}
+
+.row-sync[data-tone='unknown'] .dot {
+  background: var(--warn);
+}
+
+.row-sync[data-tone='bad'] .dot {
+  background: var(--bad);
+}
+
+.row-sync .detail {
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+}
+
+/* 清单上方的一行说明：左边是什么，右边是口径。与清单同宽。 */
+.rows-note {
+  display: flex;
+  max-width: var(--measure-table);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin: var(--space-3) 0 0;
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+}
+
+.rows-note a {
+  color: var(--ink-2);
+}
+
+/* ── 窄屏 ─────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1439px) {
+  .rows {
+    --col-bar: 248px;
+    --col-ms: 74px;
+    --col-tier: 46px;
+    --col-sync: minmax(112px, 1fr);
+  }
+
+  /* 尺子变窄后次要刻度会挤在一起，只留 0 / 100 / 200 / 300。 */
+  .axis-cell span.minor {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .rows {
+    --row-height: auto;
+  }
+
+  .row.head,
+  .row.axis {
+    display: none;
+  }
+
+  /*
+   * 一行拆成三行：第一行 名称 + 耗时，第二行 整宽的刻度条，第三行 分档 + 同步状态。
+   * 刻度条撑满整行，是因为手机上根本放不下 340px 的尺子。
+   */
+  .row,
+  .rows[data-sync='false'] .row {
+    min-height: 0;
+    padding: var(--space-3) 0;
+    gap: var(--space-1) var(--space-3);
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .row.body[data-recommended='true']::before {
+    left: 0;
+  }
+
+  .row-name {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .row > .kind {
+    display: none;
+  }
+
+  .row .readout-value {
+    grid-row: 1;
+    grid-column: 2;
+  }
+
+  .row .readout-track {
+    height: 8px;
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+
+  .row .readout-tier {
+    grid-row: 3;
+    grid-column: 1;
+  }
+
+  .row-sync {
+    justify-content: flex-end;
+    grid-row: 3;
+    grid-column: 2;
+  }
+
+  /* 站点目录：站点名 + 生态数一行，官方地址一行。 */
+  .rows.dir .row {
+    gap: var(--space-1) var(--space-3);
+  }
+
+  .rows.dir .row-url {
+    grid-row: 2;
+    grid-column: 1;
+  }
+
+  .rows.dir .row-count {
+    grid-row: 2;
+    grid-column: 2;
+  }
+}

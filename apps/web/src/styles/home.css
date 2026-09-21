@@ -1,191 +1,298 @@
 /*
- * 首页：标题、搜索、本机测量入口、生态目录（账本式列表）。
+ * 页面版面：正文一列 + 右侧一列真实数据（首页、站点页共用）。
  *
- * 目录做成一张“账本”而不是卡片墙：内容本来就是一份可比较的清单（名称 / 说明 / 来源数），
- * 卡片会把它变成一堆互不相干的方块，账本让同一列的值可以直接上下比较。
+ * 右列不是装饰：宽屏上把与当前决策无关但确实存在的数字（覆盖规模、数据核对日期）
+ * 放在那里，正文区因此可以专心回答“换哪个来源”。
+ *
+ * 首页另有四态由 data-state / data-searching 驱动，不切换组件树：
+ *   untested  还没测速（默认，等待用户点「测速」）
+ *   measuring 测速中（骨架行 + 剖面线刻度）
+ *   measured  已测速（大号读数 + 前 3 名 + 固定刻度的排名表）
+ *   searching 搜索态（框拉到视觉中心，测速区与右列收起）
  */
 
+.page {
+  display: grid;
+  padding: var(--space-6) 0 var(--space-10);
+  gap: var(--space-8) var(--space-7, 28px);
+  grid-template-columns: minmax(0, 1fr) var(--meta-width, 232px);
+}
+
+.page-main {
+  min-width: 0;
+}
+
+/* 单栏页面（帮助、404）：不要右侧数据列，正文独占整宽。 */
+.page.is-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ── 搜索态：只留搜索框，把它放到视觉中心 ─────────────────────────────── */
+
+.page[data-searching='true'] {
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: 16vh;
+}
+
+.page[data-searching='true'] .page-main > :not(.search),
+.page[data-searching='true'] .page-meta {
+  display: none;
+}
+
+.page[data-searching='true'] .search {
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+/* ── 页头：一节标题 + 右侧口径 ─────────────────────────────────────────── */
+
+.page-head {
+  display: flex;
+  margin-top: var(--space-6);
+  padding-bottom: var(--space-2);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-6);
+  border-bottom: 2px solid var(--ink);
+}
+
+.page-head h1 {
+  font-size: var(--size-h3);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.page-head .stamp {
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 第一视觉：大号读数 + 来源 + 动作 ─────────────────────────────────── */
+
 .hero {
-  padding: var(--space-16) 0 var(--space-12);
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-6);
+  padding: var(--space-5) 0;
+  border-bottom: var(--rule) solid var(--line);
 }
 
-.hero-title {
-  max-width: 22em;
-  font-size: clamp(30px, 4.6vw, var(--size-display));
-  letter-spacing: -0.018em;
+.hero-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
 }
 
-.hero-lede {
-  max-width: var(--measure);
-  margin-top: var(--space-4);
+.hero-value {
+  font-family: var(--font-mono);
+  font-size: var(--size-readout);
+  font-weight: 500;
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-unit {
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 18px;
+}
+
+/* 未测速／测速中：一个破折号占住大号数字的位置，页面不会因为没数据而塌掉。 */
+.hero-void {
+  display: block;
+  width: 84px;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: var(--size-readout-sm);
+  line-height: 1;
+  text-align: center;
+}
+
+.hero-who {
+  padding-bottom: 6px;
+}
+
+.hero-name {
+  color: var(--ink);
+  font-size: var(--size-h3);
+  font-weight: 600;
+}
+
+.hero-flags {
+  display: flex;
+  margin-top: 6px;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 19px;
+}
+
+.hero-sub {
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+}
+
+.hero-tier {
+  font-size: var(--size-micro);
+}
+
+.hero-tier[data-tier='fast'] {
+  color: var(--ok);
+}
+
+.hero-tier[data-tier='fair'] {
+  color: var(--warn);
+}
+
+.hero-tier[data-tier='slow'] {
+  color: var(--bad);
+}
+
+.hero-action {
+  margin-left: auto;
+  padding-bottom: 6px;
+}
+
+/* ── 排名表 ───────────────────────────────────────────────────────────── */
+
+.home-rank {
+  margin-top: var(--space-6);
+}
+
+/* ── 页脚：一行口径 + 一行数据来源 ─────────────────────────────────────── */
+
+.footline {
+  display: flex;
+  margin-top: var(--space-5);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-6);
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+}
+
+.footline a {
   color: var(--ink-2);
 }
 
-/*
- * 开始搜索时收起标题与副标题，把位置让给结果列表。
- * 用 max-height 而不是 height：字号随视口变化，写死高度会在窄屏截断文字。
- */
-.hero-title,
-.hero-lede {
-  overflow: hidden;
-  max-height: 320px;
-  transition:
-    opacity var(--duration-base) var(--ease-standard),
-    max-height var(--duration-slow) var(--ease-out),
-    margin var(--duration-slow) var(--ease-out);
+/* ── 右列：四块真实数据 ───────────────────────────────────────────────── */
+
+.page-meta {
+  min-width: 0;
 }
 
-.hero.is-searching .hero-title,
-.hero.is-searching .hero-lede {
-  max-height: 0;
-  margin-top: 0;
-  opacity: 0;
-}
-
-.hero-search {
+.meta-block + .meta-block {
   margin-top: var(--space-8);
 }
 
-/* ── 本机测量入口 ───────────────────────────────────────────────────── */
-
-.measure {
-  margin-top: var(--space-5);
-  padding-top: var(--space-4);
-  border-top: var(--rule) solid var(--line);
-  max-width: 620px;
+.meta-block h2 {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: var(--rule) solid var(--line);
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+  font-weight: 400;
 }
 
-.measure-rows {
-  display: grid;
-  margin: var(--space-4) 0;
-  gap: var(--space-3);
-}
-
-.measure-head {
+.eco-chips {
   display: flex;
-  align-items: center;
-  gap: var(--space-4);
   flex-wrap: wrap;
+  gap: var(--space-2);
 }
 
-.measure-hint {
-  color: var(--ink-3);
-  font-size: var(--size-micro);
-}
-
-.measure-rows {
-  display: grid;
-  margin-top: var(--space-4);
-  gap: var(--space-3);
-}
-
-.measure-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.measure-name {
-  /* 中文来源名（“阿里云开发者镜像站”）比英文长，列宽要留够，否则会顶到刻度上。 */
-  flex: 0 0 12em;
-  color: var(--ink-2);
-  font-size: var(--size-small);
-}
-
-/* ── 生态目录（账本） ───────────────────────────────────────────────── */
-
-.ledger {
+.eco-chips a {
+  padding: 2px var(--space-2);
   border: var(--rule) solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-}
-
-.ledger-head,
-.ledger-row {
-  display: grid;
-  grid-template-columns: 176px minmax(0, 1fr) 96px;
-  gap: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-}
-
-.ledger-head {
-  border-bottom: var(--rule) solid var(--line);
-  color: var(--ink-3);
-  font-size: var(--size-micro);
-}
-
-.ledger-row {
-  align-items: baseline;
-  border-bottom: var(--rule) solid var(--line);
-  border-left: 2px solid transparent;
-  color: inherit;
-  text-decoration: none;
-  transition: background var(--duration-fast) var(--ease-standard);
-}
-
-.ledger-row:last-child {
-  border-bottom: 0;
-}
-
-.ledger-row:hover {
-  border-left-color: var(--struct);
-  background: var(--surface-hover);
-}
-
-.ledger-name {
-  color: var(--ink);
-  font-size: var(--size-body);
-  font-weight: 500;
-}
-
-.ledger-desc {
+  border-radius: var(--radius-xs);
   color: var(--ink-2);
-  font-size: var(--size-small);
-  line-height: var(--leading-small);
-}
-
-.ledger-meta {
-  color: var(--ink-3);
   font-family: var(--font-mono);
   font-size: var(--size-micro);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
+  text-decoration: none;
 }
 
-.section-label {
+.eco-chips a:hover {
+  border-color: var(--struct);
+  color: var(--struct);
+}
+
+.kv {
+  display: grid;
+  margin: 0;
+  gap: var(--space-2);
+}
+
+.kv > div {
   display: flex;
-  max-width: var(--measure-wide);
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: var(--space-3);
+  gap: var(--space-3);
+}
+
+.kv dt {
   color: var(--ink-3);
   font-size: var(--size-micro);
 }
 
-@media (max-width: 720px) {
-  .hero {
-    padding: var(--space-10) 0 var(--space-8);
-  }
+.kv dd {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--size-micro);
+  font-variant-numeric: tabular-nums;
+}
 
-  .ledger-head {
-    display: none;
-  }
+/* ── 宽度适配 ─────────────────────────────────────────────────────────── */
 
-  .ledger-row {
+@media (max-width: 1199px) {
+  /* 右列不再并排：改成正文下方的一带四栏，避免挤压排名表的刻度列。 */
+  .page {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .page-meta {
+    display: grid;
+    padding-top: var(--space-6);
+    border-top: var(--rule) solid var(--line);
+    gap: var(--space-6) var(--space-7, 28px);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .meta-block + .meta-block {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .page {
+    padding: var(--space-5) 0 var(--space-8);
+    gap: var(--space-6);
+  }
+
+  .hero {
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    align-items: center;
+  }
+
+  .hero-value {
+    font-size: var(--size-readout-sm);
+  }
+
+  .hero-action {
+    margin-left: 0;
+  }
+
+  .page-meta {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .footline {
+    flex-direction: column;
     gap: var(--space-1);
   }
 
-  .ledger-meta {
-    text-align: left;
-  }
-
-  .measure-name {
-    flex: 1 1 100%;
-  }
-
-  .measure-row {
-    flex-wrap: wrap;
-    gap: var(--space-1) var(--space-3);
+  .page[data-searching='true'] {
+    padding-top: 10vh;
   }
 }

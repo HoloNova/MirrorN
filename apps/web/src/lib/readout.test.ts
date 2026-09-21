@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import type { ProbeResult } from '@mirrorn/shared/probe';
 
 import { presentReadout, READOUT_TIER_THRESHOLDS, tierForDelayScore } from './readout';
-
 const okResult = (durationMs: number | null): ProbeResult => ({
   mirrorId: 'tsinghua',
   probeId: 'tsinghua-robots',
@@ -38,8 +37,31 @@ describe('presentReadout', () => {
     expect(readout.state).toBe('measured');
     expect(readout.score).toBeCloseTo(0.75, 5);
     expect(readout.tier).toBe('fast');
+    expect(readout.tierLabel).toBe('快');
     expect(readout.value).toBe('375');
     expect(readout.unit).toBe(' ms');
+  });
+
+  it('分档词与刻度、颜色同源：每一档都有词，没有结果就不给词', () => {
+    const labels = [
+      [200, '快'],
+      [600, '一般'],
+      [1400, '偏慢'],
+    ] as const;
+
+    for (const [durationMs, label] of labels) {
+      const readout = presentReadout({
+        hasProbe: true,
+        pending: false,
+        stale: false,
+        result: okResult(durationMs),
+      });
+      expect(readout.tierLabel, String(durationMs)).toBe(label);
+    }
+
+    expect(
+      presentReadout({ hasProbe: true, pending: true, stale: false }).tierLabel,
+    ).toBeUndefined();
   });
 
   it('耗时超过超时阈值时分数夹到 0，而不是负数', () => {

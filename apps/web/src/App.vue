@@ -1,45 +1,37 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router';
 import { computed } from 'vue';
+import { RouterView, useRoute } from 'vue-router';
 
-import ThemeSwitcher from './components/ThemeSwitcher.vue';
+import SideNav from './components/SideNav.vue';
+import TopBar from './components/TopBar.vue';
 import { resolveApiBase } from './composables/useMirrorStatus';
 
 /**
- * 顶栏只放三件事：品牌、数据来源模式、主题切换。
+ * 外壳有两种形态，由路由的 meta.layout 决定：
+ *
+ *   'app'  首页 / 站点 / 帮助：左侧常驻导航（品牌 + 三个模块 + 数据模式 + 主题切换）。
+ *   'doc'  生态文档：顶栏 + 常驻的横向模块导航，不占额外一列（文档自带页内目录栏）。
+ *
  * 数据模式必须显示出来：静态模式（不发任何接口请求）与在线模式对用户来说是两种不同的可信度，
- * 不该让人猜。
+ * 因此连圆点的颜色也分开——在线是绿，本地数据是琥珀。
  */
-const dataMode = computed(() =>
-  resolveApiBase() === undefined ? '静态数据模式' : '同步状态已连接',
-);
+const route = useRoute();
+const layout = computed(() => (route.meta.layout === 'doc' ? 'doc' : 'app'));
+const online = computed(() => resolveApiBase() !== undefined);
+const dataMode = computed(() => (online.value ? '同步状态在线' : '本地数据'));
+const dataState = computed<'online' | 'local'>(() => (online.value ? 'online' : 'local'));
 </script>
 
 <template>
-  <div class="shell">
-    <header class="topbar">
-      <div class="shell-inner">
-        <RouterLink class="brand" :to="{ name: 'home' }" aria-label="MirrorN 首页">
-          <span class="brand-mark" aria-hidden="true"></span>
-          <span>MirrorN</span>
-        </RouterLink>
-        <span class="brand-caption">镜像导航与依赖换源指南</span>
-        <div class="topbar-end">
-          <span class="data-mode">{{ dataMode }}</span>
-          <ThemeSwitcher />
-        </div>
-      </div>
-    </header>
+  <div class="shell" :data-layout="layout">
+    <SideNav v-if="layout === 'app'" :data-mode="dataMode" :data-state="dataState" />
 
-    <main class="shell-main">
-      <RouterView />
-    </main>
+    <div class="shell-body">
+      <TopBar v-if="layout === 'doc'" :data-mode="dataMode" :data-state="dataState" />
 
-    <footer class="footer">
-      <div class="shell-inner">
-        <span>数据与逻辑分离，来源可追溯</span>
-        <span>页面不会修改你的电脑配置</span>
-      </div>
-    </footer>
+      <main class="shell-main">
+        <RouterView />
+      </main>
+    </div>
   </div>
 </template>

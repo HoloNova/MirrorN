@@ -38,10 +38,10 @@ describe('describeProbeView', () => {
     expect(view.detail).not.toContain('数据里没有');
   });
 
-  it('distinguishes testing from never tested', () => {
-    expect(describeProbeView({ hasProbe: true, pending: true, stale: false }).label).toBe('测试中');
+  it('distinguishes measuring from never measured', () => {
+    expect(describeProbeView({ hasProbe: true, pending: true, stale: false }).label).toBe('测速中');
     expect(describeProbeView({ hasProbe: true, pending: false, stale: false }).label).toBe(
-      '未测试',
+      '未测速',
     );
   });
 
@@ -117,5 +117,35 @@ describe('describeProbeView', () => {
     });
 
     expect(view.detail).toContain('结果可能已过期');
+  });
+
+  it('discloses how many attempts produced the number', () => {
+    const partial = describeProbeView({
+      hasProbe: true,
+      pending: false,
+      stale: false,
+      result: result({ attempts: 3, samples: 1 }),
+    });
+    expect(partial.detail).toContain('3 次尝试中只有 1 次有效');
+
+    // 三次都成功时不啰嗦：数字本身的依据不需要额外解释。
+    const full = describeProbeView({
+      hasProbe: true,
+      pending: false,
+      stale: false,
+      result: result({ attempts: 3, samples: 3 }),
+    });
+    expect(full.detail).toBe('响应完成，内容未验证');
+  });
+
+  it('says how many attempts were made when none of them completed', () => {
+    const view = describeProbeView({
+      hasProbe: true,
+      pending: false,
+      stale: false,
+      result: result({ status: 'timeout', durationMs: null, opaque: false, attempts: 2 }),
+    });
+
+    expect(view.detail).toContain('已连续尝试 2 次');
   });
 });

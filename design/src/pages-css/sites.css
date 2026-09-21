@@ -1,0 +1,52 @@
+/* 站点目录：四列 —— 站点 / 性质 / 官方地址 / 生态数 */
+.dir .row {
+  gap: 18px;
+  height: 48px;
+  grid-template-columns: minmax(190px, 1.1fr) 56px minmax(220px, 1.4fr) 56px;
+}
+
+.dir .row.body {
+  margin-left: 0;
+  padding: 0 8px 0 0;
+  text-decoration: none;
+}
+
+.dir .row.body:hover {
+  background: var(--bg-alt);
+}
+
+.dir .url {
+  overflow: hidden;
+  color: var(--ink-2);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dir .row.body:hover .url {
+  color: var(--accent-ink);
+}
+
+.dir .col-num {
+  font-size: 13px;
+  text-align: right;
+}
+
+@media (max-width: 767px) {
+  .dir .row {
+    height: auto;
+    padding: 10px 0;
+    gap: 4px 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .dir .url {
+    grid-row: 2;
+    grid-column: 1;
+  }
+
+  .dir .col-num {
+    grid-row: 2;
+    grid-column: 2;
+  }
+}

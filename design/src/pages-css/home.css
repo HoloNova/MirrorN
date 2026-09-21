@@ -1,0 +1,33 @@
+/* 首页专属：骨架行（测速中）与"只有前 3 名"的说明行 */
+.ph {
+  display: block;
+  height: 9px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(135deg, var(--line-2) 0 1px, transparent 1px 5px);
+}
+
+.rank-note {
+  display: none;
+  margin: 10px 0 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  color: var(--ink-3);
+  font-size: 12px;
+}
+
+.rank-note a {
+  color: var(--ink-2);
+}
+
+[data-state='measured'] .row.skeleton {
+  display: none;
+}
+
+[data-state='idle'] .row.body:not(.skeleton) {
+  display: none;
+}
+
+[data-state='measured'] .rank-note {
+  display: flex;
+}

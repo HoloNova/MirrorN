@@ -8,6 +8,10 @@
 - 探针只访问下表中**审核过的小资源**，cors 模式拿到响应头就取消正文，不下载大文件。
 - 界面统一称“响应耗时（估算）”。`fetch` 的总耗时受 DNS、TLS、连接复用、缓存和浏览器调度影响，
   不等于精确 TCP RTT、TTFB，也不是下载速度。
+- **每个候选连续尝试 3 次（`PROBE_LIMITS.attemptsPerTarget`），取最快两次的平均**：第一个请求包含
+  建连开销，而跨域资源拿不到 Resource Timing 的 `connectStart` / `requestStart`（没有
+  `Timing-Allow-Origin` 时被浏览器置 0），事后无法扣除，只能多测几次把建连那一次排除在外。
+  连续失败两次就停止尝试。样本不足时界面会写明“3 次尝试中只有 1 次拿到数值”。
 - no-cors（opaque）结果只能说明“请求完成”，状态码和内容都读不到，界面标注“响应完成，内容未验证”。
 - 下表的毫秒数只是“这台机器 + 这个浏览器”的单次样本，**不是**任何用户侧的速度排名。
 
@@ -24,7 +28,8 @@
 
 浏览器证据的产生方式：用系统 Chrome 打开 `http://127.0.0.1:8123/` 上的本地页面，在页面里按上表的
 url/mode 执行 `fetch(url, { mode, method: 'get', cache: 'no-store', redirect: 'follow' })`，
-并用 1500 ms 的 `AbortController` 熔断。
+并用 1500 ms 的 `AbortController` 熔断。表中数字是**第一次请求**的结果（包含建连），
+所以它们普遍高于页面上显示的聚合值——这正是加入多次尝试的原因。
 
 ## 三个改变原设想的实测结论
 
@@ -45,7 +50,8 @@ url/mode 执行 `fetch(url, { mode, method: 'get', cache: 'no-store', redirect: 
 | 域名不存在（`https://no-such-host-mirrorn.invalid/robots.txt`） | 7 ms 抛 `TypeError: Failed to fetch`                         |
 
 两者可区分，因此“超时”和“失败”在界面上是两种状态。`TypeError` 也可能是 CSP 或浏览器策略导致的，
-界面文案不会宣称站点宕机。
+界面文案不会宣称站点宕机。同一候选连续失败两次后不再尝试（`PROBE_CONSECUTIVE_FAILURE_LIMIT`），
+所以一个不可达的来源最坏占 2 × 1500 ms。
 
 ## 参考：pip 仓库路径本身也支持 HEAD
 

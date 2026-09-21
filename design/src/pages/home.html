@@ -1,0 +1,289 @@
+<div class="shell" data-state="{{STATE}}">
+  <aside class="rail">
+    <a id="brand-home" class="brand" href="#home">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="0" y="0" width="16" height="16" fill="#101318" />
+        <rect x="0" y="0" width="8" height="16" fill="#2049e6" />
+        <rect x="7" y="0" width="1" height="16" fill="#fcfcfb" />
+      </svg>
+      MirrorN
+    </a>
+    <nav class="nav">
+      <a id="nav-home" href="#home" aria-current="page">首页</a>
+      <a id="nav-sites" href="#sites">站点</a>
+      <a id="nav-help" href="#help">帮助</a>
+    </nav>
+    <div class="rail-foot">
+      <span class="mode"><i></i>同步状态在线</span>
+      <div class="themes">
+        <button type="button" aria-pressed="true">浅色</button>
+        <button type="button" aria-pressed="false">深色</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <main class="content">
+      <div class="search">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          aria-hidden="true"
+        >
+          <circle cx="8.5" cy="8.5" r="5.5" />
+          <path d="M12.8 12.8 17 17" />
+        </svg>
+        <input
+          id="search-input"
+          type="search"
+          placeholder="搜索生态、镜像站或系统"
+          aria-label="搜索生态、镜像站或系统"
+        />
+        <kbd>/</kbd>
+      </div>
+
+      <div class="head">
+        <h1>各镜像站响应耗时</h1>
+        <span class="stamp measured-only inline num">上次测速 10:24</span>
+        <span class="stamp idle-only inline">测速中</span>
+      </div>
+
+      <section class="hero">
+        <!-- 测量后 -->
+        <div class="value measured-only inline"><b>18</b><span>ms</span></div>
+        <div class="who measured-only">
+          <div class="name">清华大学开源软件镜像站</div>
+          <div class="flags">
+            <span class="chip-rec">推荐</span>
+            <span class="tier-tag"><i></i>快</span>
+          </div>
+        </div>
+
+        <!-- 默认：还没测 -->
+        <div class="void idle-only inline">—</div>
+        <div class="who idle-only">
+          <div class="name">测速中</div>
+          <div class="flags">
+            <span class="tier-tag" style="color: var(--ink-3)">正在测 5 个来源</span>
+          </div>
+        </div>
+
+        <div class="right">
+          <button class="btn measured-only inline" type="button">重新测速</button>
+        </div>
+      </section>
+
+      <section class="rank">
+        <div class="row body win">
+          <span class="name"><span class="t">清华大学开源软件镜像站</span></span>
+          <span class="tag-cell"><span class="tag">高校</span></span>
+          <span class="bar-cell"><span class="bar" style="width: 6%"></span></span>
+          <span class="ms value">18<span class="u">ms</span></span>
+          <span class="ms none">—</span>
+          <span class="tier value fast">快</span>
+          <span class="tier none">测速中</span>
+          <span class="sync"><i></i>已同步<small>12 分钟前</small></span>
+        </div>
+        <div class="row body">
+          <span class="name"><span class="t">阿里云开发者镜像站</span></span>
+          <span class="tag-cell"><span class="tag">商业</span></span>
+          <span class="bar-cell"><span class="bar" style="width: 10.33%"></span></span>
+          <span class="ms value">31<span class="u">ms</span></span>
+          <span class="ms none">—</span>
+          <span class="tier value fast">快</span>
+          <span class="tier none">测速中</span>
+          <span class="sync unknown"><i></i>状态未知</span>
+        </div>
+        <div class="row body">
+          <span class="name"><span class="t">腾讯云软件源</span></span>
+          <span class="tag-cell"><span class="tag">商业</span></span>
+          <span class="bar-cell"><span class="bar" style="width: 24.67%"></span></span>
+          <span class="ms value">74<span class="u">ms</span></span>
+          <span class="ms none">—</span>
+          <span class="tier value fair">一般</span>
+          <span class="tier none">测速中</span>
+          <span class="sync unknown"><i></i>状态未知</span>
+        </div>
+        <div class="row body skeleton">
+          <span class="name"><span class="ph" style="width: 168px"></span></span>
+          <span class="tag-cell"><span class="ph" style="width: 34px"></span></span>
+          <span class="bar-cell empty"></span>
+          <span class="ms none">—</span>
+          <span class="tier none">待测</span>
+          <span class="sync unknown"><i></i>状态未知</span>
+        </div>
+        <div class="row body skeleton">
+          <span class="name"><span class="ph" style="width: 168px"></span></span>
+          <span class="tag-cell"><span class="ph" style="width: 34px"></span></span>
+          <span class="bar-cell empty"></span>
+          <span class="ms none">—</span>
+          <span class="tier none">待测</span>
+          <span class="sync unknown"><i></i>状态未知</span>
+        </div>
+        <div class="row body skeleton">
+          <span class="name"><span class="ph" style="width: 168px"></span></span>
+          <span class="tag-cell"><span class="ph" style="width: 34px"></span></span>
+          <span class="bar-cell empty"></span>
+          <span class="ms none">—</span>
+          <span class="tier none">待测</span>
+          <span class="sync unknown"><i></i>状态未知</span>
+        </div>
+
+        <div class="row axis">
+          <span></span>
+          <span></span>
+          <span class="axis-cell">
+            <span class="first k0" style="left: 0">0</span>
+            <span class="minor k1" style="left: 16.67%">50</span>
+            <span class="k2" style="left: 33.33%">100</span>
+            <span class="minor k3" style="left: 50%">150</span>
+            <span class="k4" style="left: 66.67%">200</span>
+            <span class="minor k5" style="left: 83.33%">250</span>
+            <span class="last k6" style="left: 100%">300 ms</span>
+          </span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <p class="rank-note measured-only">
+          <span>已测 5 个来源，这里是最快的 3 个</span>
+          <a id="rank-all" href="#sites">看全部站点</a>
+        </p>
+      </section>
+
+      <section class="change measured-only">
+        <div class="change-head">
+          <span class="path num">/etc/apt/sources.list.d/ubuntu.sources</span>
+          <a id="open-guide" href="#guide">看完整配置</a>
+        </div>
+        <div class="code">
+          <div class="minus">
+            <span class="marker">−</span><span>URIs: http://archive.ubuntu.com/ubuntu/</span>
+          </div>
+          <div class="plus">
+            <span class="marker">+</span
+            ><span>URIs: https://mirrors.tuna.tsinghua.edu.cn/ubuntu/</span>
+          </div>
+        </div>
+      </section>
+
+      <p class="footline">
+        <span
+          >数字是响应耗时估算，不是下载速度。<a id="footline-help" href="#help">口径见帮助</a></span
+        >
+        <span>数据来自各站公开发布的仓库地址与状态文件</span>
+      </p>
+
+      <div class="results">
+        <span class="group-label">生态</span>
+        <a id="hit-apt" class="hit sel" href="#apt">
+          <span class="t">Ubuntu / apt</span>
+          <span class="sub">Ubuntu 的系统级软件源，按版本给出对应配置格式</span>
+          <span class="kind">生态</span>
+        </a>
+        <a id="hit-pip" class="hit" href="#pip">
+          <span class="t">Python / pip</span>
+          <span class="sub">Python 官方包索引客户端</span>
+          <span class="kind">生态</span>
+        </a>
+        <a id="hit-npm" class="hit" href="#npm">
+          <span class="t">Node.js / npm</span>
+          <span class="sub">Node.js 默认包管理器</span>
+          <span class="kind">生态</span>
+        </a>
+        <a id="hit-docker-ce" class="hit" href="#docker-ce">
+          <span class="t">Docker CE / apt 仓库</span>
+          <span class="sub">在 Ubuntu 上从镜像下载 Docker CE 软件包</span>
+          <span class="kind">生态</span>
+        </a>
+        <span class="group-label" style="margin-top: 14px">镜像站</span>
+        <a id="hit-tsinghua" class="hit" href="#site-tsinghua">
+          <span class="t">清华大学开源软件镜像站</span>
+          <span class="sub">支持 pip / apt / docker-ce</span>
+          <span class="kind">镜像站</span>
+        </a>
+        <a id="hit-aliyun" class="hit" href="#site-aliyun">
+          <span class="t">阿里云开发者镜像站</span>
+          <span class="sub">支持 pip / npm / docker-ce</span>
+          <span class="kind">镜像站</span>
+        </a>
+        <div class="keys">
+          <span><kbd>↑</kbd> <kbd>↓</kbd> 选择</span>
+          <span><kbd>↵</kbd> 打开</span>
+          <span><kbd>Esc</kbd> 退出</span>
+        </div>
+      </div>
+    </main>
+
+    <aside class="meta">
+      <div class="block">
+        <h2>常用生态</h2>
+        <div class="eco">
+          <a id="eco-pip" href="#pip">pip</a>
+          <a id="eco-npm" href="#npm">npm</a>
+          <a id="eco-apt" href="#apt">apt</a>
+          <a id="eco-docker-ce" href="#docker-ce">docker-ce</a>
+          <a id="eco-dockerhub" href="#dockerhub">dockerhub</a>
+        </div>
+      </div>
+
+      <div class="block">
+        <h2>本次会话</h2>
+        <dl class="kv">
+          <div>
+            <dt>已测</dt>
+            <dd>4 / 6</dd>
+          </div>
+          <div>
+            <dt>上次测速</dt>
+            <dd>10:24</dd>
+          </div>
+          <div>
+            <dt>数据核对</dt>
+            <dd>2026-09-19</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="block">
+        <h2>数据覆盖</h2>
+        <dl class="kv">
+          <div>
+            <dt>镜像站</dt>
+            <dd>9</dd>
+          </div>
+          <div>
+            <dt>生态</dt>
+            <dd>5</dd>
+          </div>
+          <div>
+            <dt>公开状态文件</dt>
+            <dd>1 站</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="block">
+        <h2>数据来源</h2>
+        <dl class="kv">
+          <div>
+            <dt>仓库地址</dt>
+            <dd>9 站</dd>
+          </div>
+          <div>
+            <dt>状态文件</dt>
+            <dd>1 站</dd>
+          </div>
+          <div>
+            <dt>探针地址</dt>
+            <dd>9 站</dd>
+          </div>
+        </dl>
+      </div>
+    </aside>
+  </div>
+</div>

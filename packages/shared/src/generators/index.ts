@@ -31,8 +31,8 @@ export const SHELL_LABELS: Record<ShellKind, string> = {
 };
 
 export const GUIDE_MODE_LABELS: Record<GuideMode, string> = {
-  temporary: '临时使用',
-  persistent: '全局生效',
+  temporary: '瞬态执行',
+  persistent: '持久写入',
   configFile: '配置文件',
 };
 

@@ -10,8 +10,13 @@
 }
 
 html {
-  /* 锚点跳转要停在粘性参数条下方，否则章节标题会被遮住。顶栏不吸顶，所以不计入。 */
-  scroll-padding-top: calc(var(--params-height) + var(--space-5));
+  /* 锚点跳转留出的空间。app 形态没有常驻头部，只需要一点点余量。 */
+  scroll-padding-top: var(--space-5);
+}
+
+/* 生态文档页（doc 形态）有常驻头部：顶栏 + 参数条，锚点要停在它们下面。 */
+html:has(.shell[data-layout='doc']) {
+  scroll-padding-top: calc(var(--sticky-stack) + var(--space-5));
 }
 
 body {
@@ -30,8 +35,9 @@ body {
 }
 
 /*
- * 中文排版的可读性靠三件事：足够松的行高（--leading-body）、略窄的行宽（--measure）、
- * 以及不要用细字重。系统中文字体没有 300 字重，写细了会由浏览器合成，笔画发虚。
+ * 中文排版的可读性靠三件事：足够松的行高（--leading-body）、相对舒服的行宽（标题用 em、
+ * Markdown 正文用 ch）、以及不要用细字重。系统中文字体没有 300 字重，写细了会由浏览器合成，笔画发虚。
+ * 页面宽度不在这里限制：容器宽度跟随视口（见 styles/shell.css）。
  */
 h1,
 h2,
@@ -125,6 +131,69 @@ hr {
   padding: 0;
   overflow: hidden;
   clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/*
+ * 小号补充文字：全站唯一的“低音量”文本样式（空态、口径指引、次要说明）。
+ * 它不是警告也不是错误提示——那两种有各自的语义色，不能用淡墨代替。
+ */
+.hint {
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+}
+
+/*
+ * 性质标签（高校 / 商业 / 官方 / 社区）：方角细边，不用药丸也不用底色。
+ * 它是一段值，不是按钮——因此和正文同一字重，只靠边线与小一号字区分。
+ */
+.kind {
+  display: inline-block;
+  padding: 0 var(--space-1);
+  border: var(--rule) solid var(--line-strong);
+  border-radius: var(--radius-xs);
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+  line-height: 17px;
+  white-space: nowrap;
+}
+
+/*
+ * 未测到数据的占位：45° 剖面线。
+ * 刻度条、骨架行、来源名都用它，全站“这里没有值”只此一种画法，不用空白也不用灰色块。
+ */
+.ph {
+  display: block;
+  height: 9px;
+  border-radius: var(--radius-xs);
+  background: repeating-linear-gradient(135deg, var(--hatch-line) 0 1px, transparent 1px 5px);
+}
+
+/* 结果里的可点小标签（例如镜像站展开后可选的那几个生态）。 */
+.chip {
+  padding: 0 var(--space-2);
+  border: var(--rule) solid var(--line);
+  border-radius: var(--radius-xs);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: var(--size-micro);
+  line-height: 22px;
+}
+
+.chip:hover {
+  border-color: var(--struct);
+  color: var(--struct);
+}
+
+/* “推荐”标记：一根蓝色内线加文字，不使用彩色底。 */
+.chip-rec {
+  padding: 0 var(--space-1);
+  border: var(--rule) solid var(--struct);
+  border-radius: var(--radius-xs);
+  color: var(--struct);
+  font-size: var(--size-micro);
+  line-height: 18px;
   white-space: nowrap;
 }
 

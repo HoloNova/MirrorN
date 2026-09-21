@@ -1,6 +1,8 @@
 /*
  * 样式入口。顺序有意义：字体 → 原子变量 → 主题（只覆盖语义色）→ 基础层 → 组件层。
  * 组件层放在最后，保证它们的类选择器不会被元素级样式反过来影响。
+ *
+ * 外壳（shell.css）排在最前：它决定页面是左侧导航还是顶栏形态，其余组件都挂在它下面。
  */
 
 @import './fonts.css';
@@ -8,9 +10,13 @@
 @import './themes/survey.css';
 @import './themes/carbon.css';
 @import './base.css';
+@import './shell.css';
 @import './doc.css';
+@import './table.css';
 @import './readout.css';
 @import './command.css';
 @import './controls.css';
 @import './search.css';
 @import './home.css';
+@import './sites.css';
+@import './markdown.css';

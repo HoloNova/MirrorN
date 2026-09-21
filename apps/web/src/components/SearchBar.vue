@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { CornerDownLeft, Search, X } from '@lucide/vue';
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { Search, X } from '@lucide/vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import type { Ecosystem } from '@mirrorn/shared';
@@ -9,7 +9,7 @@ import { toProbeTargets } from '../composables/useMirrorProbes';
 import { getCatalog } from '../lib/ecosystems';
 import { isEditableElement, moveIndex, resolveSearchKey, shouldFocusSearch } from '../lib/keys';
 import { createProbeCache, selectCachedResults } from '../lib/probeCache';
-import { createSearchIndex, MAX_RESULTS, type MirrorHit, type SearchHit } from '../lib/search';
+import { createSearchIndex, type MirrorHit, type SearchHit } from '../lib/search';
 
 const emit = defineEmits<{ 'update:active': [boolean] }>();
 
@@ -19,20 +19,48 @@ const index = createSearchIndex(catalog);
 
 /**
  * 搜索只展示缓存里的测量值，不发起新的探测：每次键入都全量扫描会浪费带宽，
- * 也会让结果列表在输入过程中不停变化。真正发起测量的是首页的测量入口与生态页。
+ * 也会让结果列表在输入过程中不停变化。真正发起测速的是首页的测速入口与生态页。
  */
 const probeCache = createProbeCache();
 const probeTargets = toProbeTargets(catalog.mirrors);
 
 const query = ref('');
+const focused = ref(false);
 const activeIndex = ref(-1);
 const expandedMirrorId = ref<string | null>(null);
 const inputRef = ref<HTMLInputElement | null>(null);
 const composing = ref(false);
 
-const hits = computed<SearchHit[]>(() => index.search(query.value));
 const hasQuery = computed(() => query.value.trim().length > 0);
+
+/**
+ * 搜索态：点一下输入框就进入（首页据此把框拉到视觉中心、收起测速区），
+ * 不是等用户敲了字才进入——否则第一下点击“什么都没发生”。
+ */
+const active = computed(() => focused.value || hasQuery.value);
 const showResults = computed(() => hasQuery.value);
+
+/**
+ * 结果按类型分段：生态在前、镜像站在后。
+ * `kind` 相同的保持索引给出的相关度顺序，只做分组不做重排。
+ */
+const grouped = computed<Array<{ kind: SearchHit['kind']; label: string; hits: SearchHit[] }>>(
+  () => {
+    const ecosystems = index.search(query.value).filter((hit) => hit.kind === 'ecosystem');
+    const mirrors = index.search(query.value).filter((hit) => hit.kind === 'mirror');
+    const groups: Array<{ kind: SearchHit['kind']; label: string; hits: SearchHit[] }> = [];
+    if (ecosystems.length > 0) {
+      groups.push({ kind: 'ecosystem', label: '生态', hits: ecosystems });
+    }
+    if (mirrors.length > 0) {
+      groups.push({ kind: 'mirror', label: '镜像站', hits: mirrors });
+    }
+    return groups;
+  },
+);
+
+/** 键盘导航按“拍平后的顺序”走，与界面上下顺序一致。 */
+const hits = computed<SearchHit[]>(() => grouped.value.flatMap((group) => group.hits));
 const activeHit = computed(() => hits.value[activeIndex.value]);
 
 const ecosystemById = computed(() => new Map(catalog.ecosystems.map((item) => [item.id, item])));
@@ -41,7 +69,9 @@ const cachedProbes = computed(() => {
   const mirrorIds = new Set(
     hits.value.filter((hit) => hit.kind === 'mirror').map((hit) => hit.mirrorId),
   );
-  const selected = selectCachedResults(probeCache.read(), probeTargets, Date.now());
+  // 搜索结果只借用缓存里的数字，因此不参与“要不要重测”的决定（decisions 丢掉）。
+  // 也不传网络指纹：这里只显示一个 ≈ 值，判断网络是否变化是页面（首页 / 生态页）的事。
+  const { results: selected } = selectCachedResults(probeCache.read(), probeTargets, Date.now());
 
   for (const mirrorId of [...selected.keys()]) {
     if (!mirrorIds.has(mirrorId)) {
@@ -52,7 +82,7 @@ const cachedProbes = computed(() => {
   return selected;
 });
 
-/** 过期的测量值不参与展示：搜索卡片太窄，说不清"可能已过期"只会造成误导。 */
+/** 过期的测量值不参与展示：结果行太窄，说不清“可能已过期”只会造成误导。 */
 function cachedLatency(mirrorId: string): string | undefined {
   const cached = cachedProbes.value.get(mirrorId);
   if (
@@ -64,10 +94,6 @@ function cachedLatency(mirrorId: string): string | undefined {
     return undefined;
   }
   return `≈ ${cached.result.durationMs} ms`;
-}
-
-function ecosystemLabel(id: string): string {
-  return ecosystemById.value.get(id)?.name ?? id;
 }
 
 function ecosystemsFor(hit: MirrorHit): Ecosystem[] {
@@ -154,6 +180,16 @@ function clearQuery(): void {
   inputRef.value?.focus();
 }
 
+/**
+ * 失焦退出搜索态。
+ *
+ * 用 mousedown 在结果面板上 preventDefault（见模板）而不是延迟 blur：后者会让点击结果
+ * 与退出搜索态抢同一个事件，出现“点了没反应”。
+ */
+function onBlur(): void {
+  focused.value = false;
+}
+
 watch(query, () => {
   activeIndex.value = -1;
   expandedMirrorId.value = null;
@@ -165,12 +201,7 @@ watch(hits, (value) => {
   }
 });
 
-watch(showResults, async (value) => {
-  emit('update:active', value);
-  if (value) {
-    await nextTick();
-  }
-});
+watch(active, (value) => emit('update:active', value), { immediate: true });
 
 onMounted(() => {
   window.addEventListener('keydown', onGlobalKeydown);
@@ -192,14 +223,16 @@ defineExpose({ focus: () => inputRef.value?.focus() });
         v-model="query"
         type="search"
         role="combobox"
-        aria-label="搜索生态、发行版或软件包"
+        aria-label="搜索生态、镜像站或系统"
         aria-autocomplete="list"
         aria-controls="search-results"
         :aria-expanded="showResults"
         :aria-activedescendant="activeHit ? `search-hit-${activeHit.id}` : undefined"
-        placeholder="搜索生态、发行版或软件包..."
+        placeholder="搜索生态、镜像站或系统"
         autocomplete="off"
         @keydown="onKeydown"
+        @focus="focused = true"
+        @blur="onBlur"
         @compositionstart="composing = true"
         @compositionend="composing = false"
       />
@@ -221,35 +254,32 @@ defineExpose({ focus: () => inputRef.value?.focus() });
       class="search-results"
       role="listbox"
       aria-label="搜索结果"
+      @mousedown.prevent
     >
-      <p v-if="hits.length === 0" class="search-empty">
-        没有匹配的生态或来源。可以换一个关键词，或直接在下方目录里浏览。
-      </p>
+      <p v-if="hits.length === 0" class="search-empty">没有匹配项。换个关键词试试。</p>
 
-      <template v-else>
-        <div
-          v-for="(hit, position) in hits"
-          :id="`search-hit-${hit.id}`"
-          :key="hit.id"
-          class="search-hit"
-          role="option"
-          :aria-selected="position === activeIndex"
-          tabindex="-1"
-          @mouseenter="activeIndex = position"
-          @click="activate(hit)"
-        >
-          <span class="hit-row">
+      <template v-for="group in grouped" :key="group.kind">
+        <span class="search-group">{{ group.label }}</span>
+
+        <template v-for="hit in group.hits" :key="hit.id">
+          <div
+            :id="`search-hit-${hit.id}`"
+            class="search-hit"
+            role="option"
+            :aria-selected="hits[activeIndex]?.id === hit.id"
+            tabindex="-1"
+            @mouseenter="activeIndex = hits.findIndex((item) => item.id === hit.id)"
+            @click="activate(hit)"
+          >
             <span class="hit-title">{{ hit.title }}</span>
             <span v-if="hit.kind === 'mirror' && cachedLatency(hit.mirrorId)" class="hit-latency">
               {{ cachedLatency(hit.mirrorId) }}
             </span>
-            <span v-if="hit.matchedTerms.length > 0" class="hit-terms">
-              {{ hit.matchedTerms.join(' / ') }}
-            </span>
             <span class="hit-subtitle">{{ hit.subtitle }}</span>
-          </span>
+            <span class="hit-kind">{{ group.label }}</span>
+          </div>
 
-          <span v-if="hit.kind === 'mirror' && expandedMirrorId === hit.mirrorId" class="hit-chips">
+          <div v-if="hit.kind === 'mirror' && expandedMirrorId === hit.mirrorId" class="hit-chips">
             <span class="hit-chips-label">选择要配置的生态：</span>
             <button
               v-for="ecosystem in ecosystemsFor(hit)"
@@ -260,22 +290,13 @@ defineExpose({ focus: () => inputRef.value?.focus() });
             >
               {{ ecosystem.name }}
             </button>
-          </span>
-          <span v-else-if="hit.kind === 'mirror'" class="search-footnote">
-            {{ ecosystemLabel(hit.ecosystemIds[0]) }} 等
-            {{ hit.ecosystemIds.length }} 个生态，回车展开
-          </span>
-        </div>
+          </div>
+        </template>
       </template>
     </div>
 
-    <p v-if="showResults && hits.length > 0" class="search-footnote">
-      <CornerDownLeft :size="12" aria-hidden="true" />
-      <span
-        >回车选择，上下键移动，Esc 退出。最多显示
-        {{ MAX_RESULTS }}
-        条结果，搜索完全在本地进行；毫秒数来自此前测量过的结果，不代表下载速度。</span
-      >
+    <p v-if="showResults && hits.length > 0" class="search-keys">
+      <kbd>↑</kbd> <kbd>↓</kbd> 选择 <kbd>↵</kbd> 打开 <kbd>Esc</kbd> 清空
     </p>
   </div>
 </template>

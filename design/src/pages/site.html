@@ -1,0 +1,120 @@
+<div class="shell" data-page="site">
+  <aside class="rail">
+    <a id="brand-home" class="brand" href="#home">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="0" y="0" width="16" height="16" fill="#101318" />
+        <rect x="0" y="0" width="8" height="16" fill="#2049e6" />
+        <rect x="7" y="0" width="1" height="16" fill="#fcfcfb" />
+      </svg>
+      MirrorN
+    </a>
+    <nav class="nav">
+      <a id="nav-home" href="#home">首页</a>
+      <a id="nav-sites" href="#sites" aria-current="page">站点</a>
+      <a id="nav-help" href="#help">帮助</a>
+    </nav>
+    <div class="rail-foot">
+      <span class="mode"><i></i>同步状态在线</span>
+      <div class="themes">
+        <button type="button" aria-pressed="true">浅色</button>
+        <button type="button" aria-pressed="false">深色</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <main class="content">
+      <a id="back-sites" class="crumbs" href="#sites">← 收录的镜像站</a>
+
+      <div class="head site-head">
+        <h1>清华大学开源软件镜像站<span class="tag">高校</span></h1>
+        <span class="stamp">数据核对于 2026-09-19</span>
+      </div>
+
+      <section class="info">
+        <dl class="kv wide">
+          <div>
+            <dt>官方地址</dt>
+            <dd>
+              <a id="link-home" href="https://mirrors.tuna.tsinghua.edu.cn/"
+                >mirrors.tuna.tsinghua.edu.cn</a
+              >
+            </dd>
+          </div>
+          <div>
+            <dt>覆盖生态</dt>
+            <dd>3 个（pip、apt、docker-ce）</dd>
+          </div>
+          <div>
+            <dt>探针地址</dt>
+            <dd class="num">https://mirrors.tuna.tsinghua.edu.cn/robots.txt</dd>
+          </div>
+          <div>
+            <dt>状态文件</dt>
+            <dd class="num">https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="sec">
+        <h2>能查到的数据</h2>
+        <p class="lede">
+          状态文件由该站自己发布，页面的同步状态就来自这里；仓库地址用于生成换源命令。
+        </p>
+        <div class="rank">
+          <div class="row head">
+            <span>生态</span>
+            <span>仓库地址</span>
+            <span class="col-r">核对日期</span>
+          </div>
+          <a id="repo-pip" class="row body" href="#ecosystems/pip">
+            <span class="name"><span class="t">Python / pip</span></span>
+            <span class="url num">mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/</span>
+            <span class="col-r num">2026-09-18</span>
+          </a>
+          <a id="repo-apt" class="row body" href="#ecosystems/apt">
+            <span class="name"><span class="t">Ubuntu / apt</span></span>
+            <span class="url num">mirrors.tuna.tsinghua.edu.cn/ubuntu/</span>
+            <span class="col-r num">2026-09-19</span>
+          </a>
+          <a id="repo-docker-ce" class="row body" href="#ecosystems/docker-ce">
+            <span class="name"><span class="t">Docker CE / apt 仓库</span></span>
+            <span class="url num">mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/ubuntu</span>
+            <span class="col-r num">2026-09-19</span>
+          </a>
+        </div>
+        <p class="footline">
+          <span>点生态名进入对应文档，那里有具体命令。</span>
+          <span>仓库地址核对于 2026-09-19</span>
+        </p>
+      </section>
+    </main>
+
+    <aside class="meta">
+      <div class="block">
+        <h2>核对来源</h2>
+        <ul class="src-list">
+          <li>
+            <a id="verify-help" href="https://mirrors.tuna.tsinghua.edu.cn/help/ubuntu/"
+              >该站 Ubuntu 帮助页</a
+            >
+          </li>
+          <li>
+            <a id="verify-status" href="https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json"
+              >该站公开的 tunasync.json</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <div class="block">
+        <h2>下一步</h2>
+        <div class="eco">
+          <a id="next-apt" href="#ecosystems/apt">apt</a>
+          <a id="next-pip" href="#ecosystems/pip">pip</a>
+          <a id="next-docker" href="#ecosystems/docker-ce">docker-ce</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>

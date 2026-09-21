@@ -11,6 +11,7 @@ import {
   createProbeCache,
   selectCachedResults,
   type CachedProbe,
+  type MeasureDecision,
   type ProbeCacheStore,
 } from '../lib/probeCache';
 import { createProbeScheduler, type ProbeRound, type ProbeScheduler } from '../lib/probeRound';
@@ -105,6 +106,8 @@ export interface MirrorProbeView {
   pending: boolean;
   /** 结果已过期，正在后台更新。 */
   stale: boolean;
+  /** 最近一次测速没成功，当前显示的是上一次成功的结果。 */
+  attemptFailed: boolean;
   result?: ProbeResult;
   /** hasProbe 为 false 时说明原因，用于区分“数据里没探针”和“本次测速不可用”。 */
   unavailableReason?: 'no-probe' | 'probing-disabled';
@@ -115,6 +118,13 @@ export interface UseMirrorProbesOptions {
   getTargets: () => ProbeTarget[];
   /** 该镜像在**当前生态**下的同步状态；缺失按 unknown 处理。 */
   getSyncStatus?: (mirrorId: string) => SyncStatus;
+  /**
+   * 当前网络的指纹（服务端按出口网段算的 HMAC）。
+   *
+   * 用途：缓存里的耗时是**在某一个网络下**测出来的。指纹变了就说明这些数字不再代表
+   * 当前链路，全部作废重测；指纹未知（拿不到 / 静态部署）时无法判断，只能按时间过期。
+   */
+  getFingerprint?: () => string | undefined;
   cache?: ProbeCacheStore;
   scheduler?: ProbeScheduler;
   env?: ProbeEnv;
@@ -133,9 +143,11 @@ export interface MirrorProbes {
   refreshing: Ref<boolean>;
   offline: Ref<boolean>;
   lastMeasuredAt: ComputedRef<number | undefined>;
-  /** 手动刷新：绕过自动刷新下限，也不使用缓存里的旧结果。 */
+  /** 最近一轮里有几个来源没测成功（失败不覆盖旧值，只记数）。 */
+  lastRoundFailures: Ref<number>;
+  /** 手动刷新：绕过自动刷新下限，也不用缓存（但失败仍不覆盖上一次成功的结果）。 */
   refresh: () => void;
-  /** 自动重新验证：遵守 30 秒下限，用于页面重新可见等场景。 */
+  /** 自动重新验证：遵守 30 秒下限与缓存有效期，只测过期/缺失/换网后的来源。 */
   revalidate: () => void;
   /**
    * 作废全部已有结果并立即重测。
@@ -162,6 +174,7 @@ export function useMirrorProbes(options: UseMirrorProbesOptions): MirrorProbes {
   const pending = ref(new Set<string>());
   const refreshing = ref(false);
   const offline = ref(false);
+  const lastRoundFailures = ref(0);
 
   let currentRound: ProbeRound | undefined;
   let lastAutoRefreshAt: number | undefined;
@@ -181,14 +194,24 @@ export function useMirrorProbes(options: UseMirrorProbesOptions): MirrorProbes {
   function markStale(): void {
     const next = new Map<string, CachedProbe>();
     for (const [mirrorId, entry] of results.value) {
-      next.set(mirrorId, { result: entry.result, stale: true });
+      next.set(mirrorId, { ...entry, stale: true });
     }
     results.value = next;
   }
 
-  /** SWR 的第一步：把缓存里能用的结果先渲染出来，过期的也显示，但标记为可能过期。 */
-  function applyCachedResults(): void {
-    const cached = selectCachedResults(cache.read(), options.getTargets(), now());
+  /**
+   * SWR 的第一步：把缓存里能用的结果先渲染出来。
+   *
+   * 返回值是“每个候选现在要不要测”的决定：缓存新鲜就一个请求都不发（这正是
+   * “不过度测试”的落地点），失败过且还在冷却期内的也先放过。
+   */
+  function applyCachedResults(): Map<string, MeasureDecision> {
+    const { results: cached, decisions } = selectCachedResults(
+      cache.read(),
+      options.getTargets(),
+      now(),
+      options.getFingerprint?.(),
+    );
     const next = new Map(results.value);
 
     for (const [mirrorId, entry] of cached) {
@@ -200,6 +223,7 @@ export function useMirrorProbes(options: UseMirrorProbesOptions): MirrorProbes {
     }
 
     results.value = next;
+    return decisions;
   }
 
   function handleResult(result: ProbeResult): void {
@@ -210,11 +234,33 @@ export function useMirrorProbes(options: UseMirrorProbesOptions): MirrorProbes {
     }
 
     const next = new Map(results.value);
-    next.set(result.mirrorId, { result, stale: false });
+    const existing = next.get(result.mirrorId);
+    const previousOk = existing !== undefined && existing.result.status === 'ok';
+
+    if (result.status === 'ok') {
+      next.set(result.mirrorId, { result, stale: false, attemptFailed: false });
+      cache.write([{ target, result }], now(), options.getFingerprint?.());
+    } else {
+      lastRoundFailures.value += 1;
+      // 失败不覆盖数据：有上次成功的结果就继续显示它，只记下“本次没成功”。
+      next.set(
+        result.mirrorId,
+        previousOk
+          ? { result: existing.result, stale: existing.stale, attemptFailed: true }
+          : { result, stale: true, attemptFailed: true },
+      );
+      cache.writeFailure([{ target, result }], now());
+    }
+
     results.value = next;
-    cache.write([{ target, result }], now());
   }
 
+  /**
+   * 起一轮测速。
+   *
+   * `force` = 手动刷新的语义：候选全上、不看缓存与下限；仍然遵守“失败不覆盖成功结果”。
+   * 非 force 时先看缓存：新鲜的候选根本不进这一轮，因此**零请求**。
+   */
   function run(force: boolean): void {
     if (!env.isOnline()) {
       offline.value = true;
@@ -234,10 +280,21 @@ export function useMirrorProbes(options: UseMirrorProbesOptions): MirrorProbes {
     }
     lastAutoRefreshAt = at;
 
-    applyCachedResults();
+    const all = options.getTargets();
+    const decisions = applyCachedResults();
+    const planned = force
+      ? all
+      : all.filter((target) => decisions.get(target.mirrorId) === 'measure');
+
+    if (planned.length === 0) {
+      // 全都在有效期内：本轮什么也不发（这就是 3 小时内不重复测速的实现位置）。
+      return;
+    }
+
+    lastRoundFailures.value = 0;
 
     // 不取消上一轮：startRound 会复用仍在进行中的同一探针，并让旧轮次的结果失效。
-    const round = scheduler.startRound(options.getTargets(), { onResult: handleResult });
+    const round = scheduler.startRound(planned, { onResult: handleResult });
     currentRound = round;
     pending.value = new Set(round.targets.map((target) => target.mirrorId));
     refreshing.value = true;
@@ -265,16 +322,8 @@ export function useMirrorProbes(options: UseMirrorProbesOptions): MirrorProbes {
   }
 
   function handleVisible(): void {
-    const targets = options.getTargets();
-    const cached = selectCachedResults(cache.read(), targets, now());
-    const needsRefresh = targets.some((target) => {
-      const entry = cached.get(target.mirrorId);
-      return entry === undefined || entry.stale;
-    });
-
-    if (needsRefresh) {
-      run(false);
-    }
+    // 过期与换网的判断都在 run 里（看缓存决定测谁），这里不做重复判断。
+    run(false);
   }
 
   const scores = computed<CandidateScore[]>(() =>
@@ -312,6 +361,7 @@ export function useMirrorProbes(options: UseMirrorProbesOptions): MirrorProbes {
       hasProbe,
       pending: pending.value.has(mirrorId),
       stale: entry?.stale ?? false,
+      attemptFailed: entry?.attemptFailed ?? false,
       ...(hasProbe ? {} : { unavailableReason: 'no-probe' as const }),
       ...(entry === undefined ? {} : { result: entry.result }),
     };
@@ -350,6 +400,7 @@ export function useMirrorProbes(options: UseMirrorProbesOptions): MirrorProbes {
     refreshing,
     offline,
     lastMeasuredAt,
+    lastRoundFailures,
     refresh: () => run(true),
     revalidate: () => run(false),
     invalidate: () => {
@@ -370,6 +421,7 @@ function createInertMirrorProbes(options: UseMirrorProbesOptions): MirrorProbes 
     hasProbe: false,
     pending: false,
     stale: false,
+    attemptFailed: false,
     unavailableReason: 'probing-disabled',
   });
 
@@ -381,6 +433,7 @@ function createInertMirrorProbes(options: UseMirrorProbesOptions): MirrorProbes 
     refreshing: ref(false),
     offline: ref(false),
     lastMeasuredAt: computed(() => undefined),
+    lastRoundFailures: ref(0),
     refresh: () => undefined,
     revalidate: () => undefined,
     invalidate: () => undefined,

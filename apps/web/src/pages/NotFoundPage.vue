@@ -4,17 +4,22 @@ import { RouterLink } from 'vue-router';
 
 <template>
   <div class="shell-inner">
-    <section class="section is-first" aria-labelledby="not-found-title">
-      <div class="section-head">
-        <span class="section-num">404</span>
-        <h1 id="not-found-title">没有找到这个页面。</h1>
-      </div>
-      <div class="section-body">
-        <p>链接可能已经失效，或者该生态还没有加入数据目录。你可以回到首页查看当前支持的生态。</p>
-        <div class="actions">
-          <RouterLink class="btn btn-primary" :to="{ name: 'home' }">返回首页</RouterLink>
+    <div class="page is-single">
+      <div class="page-main">
+        <div class="page-head">
+          <h1 id="not-found-title">没有找到这个页面</h1>
+          <span class="stamp">404</span>
         </div>
+
+        <p class="hint">
+          链接可能已经失效。首页的搜索框可以找到任意生态，站点页可以查看收录的镜像站。
+        </p>
+
+        <p class="rows-note">
+          <RouterLink class="btn" :to="{ name: 'home' }">回到首页搜索</RouterLink>
+          <RouterLink class="btn" :to="{ name: 'sites' }">查看镜像站</RouterLink>
+        </p>
       </div>
-    </section>
+    </div>
   </div>
 </template>

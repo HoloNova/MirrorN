@@ -48,3 +48,5 @@ Run tests appropriate to the change and complete required checks. Once those pas
 - MAIN.md 中的内容为项目主体的说明
 - 当前项目全量运行一次需要较长时间，所以用户未明确要求或者确实需要，不允许直接执行全量的编译、测试等操作
 - 在制定规划时不允许有任何假设（如假设已实现）或者实际情况没有了解完全的问题
+- 本项目目前只走公网验收，请在需要我验收时将其挂载的资源进行更新
+- 在使用superdesign skill/MCP等时，尽量不要使用网站的额度，具体的策略为直接提交本地设计好的代码/组件到设计网站上，而不是你直接在本地看图片

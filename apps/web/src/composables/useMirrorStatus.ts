@@ -96,6 +96,13 @@ export interface MirrorStatusAccess {
   enabled: boolean;
   meta: Ref<MirrorStatusMeta>;
   fingerprint: Ref<FingerprintState>;
+  /**
+   * 最近一次拿到的网络指纹值（服务端网段 HMAC）。未知时为 undefined。
+   *
+   * 测速缓存要按它判断“这些数字是不是在同一个网络下测的”，因此要能读到具体值，
+   * 而不只是 `available / unknown / disabled` 这个状态。
+   */
+  fingerprintValue: Ref<string | undefined>;
   recordFor: (mirrorId: string, ecosystemId: string) => SyncStatusRecord | undefined;
   statusFor: (mirrorId: string, ecosystemId: string) => SyncStatus;
   refresh: (force?: boolean) => Promise<void>;
@@ -128,6 +135,7 @@ export function createMirrorStatusAccess(options: MirrorStatusOptions = {}): Mir
 
   const meta = ref<MirrorStatusMeta>({ stale: true, sources: [] });
   const fingerprint = ref<FingerprintState>(baseUrl === undefined ? 'disabled' : 'unknown');
+  const fingerprintValue = ref<string | undefined>(undefined);
 
   if (baseUrl === undefined) {
     // 静态模式：没有任何请求，也不订阅事件。
@@ -135,6 +143,7 @@ export function createMirrorStatusAccess(options: MirrorStatusOptions = {}): Mir
       enabled: false,
       meta,
       fingerprint,
+      fingerprintValue,
       recordFor: () => undefined,
       statusFor: () => SYNC_UNKNOWN,
       refresh: async () => undefined,
@@ -210,6 +219,7 @@ export function createMirrorStatusAccess(options: MirrorStatusOptions = {}): Mir
     }
 
     fingerprint.value = 'available';
+    fingerprintValue.value = response.fingerprint;
     const changed = lastFingerprint !== undefined && lastFingerprint !== response.fingerprint;
     lastFingerprint = response.fingerprint;
     if (changed) {
@@ -242,6 +252,7 @@ export function createMirrorStatusAccess(options: MirrorStatusOptions = {}): Mir
     enabled: true,
     meta,
     fingerprint,
+    fingerprintValue,
     recordFor: (mirrorId, ecosystemId) => records.get(statusKey(mirrorId, ecosystemId)),
     statusFor: (mirrorId, ecosystemId) =>
       records.get(statusKey(mirrorId, ecosystemId))?.status ?? SYNC_UNKNOWN,
@@ -261,6 +272,7 @@ export function useMirrorStatus(options: MirrorStatusOptions = {}): MirrorStatus
       enabled: false,
       meta: ref<MirrorStatusMeta>({ stale: true, sources: [] }),
       fingerprint: ref<FingerprintState>('disabled'),
+      fingerprintValue: ref<string | undefined>(undefined),
       recordFor: () => undefined,
       statusFor: () => SYNC_UNKNOWN,
       refresh: async () => undefined,

@@ -194,3 +194,31 @@ export function createStatusClient(options: StatusClientOptions): StatusClient {
       parseFingerprintResponse(await requestJson('/api/net-fingerprint')),
   };
 }
+
+/**
+ * 测速开始前等网络指纹的最长时间。
+ *
+ * 指纹只是一次同源请求（本机后端），正常情况下几十到几百毫秒。但它是**增强**而不是前提：
+ * 后端出问题时 `requestJson` 会等满 `SYNC_CLIENT_TIMEOUT_MS`（3 秒），如果测速非要等它，
+ * 用户就会看到三秒“测速中”却什么也没发生。所以超过这个上限就直接开测，
+ * 代价是这一次的结果不带指纹（拿不到指纹时本来也只能按时间过期）。
+ */
+export const FINGERPRINT_WAIT_MS = 1_000;
+
+/**
+ * 等指纹，但最多等 `timeoutMs`。返回时指纹可能仍然未知。
+ *
+ * 不做取消：`checkFingerprint` 自己有限频与超时，拿到的结果照旧写回状态，
+ * 因此“等超时”不影响后面（若它后来变化，`onFingerprintChange` 仍会作废旧结果）。
+ */
+export async function waitForFingerprint(
+  access: { checkFingerprint: (force?: boolean) => Promise<boolean> },
+  timeoutMs: number = FINGERPRINT_WAIT_MS,
+): Promise<void> {
+  await Promise.race([
+    access.checkFingerprint(true).catch(() => false),
+    new Promise<void>((resolve) => {
+      setTimeout(resolve, timeoutMs);
+    }),
+  ]);
+}

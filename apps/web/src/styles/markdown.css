@@ -1,0 +1,119 @@
+/*
+ * Markdown 正文（帮助文档）。
+ *
+ * 渲染器只产出 h2 / h3 / p / ul / ol / li / blockquote / hr / pre / code / strong / a / table，
+ * 所以这里只需要覆盖这些标签，不需要通用 markdown 主题那一套。
+ *
+ * 字号比正文小一号：这些是“说明”，读者是来找一句具体做法的，不是来读长文的。
+ * 行宽用相对量（--measure-prose）限制，容器宽度仍然跟随视口。
+ */
+
+.markdown {
+  max-width: var(--measure-prose);
+  color: var(--ink-2);
+  font-size: var(--size-small);
+}
+
+.markdown h2 {
+  margin: var(--space-6) 0 var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--ink);
+  color: var(--ink);
+  font-size: var(--size-h2);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.markdown h2:first-child {
+  margin-top: 0;
+}
+
+.markdown h3 {
+  margin: var(--space-6) 0 var(--space-2);
+  color: var(--ink);
+  font-size: var(--size-h3);
+  font-weight: 600;
+}
+
+.markdown p {
+  margin: 0 0 var(--space-3);
+}
+
+.markdown ul,
+.markdown ol {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-5);
+}
+
+.markdown li + li {
+  margin-top: var(--space-1);
+}
+
+.markdown strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.markdown a {
+  color: var(--struct);
+  text-decoration-color: var(--struct-line);
+}
+
+/* 行内代码：细边小方块，不用灰底——灰底会和代码块的底色抢注意力。 */
+.markdown code {
+  padding: 1px 5px;
+  border: var(--rule) solid var(--line);
+  border-radius: var(--radius-xs);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.94em;
+  /* 命令里的路径很长，允许在标点处断开，避免把整段文字挤出屏幕。 */
+  overflow-wrap: anywhere;
+}
+
+.markdown pre {
+  overflow-x: auto;
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border: var(--rule) solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--code-surface);
+}
+
+.markdown pre code {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.markdown blockquote {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-4);
+  border-left: 2px solid var(--line-strong);
+  color: var(--ink-3);
+}
+
+.markdown hr {
+  margin: var(--space-6) 0;
+}
+
+.markdown table {
+  width: 100%;
+  max-width: var(--measure-table);
+  margin: 0 0 var(--space-3);
+  border-collapse: collapse;
+  font-size: var(--size-micro);
+}
+
+.markdown th,
+.markdown td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--rule) solid var(--line);
+  text-align: left;
+}
+
+.markdown th {
+  color: var(--ink-3);
+  font-weight: 400;
+}

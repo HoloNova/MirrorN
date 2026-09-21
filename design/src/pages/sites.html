@@ -1,0 +1,176 @@
+<div class="shell" data-page="sites">
+  <aside class="rail">
+    <a id="brand-home" class="brand" href="#home">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="0" y="0" width="16" height="16" fill="#101318" />
+        <rect x="0" y="0" width="8" height="16" fill="#2049e6" />
+        <rect x="7" y="0" width="1" height="16" fill="#fcfcfb" />
+      </svg>
+      MirrorN
+    </a>
+    <nav class="nav">
+      <a id="nav-home" href="#home">首页</a>
+      <a id="nav-sites" href="#sites" aria-current="page">站点</a>
+      <a id="nav-help" href="#help">帮助</a>
+    </nav>
+    <div class="rail-foot">
+      <span class="mode"><i></i>同步状态在线</span>
+      <div class="themes">
+        <button type="button" aria-pressed="true">浅色</button>
+        <button type="button" aria-pressed="false">深色</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <main class="content">
+      <div class="search">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          aria-hidden="true"
+        >
+          <circle cx="8.5" cy="8.5" r="5.5" />
+          <path d="M12.8 12.8 17 17" />
+        </svg>
+        <input
+          id="site-filter"
+          type="search"
+          placeholder="筛选站点、别名或系统"
+          aria-label="筛选站点"
+        />
+        <kbd>/</kbd>
+      </div>
+
+      <div class="head">
+        <h1>收录的镜像站</h1>
+        <span class="stamp num">9 个</span>
+      </div>
+
+      <section class="dir">
+        <div class="row head">
+          <span>站点</span>
+          <span>性质</span>
+          <span>官方地址</span>
+          <span class="col-num">生态</span>
+        </div>
+
+        <a id="site-aliyun" class="row body" href="#sites/aliyun">
+          <span class="name"><span class="t">阿里云开发者镜像站</span></span>
+          <span class="tag-cell"><span class="tag">商业</span></span>
+          <span class="url num">developer.aliyun.com/mirror/</span>
+          <span class="col-num num">3</span>
+        </a>
+        <a id="site-tsinghua" class="row body" href="#sites/tsinghua">
+          <span class="name"><span class="t">清华大学开源软件镜像站</span></span>
+          <span class="tag-cell"><span class="tag">高校</span></span>
+          <span class="url num">mirrors.tuna.tsinghua.edu.cn</span>
+          <span class="col-num num">3</span>
+        </a>
+        <a id="site-tencent" class="row body" href="#sites/tencent">
+          <span class="name"><span class="t">腾讯云软件源</span></span>
+          <span class="tag-cell"><span class="tag">商业</span></span>
+          <span class="url num">mirrors.tencent.com</span>
+          <span class="col-num num">3</span>
+        </a>
+        <a id="site-docker-official" class="row body" href="#sites/docker-official">
+          <span class="name"><span class="t">Docker 官方仓库</span></span>
+          <span class="tag-cell"><span class="tag">官方</span></span>
+          <span class="url num">download.docker.com</span>
+          <span class="col-num num">1</span>
+        </a>
+        <a id="site-dockerhub-official" class="row body" href="#sites/dockerhub-official">
+          <span class="name"><span class="t">Docker Hub 官方</span></span>
+          <span class="tag-cell"><span class="tag">官方</span></span>
+          <span class="url num">hub.docker.com</span>
+          <span class="col-num num">1</span>
+        </a>
+        <a id="site-npm-official" class="row body" href="#sites/npm-official">
+          <span class="name"><span class="t">npm 官方 Registry</span></span>
+          <span class="tag-cell"><span class="tag">官方</span></span>
+          <span class="url num">registry.npmjs.org</span>
+          <span class="col-num num">1</span>
+        </a>
+        <a id="site-npmmirror" class="row body" href="#sites/npmmirror">
+          <span class="name"><span class="t">npmmirror</span></span>
+          <span class="tag-cell"><span class="tag">社区</span></span>
+          <span class="url num">npmmirror.com</span>
+          <span class="col-num num">1</span>
+        </a>
+        <a id="site-pypi-official" class="row body" href="#sites/pypi-official">
+          <span class="name"><span class="t">PyPI 官方源</span></span>
+          <span class="tag-cell"><span class="tag">官方</span></span>
+          <span class="url num">pypi.org</span>
+          <span class="col-num num">1</span>
+        </a>
+        <a id="site-ubuntu-official" class="row body" href="#sites/ubuntu-official">
+          <span class="name"><span class="t">Ubuntu 官方归档</span></span>
+          <span class="tag-cell"><span class="tag">官方</span></span>
+          <span class="url num">archive.ubuntu.com</span>
+          <span class="col-num num">1</span>
+        </a>
+      </section>
+
+      <p class="footline">
+        <span>只收录能生成换源命令的镜像站；没有公开仓库地址的站不收录。</span>
+        <span>数据核对于 2026-09-19</span>
+      </p>
+    </main>
+
+    <aside class="meta">
+      <div class="block">
+        <h2>收录情况</h2>
+        <dl class="kv">
+          <div>
+            <dt>镜像站</dt>
+            <dd>9</dd>
+          </div>
+          <div>
+            <dt>覆盖生态</dt>
+            <dd>5</dd>
+          </div>
+          <div>
+            <dt>商业 / 高校 / 社区</dt>
+            <dd>2 / 1 / 1</dd>
+          </div>
+          <div>
+            <dt>官方站</dt>
+            <dd>5</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="block">
+        <h2>数据来源</h2>
+        <dl class="kv">
+          <div>
+            <dt>仓库地址</dt>
+            <dd>9 站</dd>
+          </div>
+          <div>
+            <dt>状态文件</dt>
+            <dd>1 站</dd>
+          </div>
+          <div>
+            <dt>探针地址</dt>
+            <dd>9 站</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="block">
+        <h2>下一步</h2>
+        <div class="eco">
+          <a id="eco-next-apt" href="#ecosystems/apt">apt</a>
+          <a id="eco-next-pip" href="#ecosystems/pip">pip</a>
+          <a id="eco-next-npm" href="#ecosystems/npm">npm</a>
+          <a id="eco-next-docker" href="#ecosystems/docker-ce">docker-ce</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
