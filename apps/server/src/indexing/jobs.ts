@@ -4,6 +4,7 @@ import type { ScopeSpec } from './policy.js';
 export type IndexJob =
   | { kind: 'refresh' }
   | { kind: 'catalog' }
+  | { kind: 'pypi-dispatch' }
   | (ScopeSpec & {
       kind:
         | 'directory'

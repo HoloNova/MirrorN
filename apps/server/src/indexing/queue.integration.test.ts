@@ -19,7 +19,7 @@ describe.runIf(Boolean(redisUrl))('真实Redis/BullMQ隔离验证', () => {
       const first = await queue.start();
       expect(first?.id).toMatch(/^startup-/);
       await first!.waitUntilFinished(events, 10000);
-      expect(await queue.queue.getJobSchedulers()).toHaveLength(1);
+      expect(await queue.queue.getJobSchedulers()).toHaveLength(2);
       const firstId = first!.id;
       await queue.close();
       queue = createIndexQueue(db, redisUrl!, () => {}, { fetchImpl });

@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { rememberProjects } from './projectRegistry.js';
 import type { DatabaseSync } from 'node:sqlite';
 import { JSONParser } from '@streamparser/json';
 import { beginSnapshot, stageFiles, publishSnapshot, rejectSnapshot } from '../db/snapshots.js';
@@ -19,7 +20,10 @@ import {
   pacmanFiles,
 } from './parsers.js';
 
-type Task = Exclude<IndexJob, { kind: 'refresh' } | { kind: 'catalog' }>;
+type Task = Exclude<
+  IndexJob,
+  { kind: 'refresh' } | { kind: 'catalog' } | { kind: 'pypi-dispatch' }
+>;
 type Entry = { name: string; type: string; size?: number; mtime?: string };
 const directoryIndex = (url: string) => `${PKU_ORIGIN}/files${sourceUrl(url).pathname}`;
 const safeName = (value: string) =>
@@ -80,6 +84,7 @@ export async function executeIndexJob(
   source: SourceClient,
   enqueue: Enqueue,
 ) {
+  if (task.kind === 'pypi-dispatch') throw new SourceError('项目派发必须由BullMQ队列执行', false);
   if (task.kind === 'refresh') {
     const rows = db
       .prepare("SELECT id,repo_id AS repo FROM resources WHERE site_id='pku'")
@@ -345,12 +350,12 @@ export async function executeIndexJob(
   }
   if (task.kind === 'pypi-root') {
     task.discoveryEpoch = Date.now();
-    let pending: IndexJob[] = [];
+    let pending: { name: string; indexUrl: string }[] = [];
     let discovered = 0;
     let complete = false;
     const flush = async () => {
       if (pending.length) {
-        await enqueue(pending);
+        rememberProjects(db, pending);
         discovered += pending.length;
         pending = [];
       }
@@ -366,12 +371,7 @@ export async function executeIndexJob(
             const url = sourceUrl(new URL(attrs.href, task.indexUrl).href, task.indexUrl);
             const pkg = decodeURIComponent(url.pathname.split('/').filter(Boolean).at(-1) ?? '');
             if (!/^[a-z0-9][a-z0-9_.-]*$/i.test(pkg)) throw new SyntaxError('PyPI包名不合法');
-            pending.push({
-              ...task,
-              kind: 'pypi-project',
-              indexUrl: url.href,
-              component: normalizePythonName(pkg),
-            });
+            pending.push({ name: normalizePythonName(pkg), indexUrl: url.href });
           },
         },
         { decodeEntities: true },

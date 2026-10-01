@@ -37,6 +37,13 @@ export function openReadDatabase(path: string): DatabaseSyncType {
 
 export function migrate(db: DatabaseSyncType): void {
   db.exec(`
+    CREATE TABLE IF NOT EXISTS discovered_projects (
+      resource_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      index_url TEXT NOT NULL,
+      PRIMARY KEY(resource_id,name)
+    );
+
     CREATE TABLE IF NOT EXISTS sites (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,

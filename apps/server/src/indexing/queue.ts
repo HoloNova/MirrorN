@@ -10,6 +10,7 @@ import {
 import type { DatabaseSync } from 'node:sqlite';
 import { executeIndexJob } from './adapters.js';
 import { taskKey, type IndexJob, type Enqueue } from './jobs.js';
+import { dispatchProjects } from './projectRegistry.js';
 import { SourceClient, SourceError } from './source.js';
 import { REFRESH_INTERVAL_MS } from './policy.js';
 import { collectOldSnapshots, SnapshotPublishError } from '../db/snapshots.js';
@@ -91,13 +92,29 @@ export function createIndexQueue(
       );
       try {
         if (job.data.kind === 'refresh') collectOldSnapshots(db);
-        const result = await executeIndexJob(
-          db,
-          job.data,
-          `${job.id}-${job.timestamp}`,
-          source,
-          enqueue,
-        );
+        let result: { files?: number; discovered?: number };
+        if (job.data.kind === 'pypi-dispatch') {
+          // 小窗口派发：不把数十万项目变成同时驻留Redis的独立任务。
+          const counts = await queue.getJobCounts('wait', 'prioritized', 'active', 'delayed');
+          if (Object.values(counts).reduce((a, b) => a + b, 0) >= 1000) {
+            result = { discovered: 0 };
+          } else {
+            const client = await queue.client;
+            const cursorKey = `${queue.toKey('pypi-cursor')}`;
+            const batch = await dispatchProjects(db, (await client.get(cursorKey)) ?? '', enqueue);
+            // 入队成功才推进；中断时重派也由稳定jobId去重。
+            await client.set(cursorKey, batch.cursor);
+            result = batch;
+          }
+        } else {
+          result = await executeIndexJob(
+            db,
+            job.data,
+            `${job.id}-${job.timestamp}`,
+            source,
+            enqueue,
+          );
+        }
         db.prepare(
           "UPDATE crawl_runs SET finished_at=?,ok=1,files_seen=?,result='complete',requests=?,network_bytes=? WHERE id=?",
         ).run(
@@ -161,6 +178,15 @@ export function createIndexQueue(
         { every: options.intervalMs ?? REFRESH_INTERVAL_MS },
         { name: 'refresh', data: { kind: 'refresh' }, opts: { ...JOB_OPTIONS, priority: 1 } },
       );
+      await queue.upsertJobScheduler(
+        'pku-pypi-dispatch',
+        { every: 60000 },
+        {
+          name: 'pypi-dispatch',
+          data: { kind: 'pypi-dispatch' },
+          opts: { ...JOB_OPTIONS, priority: 25 },
+        },
+      );
       // 每次进程启动一个独立刷新，不检查数据库或缓存年龄，也不沿用上次完成的启动ID。
       const startup = await queue.add(
         'refresh',
@@ -182,6 +208,7 @@ export function createIndexQueue(
 function taskPriority(task: IndexJob): number {
   if (task.kind === 'refresh') return 1;
   if (task.kind === 'catalog') return 2;
+  if (task.kind === 'pypi-dispatch') return 25;
   if (['directory', 'pypi-root', 'apt-release', 'rpm-repomd', 'julia-root'].includes(task.kind))
     return 5;
   return task.kind === 'pypi-project' ? 20 : 10;
