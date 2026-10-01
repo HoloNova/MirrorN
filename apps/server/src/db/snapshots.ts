@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { initializeFileStats, updateFileStats } from './catalogStats.js';
 import type { DatabaseSync } from 'node:sqlite';
 import {
   assertEnabledResource,
@@ -10,7 +11,8 @@ import {
 export class SnapshotPublishError extends Error {}
 
 export function installSnapshots(db: DatabaseSync): void {
-  db.exec(`
+  try {
+    db.exec(`BEGIN IMMEDIATE;
     CREATE TABLE IF NOT EXISTS site_details(site_id TEXT PRIMARY KEY REFERENCES sites(id),payload TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS upstream_catalog(site_id TEXT PRIMARY KEY,payload TEXT NOT NULL,checked_at INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS crawl_scopes (
@@ -37,12 +39,13 @@ export function installSnapshots(db: DatabaseSync): void {
     CREATE INDEX IF NOT EXISTS file_snapshot_package ON files(snapshot_id, package_name COLLATE NOCASE, id);
     CREATE INDEX IF NOT EXISTS file_snapshot_package_exact ON files(snapshot_id, package_name, id);
     CREATE INDEX IF NOT EXISTS file_snapshot_filters ON files(snapshot_id, arch, role, version, id);
-    CREATE VIEW IF NOT EXISTS effective_files AS
+    DROP VIEW IF EXISTS effective_files;
+    CREATE VIEW effective_files AS
       SELECT f.id, s.resource_id, f.snapshot_id, f.package_name, f.version, f.filename, f.url, f.size,
         f.role, f.platform, f.arch, f.format, f.checksum, f.compatibility, f.mtime,
         s.release, s.component, n.completed_at AS crawled_at
-      FROM files f JOIN snapshots n ON n.id = f.snapshot_id
-      JOIN crawl_scopes s ON s.active_snapshot_id = n.id
+      FROM crawl_scopes s CROSS JOIN snapshots n ON n.id = s.active_snapshot_id
+      CROSS JOIN files f ON f.snapshot_id = n.id
       UNION ALL
       SELECT -a.rowid AS id, a.resource_id, 'legacy' AS snapshot_id, '' AS package_name, a.version,
         a.filename, a.url, a.size,
@@ -55,7 +58,13 @@ export function installSnapshots(db: DatabaseSync): void {
         AND substr(a.url, 1, length(s.base_url)) = s.base_url
         AND instr(substr(a.url, length(s.base_url) + 1), '/') = 0
       );
+    COMMIT;
   `);
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+  initializeFileStats(db);
   const columns = db.prepare('PRAGMA table_info(snapshots)').all() as { name: string }[];
   if (!columns.some((column) => column.name === 'discovery_epoch'))
     db.exec('ALTER TABLE snapshots ADD COLUMN discovery_epoch INTEGER NOT NULL DEFAULT 0');
@@ -230,6 +239,10 @@ export function publishSnapshot(
       at,
       next.scope_id,
     );
+    const scope = db
+      .prepare('SELECT resource_id FROM crawl_scopes WHERE id=?')
+      .get(next.scope_id) as { resource_id: string };
+    updateFileStats(db, scope.resource_id);
     db.exec('COMMIT');
     return count;
   } catch (error) {

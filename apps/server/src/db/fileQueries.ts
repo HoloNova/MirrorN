@@ -90,7 +90,7 @@ export function queryFiles(db: DatabaseSync, input: FileQuery, now = Date.now())
   const sql = `WITH available AS (
     SELECT f.id, f.snapshot_id, f.package_name AS packageName, f.version, f.platform, f.arch, f.format,
       f.filename, f.url, f.size, f.role, f.checksum, f.compatibility, f.mtime, s.release, s.component
-    FROM crawl_scopes s CROSS JOIN snapshots n ON n.scope_id=s.id CROSS JOIN files f ON f.snapshot_id=n.id
+    FROM ${input.package || input.q ? 'crawl_scopes s CROSS JOIN snapshots n ON n.scope_id=s.id CROSS JOIN files f ON f.snapshot_id=n.id' : 'files f NOT INDEXED CROSS JOIN snapshots n ON n.id=f.snapshot_id CROSS JOIN crawl_scopes s ON s.id=n.scope_id'}
     WHERE ${snapshotClause}
     UNION ALL
     SELECT -a.rowid, 'legacy', '' AS packageName,a.version,a.platform,a.arch,a.format,a.filename,a.url,a.size,
@@ -145,13 +145,68 @@ export function queryFiles(db: DatabaseSync, input: FileQuery, now = Date.now())
     clauses.push("arch IN (?, 'all', 'noarch', 'any', 'unknown')");
     params.push(input.arch);
   }
-  const rows = db
-    .prepare(
-      `${sql}, unique_files AS (SELECT *,ROW_NUMBER() OVER(PARTITION BY url,packageName,version ORDER BY id DESC) AS occurrence
-      FROM available WHERE ${clauses.length ? clauses.join(' AND ') : '1=1'})
-      SELECT * FROM unique_files WHERE occurrence=1 AND id>? ORDER BY id LIMIT ?`,
-    )
-    .all(...params, cursor.after, limit + 1) as unknown as FileRow[];
+  const filterClause = clauses.length ? clauses.join(' AND ') : '1=1';
+  const qualifiedFilters = (file: string, scope: string) =>
+    filterClause.replace(
+      /\b(packageName|filename|version|release|arch|platform|role|format)\b/g,
+      (name) =>
+        name === 'release'
+          ? `${scope}.release`
+          : name === 'packageName'
+            ? `${file}.package_name`
+            : `${file}.${name}`,
+    );
+  const rows: FileRow[] = [];
+  let after = cursor.after;
+  const bounded = !input.package && !input.q;
+  const batchSize = Math.max(200, (limit + 1) * 4);
+  while (rows.length <= limit) {
+    const candidates = bounded
+      ? (db
+          .prepare(
+            `SELECT f.id FROM files f NOT INDEXED
+      CROSS JOIN snapshots n ON n.id=f.snapshot_id CROSS JOIN crawl_scopes s ON s.id=n.scope_id
+      WHERE ${snapshotClause} AND ${qualifiedFilters('f', 's')} AND f.id>? ORDER BY f.id LIMIT ?`,
+          )
+          .all(
+            cursor.frontier,
+            input.resource,
+            cursor.frontier,
+            ...params.slice(7),
+            Math.max(after, 0),
+            batchSize,
+          ) as { id: number }[])
+      : [];
+    // 先限量选候选，再核对跨范围重复；候选没填满页面就继续下一窗口，不截掉后续文件。
+    const windowSql = bounded
+      ? sql.replace(
+          `WHERE ${snapshotClause}`,
+          `WHERE ${snapshotClause} AND f.id IN (${candidates.map((c) => c.id).join(',') || '0'})`,
+        )
+      : sql;
+    const page = db
+      .prepare(
+        `${windowSql} SELECT winner.*,1 AS occurrence FROM available winner
+      WHERE ${filterClause} AND winner.id>?
+      AND NOT EXISTS (SELECT 1 FROM crawl_scopes ds CROSS JOIN snapshots dn ON dn.scope_id=ds.id
+        CROSS JOIN files df ON df.snapshot_id=dn.id
+        WHERE ${snapshotClause.replace(/\bn\./g, 'dn.').replace(/\bs\./g, 'ds.')}
+        AND df.url=winner.url AND df.package_name=winner.packageName AND df.version=winner.version AND df.id>winner.id
+        AND ${qualifiedFilters('df', 'ds')}) ORDER BY winner.id LIMIT ?`,
+      )
+      .all(
+        ...params,
+        after,
+        cursor.frontier,
+        input.resource,
+        cursor.frontier,
+        ...params.slice(7),
+        limit + 1 - rows.length,
+      ) as unknown as FileRow[];
+    rows.push(...page);
+    if (!bounded || rows.length > limit || candidates.length < batchSize) break;
+    after = candidates.at(-1)!.id;
+  }
   const hasMore = rows.length > limit;
   const selected = rows.slice(0, limit);
   return {

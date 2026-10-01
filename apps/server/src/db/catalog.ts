@@ -169,20 +169,24 @@ function toResourceRow(raw: RawResourceRow): ResourceRow {
 }
 
 // 下载资格仅由数据库有效文件决定，不再提供按需抓取。
-const DOWNLOAD_MODE = `CASE WHEN r.site_id = '${ENABLED_RESOURCE_SITE}' AND EXISTS
-  (SELECT 1 FROM effective_files a WHERE a.resource_id = r.id) THEN 'files' ELSE 'unavailable' END`;
+const DOWNLOAD_MODE = `CASE WHEN r.site_id = '${ENABLED_RESOURCE_SITE}' AND (
+  EXISTS (SELECT 1 FROM crawl_scopes c JOIN snapshots n ON n.id=c.active_snapshot_id
+    WHERE c.resource_id=r.id AND n.file_count>0)
+  OR (r.kind<>'dataset' AND EXISTS (SELECT 1 FROM artifacts a WHERE a.resource_id=r.id))
+  ) THEN 'files' ELSE 'unavailable' END`;
 const READY = `${DOWNLOAD_MODE} <> 'unavailable'`;
 
 const RESOURCE_SELECT = `
   SELECT r.id, r.site_id, s.name AS site_name, r.repo_id, r.name, r.ecosystem_id,
          e.label AS ecosystem_label, e.category AS ecosystem_category, r.kind,
          r.download_entry, r.versions_hint, r.crawl_depth, r.platforms, r.help_doc_url, r.tutorial_id,
-         (SELECT COUNT(DISTINCT a.url) FROM effective_files a WHERE a.resource_id = r.id) AS artifact_count,
+          COALESCE(totals.artifact_count,0) AS artifact_count,
           NULL AS latest_version,
           ${DOWNLOAD_MODE} AS download_mode
   FROM resources r
   JOIN sites s ON s.id = r.site_id
-  JOIN ecosystems e ON e.id = r.ecosystem_id`;
+   JOIN ecosystems e ON e.id = r.ecosystem_id
+   LEFT JOIN (SELECT resource_id,file_count AS artifact_count FROM resource_file_stats) totals ON totals.resource_id=r.id`;
 
 export interface SearchOptions {
   query?: string;
