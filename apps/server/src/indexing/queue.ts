@@ -209,7 +209,8 @@ function taskPriority(task: IndexJob): number {
   if (task.kind === 'refresh') return 1;
   if (task.kind === 'catalog') return 2;
   if (task.kind === 'pypi-dispatch') return 25;
-  if (['directory', 'pypi-root', 'apt-release', 'rpm-repomd', 'julia-root'].includes(task.kind))
-    return 5;
-  return task.kind === 'pypi-project' ? 20 : 10;
+  if (['apt-release', 'rpm-repomd'].includes(task.kind)) return 3;
+  if (['directory', 'pypi-root', 'julia-root'].includes(task.kind)) return 5;
+  // 已发现的索引先解析发布，不等待其它目录遍历全部完成。
+  return task.kind === 'pypi-project' ? 20 : 4;
 }
