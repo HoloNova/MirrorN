@@ -266,14 +266,20 @@ export function queryFileOptions(db: DatabaseSync, input: FileQuery) {
     args.push(`${value}%`, `${value}%`);
   }
   const where = clauses.join(' AND ');
+  // 元数据维度一次扫描取齐，避免大库每个下拉框各扫一次有效文件视图。
+  const facets = db
+    .prepare(`SELECT DISTINCT platform,arch,release,role FROM effective_files WHERE ${where}`)
+    .all(...args) as Record<string, string>[];
   const distinct = (column: string) =>
-    (
-      db
-        .prepare(
-          `SELECT DISTINCT ${column} AS value FROM effective_files WHERE ${where} ORDER BY ${column}`,
-        )
-        .all(...args) as { value: string }[]
-    ).map((row) => row.value);
+    ['platform', 'arch', 'release', 'role'].includes(column)
+      ? [...new Set(facets.map((row) => row[column]!))].sort()
+      : (
+          db
+            .prepare(
+              `SELECT DISTINCT ${column} AS value FROM effective_files WHERE ${where} ORDER BY ${column}`,
+            )
+            .all(...args) as { value: string }[]
+        ).map((row) => row.value);
   const resource = db
     .prepare('SELECT kind,repo_id FROM resources WHERE id=?')
     .get(input.resource) as { kind: string; repo_id: string } | undefined;

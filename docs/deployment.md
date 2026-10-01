@@ -1,6 +1,6 @@
 # 部署：静态站点与后台资源索引
 
-**状态（2026-10-01）**：以下早期静态预览与阶段5章节是历史运行记录。公网当前仍为2026-09-29版；BullMQ/Redis采集版尚未发布，待发布方式见本文末节及 `docs/background-index-implementation-plan.md`。
+**状态（2026-10-01/02）**：以下早期静态预览与阶段5章节是历史运行记录。公网已发布BullMQ/Redis后台文件索引版：静态快照 `20261001-201932`，API/采集线程及生产依赖在 `/srv/mirrorn/api/`；SQLite文件查询正常，首轮全量采集受容量限制尚未完成。部署方式见本文末节及 `docs/background-index-implementation-plan.md`。
 
 本文档记录 `mirror.campuslink.vip` 的静态部署方式。它对应 `PLAN.md` 6.3 中“静态构建托管”的部分；`PLAN.md` 明确“阶段 3 完成即可发布静态预览版，阶段 6 完成才算首版正式可交付”，因此这里的发布不改变阶段划分。
 
@@ -136,7 +136,7 @@ sudo systemctl restart mirrorn-api                               # 强制重新�
 
 ### 资源目录与数据库
 
-资源库是 `/var/lib/mirrorn/mirrorn.sqlite`（SQLite WAL，同目录有 `-wal` / `-shm`）；审核的站点、归类在 `/srv/mirrorn/api/data/`。新版发布脚本在替换程序前，用Node SQLite备份API取得包含WAL的一致性快照，并检查完整性；不能只复制主文件。待发布版本全部源站请求归后台任务，`browse/package`退出为410，前端只查有效文件批次。每次启动强制采集，之后每6小时调度；不检查过期后才启动，不爬包体。文件字节由源站直接提供，任务状态不展示给用户。
+资源库是 `/var/lib/mirrorn/mirrorn.sqlite`（SQLite WAL，同目录有 `-wal` / `-shm`）；审核的站点、归类在 `/srv/mirrorn/api/data/`。新版发布脚本在替换程序前，用Node SQLite备份API取得包含WAL的一致性快照，并检查完整性；不能只复制主文件。当前文件索引版本的源站请求全部归后台任务，`browse/package`退出为410，前端只查有效文件批次。每次启动强制采集，之后每6小时调度；不检查过期后才启动，不爬包体。文件字节由源站直接提供，任务状态不展示给用户。
 
 ### 同步行为与上游边界
 
@@ -193,3 +193,11 @@ docker compose down       # 停止，数据卷保留
 使用单独的 `mirrorn-redis` 用户。将核验过的Redis >=6.2二进制安装到 `/usr/local/lib/mirrorn-redis/redis-server`（CLI同目录），复制 `deploy/mirrorn-redis.conf` 到 `/etc/mirrorn/redis.conf`，数据目录 `/var/lib/mirrorn-redis` 归该用户，安装 `deploy/mirrorn-redis.service` 后启动/启用服务。本次候选为已编译验证的Redis 8.10.2，不使用系统软件源的6.0；本机仅监听127.0.0.1:6389，AOF/everysec、768MiB/noeviction。SQLite仍是业务权威库。
 
 后台每次执行任务前检查数据库所在文件系统剩余空间。低于2GiB时用BullMQ原生RateLimitError延后待办、每分钟重查；不消耗任务重试次数、不删除有效数据，也不截断采集范围。腾出空间后自动继续。API查询不受暂停采集影响。
+
+### 本轮生产运行补充（2026-10-01/02）
+
+已安装独立 `mirrorn-redis` 服务，程序 `/usr/local/lib/mirrorn-redis/redis-server`，监听 `127.0.0.1:6389`，AOF/noeviction，数据 `/var/lib/mirrorn-redis/`。它仅保存采集任务，文件和项目入口仍在SQLite；使用该端口不会替换系统其它Redis实例。Redis版本、持久化配置由发布脚本预检。
+
+采集默认在可用磁盘不足2GiB时暂停，保留待办和有效数据；不得为“显示完成”而清空待办。首轮未采齐，当前空间不适合直接承诺全库完成。PyPI项目清单持久化SQLite并按小窗口派发，读取API不消费待办、不请求源站。
+
+SQLite备份如需节省空间，完成完整性检查后可压缩为同名`.sqlite.gz`，再运行`gzip -t`核验；恢复时先解压，不把压缩文件直接交给SQLite。不能只备份WAL模式的主文件。当前静态快照 `20261001-201932`，API与采集线程在 `/srv/mirrorn/api/dist/`。

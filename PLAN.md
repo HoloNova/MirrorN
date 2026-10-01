@@ -410,6 +410,14 @@ shared 仓库证据 schema + 站点/生态引用与重复映射校验、受影�
 
 生产仍为静态快照 `20260929-192557` 与原API；**本轮无部署快照、无提交**。系统Redis尚未安装，临时验证进程已停止。发布须另确认并先备份数据库、准备Redis >=6.2（AOF/noeviction）。APK v3、部分原生版本排序、完整子范围撤销与生产全量覆盖/容量仍是明确缺口，不宣称40库已全部采完。
 
+### 2026-10-01/02：提交推送并发布后台索引，处理实际队列与查询容量
+
+用户授权提交、push和公网部署。主体提交 `6a9acec` 已推送main；现场修复PyPI队列膨胀（`6ba6800`）、索引解析优先级（`83ad607`）、精确包名查询（`4cee3ad`）、后台文件汇总与限量候选分页（`1e3fd9a`），以上CI均通过。静态快照 `/srv/mirror.campuslink.vip/releases/20261001-201932`；独立API/采集线程及生产依赖位于 `/srv/mirrorn/api/`。私有Redis监听 `127.0.0.1:6389`、AOF/noeviction，服务 `mirrorn-redis`；原服务、SQLite数据均备份后再发布。
+
+生产首轮已发布部分包索引，Debian去重具体文件直链440,740条。PyPI约73万项目入口存SQLite，BullMQ按窗口派发，不把70余万长期待办全压入Redis；Redis占用由768MB降至约6MB。大数据量使旧查询扫描全库，故汇总在后台事务写入SQLite、包名走索引、分页先限量候选再检查跨范围重复；候选不足时继续下一窗口，不截掉文件。跨批次分页和失败保旧的规则不变。公网已核对首页/API、Debian默认文件页、`hello`文件链接及旧接口退出，未做浏览器代验。
+
+容量限制仍影响首轮完成：可用磁盘不足2GiB时自动暂停采集，数据和待办保留，空间恢复后继续；不宣称40库全部采完。最新版备份包括 `/var/lib/mirrorn/mirrorn.before-background-index.20261001-165413.871194534.sqlite`（完整性校验成功，归档可压缩为同名`.gz`并以`gzip -t`验证）。验收步骤见 `docs/acceptance-checklist.md`，其它27站不启用下载采集，测速不变，教程占位。
+
 ### 尚未开始 / 待办
 
 1. **逐站官方目录整理**：北大已整理完（40 条）。其余站点仍是“只有官方入口、目录待整理”。清华 `static/tunasync.json` + `static/js/options.json`、USTC `static/json/index.json`（只有更新时间）、腾讯 `source.js`（JS 包裹，需受限解析，不可执行）都无 CORS，需经后端代理；**在把 USTC/腾讯接入通用状态源之前，必须先修掉通用 `statusStore` 里“所有源共用一个最近成功时间”的过期判断**。北大旧状态任务已从运行时移除；文件索引的新鲜度只按资源本身记录。
@@ -419,11 +427,11 @@ shared 仓库证据 schema + 站点/生态引用与重复映射校验、受影�
 5. **MirrorZ 的数据许可 / 公开接口询问**：需用户账号发 issue，agent 不代发（`docs/decisions.md` 与项目规则）。
 6. **帮助页正文**（`apps/web/src/help/documents.ts`）已按新主线重写（怎么用、资源状态与测速），待用户审阅措辞。
 7. `docs/validation-matrix.md` 里针对换源向导的人工验证缺口（Windows/macOS 模板、zsh、arm64、升级流程、Docker 行为）随向导退出界面而**成为历史记录**；如将来恢复向导再解锁。
-8. **后台索引发布与覆盖确认**：北大的数据库文件筛选、BullMQ后台采集和安全批次切换已本地实现，待Redis准备与发布确认；上线后记录首轮各协议实际覆盖、容量、耗时及明确缺口。线上仍是旧按需目录版本；其它27站本阶段不启用资源采集和下载查询。`docs/background-index-implementation-plan.md` 是当前实施依据，`docs/site-index-data-model-draft.md` 是历史草案。
+8. **后台索引发布与覆盖确认**：北大的数据库文件筛选、BullMQ后台采集和安全批次切换已发布，需继续核对全量覆盖与容量；目前磁盘限制导致首轮未完成，待办和已发布文件保留；其它27站本阶段不启用资源采集和下载查询。`docs/background-index-implementation-plan.md` 是当前实施依据，`docs/site-index-data-model-draft.md` 是历史草案。
 9. **其它既有计划**：资源共享中心与 LLM 识别继续独立排期；大文件带宽测试仍未做。
 
 ### 部署与回滚（当前）
 
 - 静态站点：`sudo scripts/deploy-static.sh` → 构建 → rsync 到 `/srv/mirror.campuslink.vip/current` → 快照 `/srv/mirror.campuslink.vip/releases/<时间戳>`（保留最近 5 份）。
-- 后端 API：线上目前仍为原单文件程序；新候选由 `scripts/prepare-api-runtime.sh <空目录>` 生成 `dist/server.js`、`dist/index-worker.js` 与生产依赖，`sudo scripts/deploy-api.sh` 先检查Redis再切换systemd服务（127.0.0.1:8788、Caddy同域反代），须另获发布确认。
+- 后端 API：线上已使用主进程/采集线程独立运行目录；由 `scripts/prepare-api-runtime.sh <空目录>` 生成 `dist/server.js`、`dist/index-worker.js` 与生产依赖，`sudo scripts/deploy-api.sh` 先检查Redis再切换systemd服务（127.0.0.1:8788、Caddy同域反代），每次后续发布仍须用户授权并先备份资源数据库。
 - 回滚：`rm -rf /srv/mirror.campuslink.vip/current && cp -a /srv/mirror.campuslink.vip/releases/<时间戳> /srv/mirror.campuslink.vip/current`。
