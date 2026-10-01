@@ -35,6 +35,7 @@ export function installSnapshots(db: DatabaseSync): void {
       UNIQUE(snapshot_id, url, package_name, version, arch)
     );
     CREATE INDEX IF NOT EXISTS file_snapshot_package ON files(snapshot_id, package_name COLLATE NOCASE, id);
+    CREATE INDEX IF NOT EXISTS file_snapshot_package_exact ON files(snapshot_id, package_name, id);
     CREATE INDEX IF NOT EXISTS file_snapshot_filters ON files(snapshot_id, arch, role, version, id);
     CREATE VIEW IF NOT EXISTS effective_files AS
       SELECT f.id, s.resource_id, f.snapshot_id, f.package_name, f.version, f.filename, f.url, f.size,

@@ -90,7 +90,7 @@ export function queryFiles(db: DatabaseSync, input: FileQuery, now = Date.now())
   const sql = `WITH available AS (
     SELECT f.id, f.snapshot_id, f.package_name AS packageName, f.version, f.platform, f.arch, f.format,
       f.filename, f.url, f.size, f.role, f.checksum, f.compatibility, f.mtime, s.release, s.component
-    FROM files f JOIN snapshots n ON n.id=f.snapshot_id JOIN crawl_scopes s ON s.id=n.scope_id
+    FROM crawl_scopes s CROSS JOIN snapshots n ON n.scope_id=s.id CROSS JOIN files f ON f.snapshot_id=n.id
     WHERE ${snapshotClause}
     UNION ALL
     SELECT -a.rowid, 'legacy', '' AS packageName,a.version,a.platform,a.arch,a.format,a.filename,a.url,a.size,
