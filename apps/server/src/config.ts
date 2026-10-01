@@ -115,6 +115,9 @@ export interface ServerEnv {
   dataDir?: string;
   /** 前端产物目录：设置后同一个进程同时托管静态页面（容器部署用）。 */
   staticDir?: string;
+  crawlEnabled: boolean;
+  redisUrl: string;
+  crawlTimeoutMs: number;
 }
 
 export type ServerEnvResolution = { ok: true; value: ServerEnv } | { ok: false; message: string };
@@ -184,6 +187,27 @@ export function resolveServerEnv(input: ResolvePortInput): ServerEnvResolution {
     return { ok: false, message: `MIRRORN_MAX_RESPONSE_BYTES ${maxBytes.error}` };
   }
 
+  const crawlTimeout = readPositiveInt(env.MIRRORN_CRAWL_TIMEOUT_MS, 30000);
+  if ('error' in crawlTimeout)
+    return { ok: false, message: `MIRRORN_CRAWL_TIMEOUT_MS ${crawlTimeout.error}` };
+  const redisUrl = env.MIRRORN_REDIS_URL?.trim() || 'redis://127.0.0.1:6389/0';
+  try {
+    const parsed = new URL(redisUrl);
+    if (
+      !['redis:', 'rediss:'].includes(parsed.protocol) ||
+      !parsed.hostname ||
+      parsed.search ||
+      parsed.hash ||
+      !/^\/(?:\d+)?$|^$/.test(parsed.pathname)
+    )
+      throw new Error();
+    decodeURIComponent(parsed.username);
+    decodeURIComponent(parsed.password);
+    if (!Number.isSafeInteger(Number(parsed.pathname.slice(1) || '0'))) throw new Error();
+  } catch {
+    return { ok: false, message: 'MIRRORN_REDIS_URL 必须是合法redis地址' };
+  }
+
   const snapshotDir = normalizeDir(env.MIRRORN_SNAPSHOT_DIR) ?? 'apps/server/.data';
   const secret = env.MIRRORN_FINGERPRINT_SECRET?.trim();
   const dataDir = env.MIRRORN_DATA_DIR?.trim();
@@ -197,6 +221,9 @@ export function resolveServerEnv(input: ResolvePortInput): ServerEnvResolution {
       host: env.MIRRORN_HOST?.trim() || '127.0.0.1',
       snapshotDir,
       syncEnabled: readBoolean(env.MIRRORN_SYNC_ENABLED, true),
+      crawlEnabled: readBoolean(env.MIRRORN_CRAWL_ENABLED, true),
+      redisUrl,
+      crawlTimeoutMs: crawlTimeout.value,
       syncIntervalMs: interval.value,
       staleAfterMs: stale.value,
       fetchTimeoutMs: timeout.value,

@@ -4,9 +4,12 @@ import { PROBE_LIMITS, type ProbeResult } from '@mirrorn/shared/probe';
  * 探测状态在界面上的文案。集中在这里的原因：
  * 1. 「响应耗时（估算）」这类口径不能由组件各写一份，否则很容易漂回「延迟/RTT/速度」；
  * 2. 状态只有三种结果值（ok / timeout / failed），但界面上还要区分未测量、测量中、
- *    无法测量和可能过期，这些区分不做成纯函数就没法测试；
+ *    无法测量和“本次失败”，这些区分不做成纯函数就没法测试；
  * 3. 结果由多次尝试聚合而来（见 probeAggregate.ts），"几次里拿到几次数值"必须在界面上
  *    说清楚，否则用户看到一个孤立的毫秒数会以为那是一次测量的全部信息。
+ *
+ * 只有一个口径能被叫作“数据”：3 小时内的成功结果。过期与失败都不算数据，界面上一律是占位符
+ * （过期的不展示、不参与推荐；失败只说明原因）。
  */
 export type ProbeTone = 'neutral' | 'good' | 'warn';
 
@@ -23,9 +26,6 @@ export interface ProbeViewInput {
   /** 数据里是否声明了该来源的探针。 */
   hasProbe: boolean;
   pending: boolean;
-  stale: boolean;
-  /** 最近一次测速没成功，当前显示的是上一次成功的结果。 */
-  attemptFailed?: boolean;
   result?: ProbeResult;
   timeoutMs?: number;
   /**
@@ -87,15 +87,6 @@ export function describeProbeView(input: ProbeViewInput): ProbeViewLabel {
   }
   if (result.status === 'ok' && attempts > 1 && (result.samples ?? attempts) < attempts) {
     parts.push(`${attempts} 次尝试中只有 ${result.samples ?? 0} 次有效`);
-  }
-
-  if (input.stale) {
-    parts.push('结果可能已过期，正在后台更新');
-  }
-
-  // 失败不覆盖上一次成功的结果：屏幕上是旧的毫秒数，但必须能看出来“这次没测到”。
-  if (input.attemptFailed) {
-    parts.push('最近一次测速没有成功，上面是上一次成功的结果');
   }
 
   // detail 只出现在悬停提示里（按需展开），所以细节写在这里、不写进常驻界面。

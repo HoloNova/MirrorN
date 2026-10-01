@@ -1,0 +1,170 @@
+[
+  {
+    "id": "almalinux",
+    "label": "AlmaLinux",
+    "category": "distro",
+    "aliases": ["almalinux", "yum", "el"]
+  },
+  {
+    "id": "anaconda-installer",
+    "label": "Miniconda（Python）",
+    "category": "language",
+    "aliases": ["python", "conda", "miniconda", "anaconda"]
+  },
+  {
+    "id": "aosc",
+    "label": "AOSC OS",
+    "category": "distro",
+    "aliases": ["aosc", "安同"]
+  },
+  {
+    "id": "apache-archive",
+    "label": "Apache 项目归档",
+    "category": "other",
+    "aliases": ["apache", "归档"]
+  },
+  {
+    "id": "archlinux",
+    "label": "Arch Linux",
+    "category": "distro",
+    "aliases": ["arch", "pacman"]
+  },
+  {
+    "id": "archlinuxcn",
+    "label": "Arch Linux CN",
+    "category": "distro",
+    "aliases": ["arch", "archlinuxcn", "pacman"]
+  },
+  {
+    "id": "archriscv",
+    "label": "Arch Linux（RISC-V）",
+    "category": "distro",
+    "aliases": ["riscv", "arch"]
+  },
+  {
+    "id": "centos",
+    "label": "CentOS",
+    "category": "distro",
+    "aliases": ["centos", "yum"]
+  },
+  {
+    "id": "dataset",
+    "label": "数据集与模型",
+    "category": "dataset",
+    "aliases": ["dataset", "模型"]
+  },
+  {
+    "id": "debian",
+    "label": "Debian",
+    "category": "distro",
+    "aliases": ["debian", "apt", "deb"]
+  },
+  {
+    "id": "epel",
+    "label": "EPEL",
+    "category": "distro",
+    "aliases": ["epel", "yum", "el"]
+  },
+  {
+    "id": "immortalwrt",
+    "label": "ImmortalWrt",
+    "category": "distro",
+    "aliases": ["immortalwrt", "opkg"]
+  },
+  {
+    "id": "julia",
+    "label": "Julia",
+    "category": "language",
+    "aliases": ["julia"]
+  },
+  {
+    "id": "kubernetes",
+    "label": "Kubernetes",
+    "category": "toolchain",
+    "aliases": ["k8s", "kubernetes"]
+  },
+  {
+    "id": "loongarch",
+    "label": "Arch Linux（LoongArch）",
+    "category": "distro",
+    "aliases": ["loongarch", "arch"]
+  },
+  {
+    "id": "manjaro",
+    "label": "Manjaro",
+    "category": "distro",
+    "aliases": ["manjaro", "arch"]
+  },
+  {
+    "id": "nodejs",
+    "label": "Node.js",
+    "category": "language",
+    "aliases": ["node", "nodejs", "npm", "javascript"]
+  },
+  {
+    "id": "openeuler",
+    "label": "openEuler",
+    "category": "distro",
+    "aliases": ["openeuler", "yum"]
+  },
+  {
+    "id": "opensuse",
+    "label": "openSUSE",
+    "category": "distro",
+    "aliases": ["opensuse", "suse", "zypper"]
+  },
+  {
+    "id": "openwrt",
+    "label": "OpenWrt",
+    "category": "distro",
+    "aliases": ["openwrt", "opkg"]
+  },
+  {
+    "id": "opnsense",
+    "label": "OPNsense",
+    "category": "distro",
+    "aliases": ["opnsense", "freebsd"]
+  },
+  {
+    "id": "pip-pypi",
+    "label": "PyPI（pip 索引）",
+    "category": "package-index",
+    "aliases": ["python", "pip", "pypi"]
+  },
+  {
+    "id": "r-bioconductor",
+    "label": "Bioconductor（R）",
+    "category": "language",
+    "aliases": ["r", "bioconductor"]
+  },
+  {
+    "id": "r-cran",
+    "label": "R / CRAN",
+    "category": "language",
+    "aliases": ["r", "cran"]
+  },
+  {
+    "id": "rocky",
+    "label": "Rocky Linux",
+    "category": "distro",
+    "aliases": ["rocky", "yum", "el"]
+  },
+  {
+    "id": "termux",
+    "label": "Termux（Android）",
+    "category": "distro",
+    "aliases": ["termux", "android"]
+  },
+  {
+    "id": "texlive-ctan",
+    "label": "TeX Live / CTAN",
+    "category": "toolchain",
+    "aliases": ["tex", "latex", "ctan", "tlmgr"]
+  },
+  {
+    "id": "ubuntu",
+    "label": "Ubuntu",
+    "category": "distro",
+    "aliases": ["ubuntu", "apt", "deb"]
+  }
+]

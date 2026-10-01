@@ -48,6 +48,19 @@
           "note": "腾讯云文档中的 NPM 软件源地址。"
         }
       ]
+    },
+    {
+      "ecosystemId": "npm",
+      "mirrorId": "huaweicloud",
+      "repositoryUrl": "https://repo.huaweicloud.com/repository/npm/",
+      "supportsPublish": false,
+      "sources": [
+        {
+          "url": "https://mirrors.huaweicloud.com/home",
+          "checkedAt": "2026-09-28",
+          "note": "元数据中的 is-number tarball 地址指向 repo.huaweicloud.com，包体 GET 哈希与官方一致。"
+        }
+      ]
     }
   ],
   "guides": [

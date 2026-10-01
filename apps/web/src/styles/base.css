@@ -144,6 +144,31 @@ hr {
 }
 
 /*
+ * 一行式页脚：左一句、右一个链接/数值，两端对齐（帮助页用它放外部帮助入口）。
+ * 它是同一档低音量文字，只是多了一条两端对齐的排版规则。
+ */
+.footline {
+  display: flex;
+  margin-top: var(--space-5);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-6);
+  color: var(--ink-3);
+  font-size: var(--size-micro);
+}
+
+.footline a {
+  color: var(--ink-2);
+}
+
+@media (max-width: 767px) {
+  .footline {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+}
+
+/*
  * 性质标签（高校 / 商业 / 官方 / 社区）：方角细边，不用药丸也不用底色。
  * 它是一段值，不是按钮——因此和正文同一字重，只靠边线与小一号字区分。
  */

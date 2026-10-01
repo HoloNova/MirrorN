@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@12.4.2",
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=24.0.0"
   },
   "scripts": {
     "dev": "node scripts/require-free-port.mjs web server && pnpm validate:data && concurrently --names web,server --prefix-colors cyan,magenta \"pnpm --filter @mirrorn/web dev\" \"pnpm --filter @mirrorn/server dev\"",

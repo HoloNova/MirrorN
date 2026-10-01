@@ -1,4 +1,4 @@
-import type { Ecosystem, Mirror, Troubleshooting } from '@mirrorn/shared';
+import type { Ecosystem, Mirror, SiteRepositoryGroup, Troubleshooting } from '@mirrorn/shared';
 
 import mirrorsJson from '../../../../data/mirrors.json';
 
@@ -23,6 +23,8 @@ const troubleshootingModules = import.meta.glob<unknown>(
 );
 
 const mirrors = mirrorsJson as Mirror[];
+// 历史换源向导仍供旧数据校验，但对外不再呈现抽样拉取表。
+const siteRepositories: SiteRepositoryGroup[] = [];
 
 const ecosystems = Object.keys(ecosystemModules)
   .sort()
@@ -36,6 +38,8 @@ export interface Catalog {
   mirrors: Mirror[];
   ecosystems: Ecosystem[];
   troubleshooting: Troubleshooting[];
+  /** 按站点维护、只做过包体抽样的仓库；尚无配置/还原向导，不参与推荐。 */
+  siteRepositories: SiteRepositoryGroup[];
 }
 
 export function getCatalog(): Catalog {
@@ -43,6 +47,7 @@ export function getCatalog(): Catalog {
     mirrors,
     ecosystems,
     troubleshooting,
+    siteRepositories,
   };
 }
 

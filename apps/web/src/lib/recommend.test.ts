@@ -85,14 +85,7 @@ describe('scoreCandidate', () => {
     ).toMatchObject({ eligible: false, excludedBy: 'probe-failed' });
   });
 
-  it('keeps stale results out of the automatic recommendation', () => {
-    expect(scoreCandidate({ mirrorId: 'a', result: probeResult(), stale: true })).toMatchObject({
-      eligible: false,
-      excludedBy: 'stale',
-    });
-  });
-
-  it('excludes a fast source whose sync status says the content is not updating', () => {
+  it('keeps a fast source whose sync status says the content is not updating out of the automatic recommendation', () => {
     expect(
       scoreCandidate({
         mirrorId: 'a',
@@ -147,7 +140,11 @@ describe('rankCandidates', () => {
 describe('pickRecommended', () => {
   it('returns nothing when no candidate has a usable measurement', () => {
     expect(
-      pickRecommended([{ mirrorId: 'a' }, { mirrorId: 'b', stale: true, result: probeResult() }]),
+      pickRecommended([
+        { mirrorId: 'a' },
+        // 失败的记录没有数值（缓存只把失败的尝试记成状态）：同样不参与推荐。
+        { mirrorId: 'b', result: probeResult({ status: 'timeout', durationMs: null }) },
+      ]),
     ).toBeUndefined();
   });
 

@@ -4,8 +4,6 @@ import type { Ecosystem, Mirror } from '@mirrorn/shared';
 import {
   generateGuide,
   listPlatforms,
-  OPERATING_SYSTEM_LABELS,
-  SHELL_LABELS,
   type GuideResult,
   type OperatingSystem,
   type PlatformOption,
@@ -35,7 +33,6 @@ export interface GuideParams {
   versionLabel: ComputedRef<string | undefined>;
   mirrors: ComputedRef<Mirror[]>;
   guide: ComputedRef<GuideResult>;
-  detectionNote: ComputedRef<string | undefined>;
   /** 用户是否已经手动选过来源。选过之后推荐结果不再自动替换它。 */
   mirrorPinned: ComputedRef<boolean>;
   setOs: (os: OperatingSystem) => void;
@@ -147,18 +144,6 @@ export function createGuideParams(
     { flush: 'sync' },
   );
 
-  const detectionNote = computed<string | undefined>(() => {
-    if (options.detectedOs === undefined && options.detectedShell === undefined) {
-      const detectedForOs = detectShell(os.value);
-      if (!osShells().includes(detectedForOs)) {
-        return `检测到 ${OPERATING_SYSTEM_LABELS[os.value]} 的默认终端是 ${SHELL_LABELS[detectedForOs]}，当前数据只有 ${osShells()
-          .map((item) => SHELL_LABELS[item])
-          .join('、')} 模板；本页中的命令在这些终端里写法一致。`;
-      }
-    }
-    return undefined;
-  });
-
   const versions = computed<string[]>(() => versionsForOs(os.value));
   const versionLabel = computed<string | undefined>(() => {
     if (!guide.value.ok) {
@@ -180,7 +165,6 @@ export function createGuideParams(
     versionLabel,
     mirrors: computed(() => mirrors.value),
     guide,
-    detectionNote,
     mirrorPinned: computed(() => pinned.value),
     setOs: (value) => {
       os.value = value;

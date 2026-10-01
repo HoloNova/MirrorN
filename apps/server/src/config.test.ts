@@ -113,6 +113,9 @@ describe('resolveServerEnv', () => {
         host: '127.0.0.1',
         snapshotDir: 'apps/server/.data',
         syncEnabled: true,
+        crawlEnabled: true,
+        crawlTimeoutMs: 30000,
+        redisUrl: 'redis://127.0.0.1:6389/0',
         syncIntervalMs: 15 * 60 * 1000,
         staleAfterMs: 45 * 60 * 1000,
         fetchTimeoutMs: 10_000,
@@ -141,6 +144,28 @@ describe('resolveServerEnv', () => {
     expect(result.value.trustProxy).toBe(true);
     expect(result.value.syncEnabled).toBe(false);
     expect(result.value.dataDir).toBe('/srv/data');
+  });
+
+  it('后台开关和TLS Redis可配置；错误地址/读超时在启动前拒绝', () => {
+    const configured = env({
+      MIRRORN_REDIS_URL: 'rediss://localhost:6389/2',
+      MIRRORN_CRAWL_ENABLED: 'false',
+      MIRRORN_CRAWL_TIMEOUT_MS: '60000',
+    });
+    expect(configured.ok && configured.value).toMatchObject({
+      redisUrl: 'rediss://localhost:6389/2',
+      crawlEnabled: false,
+      crawlTimeoutMs: 60000,
+    });
+    for (const value of [
+      'https://localhost/',
+      'redis:///',
+      'redis://localhost/-1',
+      'redis://localhost/abc',
+    ])
+      expect(env({ MIRRORN_REDIS_URL: value }).ok).toBe(false);
+    expect(env({ MIRRORN_CRAWL_TIMEOUT_MS: '0' }).ok).toBe(false);
+    expect(env({ MIRRORN_CRAWL_TIMEOUT_MS: 'soon' }).ok).toBe(false);
   });
 
   it('treats blank values as absent instead of as empty settings', () => {

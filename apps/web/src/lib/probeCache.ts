@@ -16,15 +16,19 @@ export const PROBE_CACHE_KEY = `mirrorn.probe-cache.v${PROBE_CACHE_VERSION}`;
 
 /** 最多保留的探针结果条数，避免无上限增长。 */
 export const PROBE_CACHE_MAX_ENTRIES = 32;
-/** 过期后仍保留一段时间，用于 SWR 先展示再更新；超过就直接丢弃。 */
-export const PROBE_CACHE_STALE_LIMIT_MS = 24 * 60 * 60 * 1000;
+/**
+ * 没有成功结果的条目（也就是只剩“最近一次尝试失败”的那些）最多留多久。
+ *
+ * 成功结果过了 `PROBE_CACHE_TTL_MS` 就等于没有数据，写入时直接丢掉；剩下的失败记录只服务于
+ * 失败冷却（`PROBE_FAILURE_RETRY_MS`），留一天足够，也避免 localStorage 无界增长。
+ */
+export const PROBE_CACHE_ENTRY_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 /**
  * 一条缓存记录：**最近一次成功**与**最近一次尝试**分开记。
  *
- * 为什么分开：失败不覆盖结果（`ok` 保留上一次的耗时），但失败的**时间**要留下来，
- * 否则每次打开页面都会再去试一次不可达的来源。两者合起来才能同时做到
- * “有旧值就继续显示旧值”与“失败后短时间内不重复打”。
+ * 为什么分开：成功结果只在 `PROBE_CACHE_TTL_MS` 内算数，过期即等于没有数据、不会再被展示；
+ * 但“最近一次尝试失败”这件事要单独留下来，否则每次打开页面都会再去试一次不可达的来源（失败冷却）。
  */
 export interface ProbeCacheEntry {
   /** 探针 id：条目的身份（键为它）。失败条目没有结果，因此 id 必须单独存。 */
@@ -54,13 +58,20 @@ export interface ProbeCacheWrite {
 export interface ProbeCacheStore {
   /** 读取结构合法的条目，包含已过期的条目；是否过期由调用方判断。 */
   read: () => ProbeCacheEntry[];
-  /** 写入成功结果（失败请用 writeFailure，它不会覆盖 ok）。 */
+  /** 写入成功结果（失败请用 writeFailure）。 */
   write: (entries: ProbeCacheWrite[], now?: number, fingerprint?: string) => void;
-  /** 记录一次失败的尝试：只更新 lastAttempt，保留 ok。 */
+  /** 记录一次失败的尝试：只更新 lastAttempt，不写入数值。 */
   writeFailure: (
     failures: Array<{ target: ProbeTarget; result: ProbeResult }>,
     now?: number,
   ) => void;
+  /**
+   * 删除这些探针的记录。
+   *
+   * 用途：手动重测（用户明确要求重新测一遍）之前清掉旧值——否则这次没测到时，旧数字
+   * 会在下次读取缓存时重新冒出来，等于把一次失败的尝试又包装成“仍有数据”。
+   */
+  drop: (probeIds: string[], now?: number) => void;
   clear: () => void;
 }
 
@@ -279,14 +290,36 @@ export function createProbeCache(options: ProbeCacheOptions = {}): ProbeCacheSto
     return [...merged.values()];
   }
 
+  /**
+   * 落盘前的整理：过期的成功结果直接丢掉（过期即没有数据），只剩失败记录的条目按保留上限
+   * 丢掉，最后给条数封顶。
+   */
+  function prune(entries: ProbeCacheEntry[], now: number): ProbeCacheEntry[] {
+    const kept: ProbeCacheEntry[] = [];
+    for (const entry of entries) {
+      const ok = entry.ok !== undefined && entry.ok.expiresAt > now ? entry.ok : undefined;
+      if (ok !== undefined) {
+        kept.push(ok === entry.ok ? entry : { ...entry, ok });
+        continue;
+      }
+      // 没有有效结果时，只有“最近一次尝试失败”这一条记录还有用（失败冷却）——
+      // 其余情况（没成功过、且最近一次尝试也没失败）等于什么都没留下，不占存储。
+      const blockedRetry =
+        entry.lastAttempt.status !== 'ok' &&
+        entry.lastAttempt.at + PROBE_CACHE_ENTRY_MAX_AGE_MS >= now;
+      if (blockedRetry) {
+        kept.push({
+          probeId: entry.probeId,
+          signature: entry.signature,
+          lastAttempt: entry.lastAttempt,
+        });
+      }
+    }
+    return kept.slice(-PROBE_CACHE_MAX_ENTRIES);
+  }
+
   function persist(entries: ProbeCacheEntry[], now: number): void {
-    // 过期后仍保留一段时间供“先展示再更新”；两者都过期很久了就丢掉。
-    const kept = entries
-      .filter(
-        (entry) =>
-          (entry.ok?.expiresAt ?? entry.lastAttempt.at) + PROBE_CACHE_STALE_LIMIT_MS >= now,
-      )
-      .slice(-PROBE_CACHE_MAX_ENTRIES);
+    const kept = prune(entries, now);
 
     if (storage) {
       try {
@@ -350,6 +383,16 @@ export function createProbeCache(options: ProbeCacheOptions = {}): ProbeCacheSto
       }
       persist([...next.values()], now);
     },
+    drop: (probeIds, now = Date.now()) => {
+      const removing = new Set(probeIds);
+      if (removing.size === 0) {
+        return;
+      }
+      persist(
+        read().filter((entry) => !removing.has(entry.probeId)),
+        now,
+      );
+    },
     clear: () => {
       memory.clear();
       if (!storage) {
@@ -364,26 +407,21 @@ export function createProbeCache(options: ProbeCacheOptions = {}): ProbeCacheSto
   };
 }
 
-export interface CachedProbe {
-  result: ProbeResult;
-  /** true 表示已过期，展示时要说清楚，且不参与自动推荐。 */
-  stale: boolean;
-  /** 最近一次尝试失败：结果仍是上一次成功的值（见 cache.writeFailure）。 */
-  attemptFailed: boolean;
-}
-
 /** 判断一个候选现在是否需要发起测速。 */
 export type MeasureDecision = 'fresh' | 'measure' | 'throttled';
 
 /**
- * 从缓存里挑出当前候选可用的结果，并判断谁需要重测。
+ * 从缓存里挑出当前候选**可展示的数据**，并判断谁需要重测。
  *
- * 规则（对应用户要求：缓存新鲜就不测、失败不覆盖旧值、换网重测、失败后不连打）：
+ * 数据只有一种：3 小时内（`PROBE_CACHE_TTL_MS`）的成功结果。过了这个期限就等于没有数据——
+ * 不再展示、也不参与自动推荐，等下一次测到为止（用户口径：不要拿过期数字顶替）。
+ *
+ * 规则：
  *   1. 签名不一致（数据换了探针）→ 丢弃；
  *   2. 记录的指纹与当前指纹都已知且不同 → 丢弃（那些数字是在别的网络上测的）；
- *   3. 有 ok 且未过期 → `fresh`，一个请求都不发；
- *   4. 有 ok 但过期 → 展示它（stale），需要重测；但若最近一次尝试刚失败过 → `throttled`；
- *   5. 没有 ok，但最近一次尝试是失败且还在冷却期内 → `throttled`，展示那次失败。
+ *   3. 有成功结果且没过期 → `fresh`，一个请求都不发；
+ *   4. 其余情况都要测；但最近一次尝试刚失败过（`retryDelayMs` 冷却内）→ `throttled`，先不重试；
+ *   5. 没有数据，而最近一次尝试是失败 → 把那次失败作为状态展示（没有数值，只有“超时 / 失败”）。
  */
 export function selectCachedResults(
   entries: ProbeCacheEntry[],
@@ -391,9 +429,9 @@ export function selectCachedResults(
   now: number = Date.now(),
   fingerprint?: string,
   retryDelayMs: number = PROBE_FAILURE_RETRY_MS,
-): { results: Map<string, CachedProbe>; decisions: Map<string, MeasureDecision> } {
+): { results: Map<string, ProbeResult>; decisions: Map<string, MeasureDecision> } {
   const expected = new Map(targets.map((target) => [target.probe.id, target]));
-  const results = new Map<string, CachedProbe>();
+  const results = new Map<string, ProbeResult>();
   const decisions = new Map<string, MeasureDecision>();
 
   // 默认每个候选都要测；下面每读到一条可用缓存就改成 fresh / throttled。
@@ -415,36 +453,27 @@ export function selectCachedResults(
       continue;
     }
 
-    const recentFailure =
-      entry.lastAttempt.status !== 'ok' && now - entry.lastAttempt.at < retryDelayMs;
-
-    if (entry.ok) {
-      const stale = entry.ok.expiresAt <= now;
-      results.set(target.mirrorId, {
-        result: entry.ok.result,
-        stale,
-        attemptFailed: entry.lastAttempt.status !== 'ok',
-      });
-      decisions.set(target.mirrorId, !stale ? 'fresh' : recentFailure ? 'throttled' : 'measure');
+    if (entry.ok && entry.ok.expiresAt > now) {
+      results.set(target.mirrorId, entry.ok.result);
+      decisions.set(target.mirrorId, 'fresh');
       continue;
     }
 
-    // 没有成功记录：最近一次失败本身就是唯一可展示的信息。
+    // 没有有效数据：最近一次失败是唯一可展示的信息（只有状态，没有数值）。
     if (entry.lastAttempt.status !== 'ok') {
       results.set(target.mirrorId, {
-        result: {
-          mirrorId: target.mirrorId,
-          probeId: target.probe.id,
-          status: entry.lastAttempt.status,
-          durationMs: entry.lastAttempt.durationMs,
-          measuredAt: entry.lastAttempt.at,
-          mode: target.probe.mode,
-          opaque: target.probe.mode === 'no-cors',
-        },
-        stale: true,
-        attemptFailed: true,
+        mirrorId: target.mirrorId,
+        probeId: target.probe.id,
+        status: entry.lastAttempt.status,
+        durationMs: entry.lastAttempt.durationMs,
+        measuredAt: entry.lastAttempt.at,
+        mode: target.probe.mode,
+        opaque: target.probe.mode === 'no-cors',
       });
-      decisions.set(target.mirrorId, recentFailure ? 'throttled' : 'measure');
+      decisions.set(
+        target.mirrorId,
+        now - entry.lastAttempt.at < retryDelayMs ? 'throttled' : 'measure',
+      );
     }
   }
 

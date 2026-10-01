@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
-import EcosystemPage from './pages/EcosystemPage.vue';
+import ResourcePage from './pages/ResourcePage.vue';
 import HelpPage from './pages/HelpPage.vue';
 import HomePage from './pages/HomePage.vue';
 import NotFoundPage from './pages/NotFoundPage.vue';
@@ -13,21 +13,21 @@ import SitesPage from './pages/SitesPage.vue';
  *
  * `meta.layout` 决定外壳形态（见 App.vue / styles/shell.css）：
  *   'app'  左侧导航：首页、站点、帮助
- *   'doc'  顶栏：生态文档（文档自己有页内目录栏，不再叠一列全局导航）
+ *   'doc'  顶栏：文档类页面（自带页内目录栏，不再叠一列全局导航）
  */ export const router = createRouter({
   history: createWebHashHistory(),
   routes: [
     { path: '/', name: 'home', component: HomePage },
     { path: '/sites', name: 'sites', component: SitesPage },
     { path: '/sites/:id', name: 'site', component: SitesDetailPage, props: true },
+    { path: '/resources/:id', name: 'resource', component: ResourcePage, props: true },
     { path: '/help/:id?', name: 'help', component: HelpPage },
+    // 旧地址：资源页上线前的教程页与生态文档页，保留跳转不让外链失效。
     {
-      path: '/ecosystems/:id',
-      name: 'ecosystem',
-      component: EcosystemPage,
-      props: true,
-      meta: { layout: 'doc' },
+      path: '/tutorials/miniconda',
+      redirect: { name: 'resource', params: { id: 'pku:anaconda' } },
     },
+    { path: '/ecosystems/:id', redirect: { name: 'home' } },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundPage },
   ],
   scrollBehavior: () => ({ top: 0 }),

@@ -1,4 +1,14 @@
-import type { Ecosystem, GuideVariant, Mirror, Troubleshooting } from './schemas.js';
+import type {
+  Ecosystem,
+  EcosystemTaxonomyEntry,
+  GuideVariant,
+  Mirror,
+  SiteInventory,
+  SiteRepositoryGroup,
+  SiteResourceList,
+  Troubleshooting,
+  Tutorial,
+} from './schemas.js';
 
 const TEMPLATE_VARIABLE_PATTERN = /\{\{([a-zA-Z][a-zA-Z0-9]*)\}\}/g;
 const KNOWN_TEMPLATE_VARIABLES = new Set(['mirrorUrl', 'packageName', 'configPath']);
@@ -52,6 +62,16 @@ export interface Dataset {
   mirrors: Mirror[];
   ecosystems: Ecosystem[];
   troubleshooting: Troubleshooting[];
+  /** 已核实的站点官方仓库目录（data/site-inventories/*.json）。 */
+  siteInventories?: SiteInventory[];
+  /** 审核后的生态分类（data/ecosystem-taxonomy.json）；站点资源与教程都引用它。 */
+  ecosystemTaxonomy?: EcosystemTaxonomyEntry[];
+  /** 每个站点官方目录的审阅归类（data/site-resources/*.json）；这是站内页面与搜索的数据源。 */
+  siteResources?: SiteResourceList[];
+  /** 我们自己的 Markdown 教程（data/tutorials.json）。 */
+  tutorials?: Tutorial[];
+  /** 历史包体抽样目录，已停用；字段保留只为让旧测试与旧数据文件仍能被校验。 */
+  siteRepositories?: SiteRepositoryGroup[];
 }
 
 export interface DatasetValidationIssue {
@@ -106,6 +126,10 @@ export function validateDataset(dataset: Dataset): DatasetValidationIssue[] {
   const probeIds = new Set<string>();
   const ecosystemIds = new Set<string>();
   const troubleshootingIds = new Set<string>();
+  const guidedPairs = new Set<string>();
+  const guidedSites = new Set<string>();
+  // 目录已核验但尚无可用配置/还原向导的协议；不因此生成空的生态页。
+  const directoryOnlyEcosystems = new Set(['go', 'maven', 'cargo', 'debian', 'alpine']);
 
   // 生态数据里已经审核过的仓库主机，可以作为探针地址的第二个合法来源：
   // npm 官方 registry（registry.npmjs.org）与它的主页（www.npmjs.com）并不是同一个域。
@@ -179,6 +203,12 @@ export function validateDataset(dataset: Dataset): DatasetValidationIssue[] {
       if (support.repositoryUrl.startsWith('http://')) {
         addIssue(issues, `${supportPath}.repositoryUrl`, '仓库地址必须使用 HTTPS');
       }
+      const key = `${support.mirrorId}|${ecosystem.id}`;
+      if (guidedPairs.has(key)) {
+        addIssue(issues, supportPath, `同站同生态的可配置来源重复：${key}`);
+      }
+      guidedPairs.add(key);
+      guidedSites.add(support.mirrorId);
     });
 
     const guideIds = new Set<string>();
@@ -244,6 +274,158 @@ export function validateDataset(dataset: Dataset): DatasetValidationIssue[] {
       }
     }
   });
+
+  // 目录层：对站点官方公布的仓库目录做引用与同源校验。官方目录本身不承诺每个仓库可用，
+  // 它不是配置向导，也不是包体抽样记录。
+  const inventorySites = new Set<string>();
+  for (const [inventoryIndex, inventory] of (dataset.siteInventories ?? []).entries()) {
+    const inventoryPath = `siteInventories[${inventoryIndex}]`;
+    if (!mirrorIds.has(inventory.siteId)) {
+      addIssue(issues, `${inventoryPath}.siteId`, `引用了不存在的镜像：${inventory.siteId}`);
+    }
+    if (inventorySites.has(inventory.siteId)) {
+      addIssue(issues, `${inventoryPath}.siteId`, `站点官方目录重复：${inventory.siteId}`);
+    }
+    inventorySites.add(inventory.siteId);
+
+    const sourceHost = parseHost(inventory.sourceUrl);
+    const homepage = dataset.mirrors.find((mirror) => mirror.id === inventory.siteId)?.homepageUrl;
+    const homepageHost = homepage === undefined ? undefined : parseHost(homepage);
+    if (
+      sourceHost !== undefined &&
+      homepageHost !== undefined &&
+      !isSameSite(sourceHost, homepageHost)
+    ) {
+      addIssue(
+        issues,
+        `${inventoryPath}.sourceUrl`,
+        `官方目录入口必须是镜像自己站点上的地址；当前为 ${sourceHost}，主页为 ${homepageHost}`,
+      );
+    }
+  }
+
+  // 审阅归类：站内页面、筛选与搜索都读它，因此三条引用必须闭合。
+  const taxonomyIds = new Set((dataset.ecosystemTaxonomy ?? []).map((entry) => entry.id));
+  const tutorialIds = new Set((dataset.tutorials ?? []).map((entry) => entry.id));
+  const classifiedSites = new Set<string>();
+  for (const [listIndex, list] of (dataset.siteResources ?? []).entries()) {
+    const listPath = `siteResources[${listIndex}]`;
+    if (!mirrorIds.has(list.siteId)) {
+      addIssue(issues, `${listPath}.siteId`, `引用了不存在的镜像：${list.siteId}`);
+    }
+    if (classifiedSites.has(list.siteId)) {
+      addIssue(issues, `${listPath}.siteId`, `站点资源归类重复：${list.siteId}`);
+    }
+    classifiedSites.add(list.siteId);
+
+    const inventory = (dataset.siteInventories ?? []).find((entry) => entry.siteId === list.siteId);
+    const inventoryIds = new Set(inventory?.repositories.map((repository) => repository.id) ?? []);
+    const homepage = dataset.mirrors.find((mirror) => mirror.id === list.siteId)?.homepageUrl;
+    const homepageHost = homepage === undefined ? undefined : parseHost(homepage);
+
+    for (const [resourceIndex, resource] of list.resources.entries()) {
+      const resourcePath = `${listPath}.resources[${resourceIndex}]`;
+      if (!taxonomyIds.has(resource.ecosystemId)) {
+        addIssue(
+          issues,
+          `${resourcePath}.ecosystemId`,
+          `引用了未定义的生态：${resource.ecosystemId}（先在 data/ecosystem-taxonomy.json 里定义）`,
+        );
+      }
+      if (resource.tutorialId !== null && !tutorialIds.has(resource.tutorialId)) {
+        addIssue(
+          issues,
+          `${resourcePath}.tutorialId`,
+          `引用了不存在的教程：${resource.tutorialId}（见 data/tutorials.json）`,
+        );
+      }
+      if (inventory !== undefined && !inventoryIds.has(resource.id)) {
+        addIssue(issues, `${resourcePath}.id`, `官方目录里没有这条仓库：${resource.id}`);
+      }
+      // PKU /files/ 目录适配器拼接相对路径，入口必须指向以 / 结尾的目录。
+      if (list.siteId === 'pku' && !resource.downloadEntry.endsWith('/')) {
+        addIssue(issues, `${resourcePath}.downloadEntry`, '北大文件目录入口必须以 / 结尾');
+      }
+      // 下载入口必须是镜像站自己的地址：站内页面不能让用户不知不觉跳到第三方。
+      for (const [field, value] of [
+        ['downloadEntry', resource.downloadEntry],
+        ['helpDocUrl', resource.helpDocUrl],
+      ] as const) {
+        const host = value === null ? undefined : parseHost(value);
+        if (host !== undefined && homepageHost !== undefined && !isSameSite(host, homepageHost)) {
+          addIssue(
+            issues,
+            `${resourcePath}.${field}`,
+            `必须是镜像自己站点上的地址；当前为 ${host}`,
+          );
+        }
+      }
+    }
+
+    // 官方目录与归类必须一一对应：漏掉一条，站内页面就会少一个可下载的资源。
+    if (inventory !== undefined) {
+      const classified = new Set(list.resources.map((resource) => resource.id));
+      for (const repository of inventory.repositories) {
+        if (!classified.has(repository.id)) {
+          addIssue(issues, `${listPath}.resources`, `官方目录里的仓库缺少归类：${repository.id}`);
+        }
+      }
+    }
+  }
+
+  for (const [tutorialIndex, tutorial] of (dataset.tutorials ?? []).entries()) {
+    for (const ecosystemId of tutorial.ecosystemIds) {
+      if (!taxonomyIds.has(ecosystemId)) {
+        addIssue(
+          issues,
+          `tutorials[${tutorialIndex}].ecosystemIds`,
+          `教程引用了未定义的生态：${ecosystemId}`,
+        );
+      }
+    }
+  }
+
+  // 目录层是站点优先的静态抽查；不与可配置向导维护同一份仓库 URL。
+  const directorySites = new Set<string>();
+  dataset.siteRepositories?.forEach((group, groupIndex) => {
+    const groupPath = `siteRepositories[${groupIndex}]`;
+    if (!mirrorIds.has(group.siteId)) {
+      addIssue(issues, `${groupPath}.siteId`, `引用了不存在的镜像：${group.siteId}`);
+    }
+    if (directorySites.has(group.siteId)) {
+      addIssue(issues, `${groupPath}.siteId`, `站点仓库分组重复：${group.siteId}`);
+    }
+    directorySites.add(group.siteId);
+
+    const seenRepositoryIds = new Set<string>();
+    const seenAddresses = new Set<string>();
+    group.repositories.forEach((repository, repoIndex) => {
+      const repoPath = `${groupPath}.repositories[${repoIndex}]`;
+      const key = `${group.siteId}|${repository.ecosystemId}`;
+      if (seenRepositoryIds.has(repository.id)) {
+        addIssue(issues, `${repoPath}.id`, `站点仓库 ID 重复：${group.siteId}|${repository.id}`);
+      }
+      seenRepositoryIds.add(repository.id);
+      const address = `${repository.ecosystemId}|${repository.repositoryUrl}`;
+      if (seenAddresses.has(address)) {
+        addIssue(issues, `${repoPath}.repositoryUrl`, `仓库地址重复：${key}`);
+      }
+      seenAddresses.add(address);
+      if (guidedPairs.has(key)) {
+        addIssue(issues, `${repoPath}.ecosystemId`, `已经在生态向导中维护：${key}`);
+      }
+      if (
+        !ecosystemIds.has(repository.ecosystemId) &&
+        !directoryOnlyEcosystems.has(repository.ecosystemId)
+      ) {
+        addIssue(issues, `${repoPath}.ecosystemId`, `未知生态：${repository.ecosystemId}`);
+      }
+    });
+  });
+
+  // 站点收录不再要求“已核实仓库”：新主线里站点先收录官方入口，仓库目录逐站核实（site-inventories），
+  // 不在目录的站点在界面上明确标为待整理，而不是拿抽样记录充当清单。
+  // 每个站点至少要有 sources 这一条由 MirrorSchema 保证（官方入口已核对于 checkedAt）。
 
   // 状态源：与探针同样的“必须属于镜像自己”的约束，另外要求上游声明的作业名存在。
   const statusJobs = new Map<string, { mirrorId: string; ecosystemId: string; path: string }>();

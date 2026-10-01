@@ -1,0 +1,18 @@
+[
+  {
+    "id": "miniconda",
+    "title": "用 Miniconda 装出第一个 Python 环境",
+    "file": "miniconda.md",
+    "ecosystemIds": ["anaconda-installer"],
+    "summary": "按系统和架构选安装器，装好后创建第一个 Python 环境",
+    "aliases": ["python", "conda", "miniconda", "蟒蛇", "环境管理"]
+  },
+  {
+    "id": "nodejs",
+    "title": "装好 Node.js 之后：验证、第一个程序与常见问题",
+    "file": "nodejs.md",
+    "ecosystemIds": ["nodejs"],
+    "summary": "确认装的是哪个文件、怎么验证、npm 与全局包的坑",
+    "aliases": ["node", "nodejs", "npm", "javascript", "前端"]
+  }
+]

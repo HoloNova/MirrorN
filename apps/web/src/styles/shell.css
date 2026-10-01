@@ -113,13 +113,18 @@
   color: var(--ink);
 }
 
-/* 当前模块：左侧一根 2px 蓝色刻度（与页内目录、读数条同一根刻度）。 */
-.side-nav .router-link-active {
+/*
+ * 当前模块：左侧一根 2px 蓝色刻度（与页内目录、读数条同一根刻度）。
+ *
+ * 选择器写到 `.side-list` 而不是 `.side-nav`：品牌行也是一个指向首页的 RouterLink，
+ * 让它跟着高亮会在侧栏左边缘多出一根没有归属的蓝刻度（它没有 position: relative）。
+ */
+.side-list .router-link-active {
   color: var(--ink);
   font-weight: 600;
 }
 
-.side-nav .router-link-active::before {
+.side-list .router-link-active::before {
   position: absolute;
   top: 50%;
   left: 0;
@@ -279,7 +284,7 @@
   }
 
   /* 横排时当前模块的刻度转到文字下方。 */
-  .side-nav .router-link-active::before {
+  .side-list .router-link-active::before {
     top: auto;
     bottom: 0;
     left: var(--space-2);
@@ -335,7 +340,7 @@
     padding: var(--space-1);
   }
 
-  .side-nav .router-link-active::before {
+  .side-list .router-link-active::before {
     left: 0;
   }
 }

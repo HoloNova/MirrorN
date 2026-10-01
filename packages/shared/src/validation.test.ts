@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { EcosystemSchema, MirrorSchema, validateDataset } from './index.js';
+import {
+  EcosystemSchema,
+  MirrorSchema,
+  SiteRepositoryGroupSchema,
+  validateDataset,
+} from './index.js';
 import type { Dataset } from './validation.js';
 
 const source = {
@@ -73,9 +78,29 @@ function makeDataset(overrides: Partial<Dataset> = {}): Dataset {
     mirrors: [mirror],
     ecosystems: [makeEcosystem()],
     troubleshooting: [troubleshooting],
+    siteRepositories: [],
     ...overrides,
   };
 }
+
+const directoryGroup = SiteRepositoryGroupSchema.parse({
+  siteId: 'example-mirror',
+  repositories: [
+    {
+      id: 'go',
+      ecosystemId: 'go',
+      name: 'Go 模块代理',
+      repositoryUrl: 'https://example.com/goproxy/',
+      scope: 'rsc.io/quote v1.5.2',
+      sampleUrl: 'https://example.com/goproxy/rsc.io/quote/@v/v1.5.2.zip',
+      sampleFinalUrl: 'https://cdn.example.com/rsc.io/quote/v1.5.2.zip',
+      sampleBytes: 2987,
+      sampleSha256: 'a'.repeat(64),
+      checkedAt: '2026-09-28',
+      sourceUrl: 'https://example.com/help/go',
+    },
+  ],
+});
 
 describe('validateDataset', () => {
   it('accepts a complete dataset with declared template variables', () => {
@@ -375,5 +400,66 @@ describe('validateDataset', () => {
         '同一个状态文件里的作业名 pypi 被 example-mirror/example-ecosystem 与 example-mirror/example-ecosystem 同时占用',
       );
     });
+  });
+});
+
+describe('站点优先仓库目录', () => {
+  it('接受独立于换源向导的包体抽样，并拒绝无效哈希', () => {
+    expect(validateDataset(makeDataset({ siteRepositories: [directoryGroup] }))).toEqual([]);
+    expect(
+      SiteRepositoryGroupSchema.safeParse({
+        ...directoryGroup,
+        repositories: [{ ...directoryGroup.repositories[0], sampleSha256: 'HEAD-ONLY' }],
+      }).success,
+    ).toBe(false);
+  });
+
+  it('拒绝悬空站点、重复分组和重复仓库', () => {
+    const issues = validateDataset(
+      makeDataset({
+        siteRepositories: [
+          directoryGroup,
+          {
+            siteId: 'missing-site',
+            repositories: [directoryGroup.repositories[0], directoryGroup.repositories[0]],
+          },
+          directoryGroup,
+        ],
+      }),
+    ).map((issue) => issue.message);
+    expect(issues).toContain('引用了不存在的镜像：missing-site');
+    expect(issues).toContain('站点仓库分组重复：example-mirror');
+    expect(issues).toContain('站点仓库 ID 重复：missing-site|go');
+  });
+
+  it('同一站点可记录同一生态的多个不同仓库入口', () => {
+    const second = {
+      ...directoryGroup.repositories[0],
+      id: 'go-secondary',
+      repositoryUrl: 'https://example.com/other-goproxy/',
+    };
+    expect(
+      validateDataset(
+        makeDataset({
+          siteRepositories: [
+            { ...directoryGroup, repositories: [...directoryGroup.repositories, second] },
+          ],
+        }),
+      ),
+    ).toEqual([]);
+  });
+
+  it('同站同生态不能同时在目录和向导里维护两个地址', () => {
+    const issues = validateDataset(
+      makeDataset({
+        siteRepositories: [
+          {
+            ...directoryGroup,
+            repositories: [{ ...directoryGroup.repositories[0], ecosystemId: 'example-ecosystem' }],
+          },
+        ],
+      }),
+    ).map((issue) => issue.message);
+    expect(issues).toContain('已经在生态向导中维护：example-mirror|example-ecosystem');
   });
 });

@@ -2,13 +2,10 @@
  * 页面版面：正文一列 + 右侧一列真实数据（首页、站点页共用）。
  *
  * 右列不是装饰：宽屏上把与当前决策无关但确实存在的数字（覆盖规模、数据核对日期）
- * 放在那里，正文区因此可以专心回答“换哪个来源”。
+ * 放在那里，正文区因此可以专心回答“从哪个生态开始”。
  *
- * 首页另有四态由 data-state / data-searching 驱动，不切换组件树：
- *   untested  还没测速（默认，等待用户点「测速」）
- *   measuring 测速中（骨架行 + 剖面线刻度）
- *   measured  已测速（大号读数 + 前 3 名 + 固定刻度的排名表）
- *   searching 搜索态（框拉到视觉中心，测速区与右列收起）
+ * 首页的搜索态由 data-searching 驱动，不切换组件树：
+ *   searching 搜索态（框拉到视觉中心，其余内容与右列一起收起）
  */
 
 .page {
@@ -45,7 +42,7 @@
   margin-inline: auto;
 }
 
-/* ── 页头：一节标题 + 右侧口径 ─────────────────────────────────────────── */
+/* ── 页头：一节标题 + 右侧一个事实（数量或日期） ──────────────────────── */
 
 .page-head {
   display: flex;
@@ -69,115 +66,13 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── 第一视觉：大号读数 + 来源 + 动作 ─────────────────────────────────── */
+/* ── 首页的生态目录：生态 / 来源（与站点目录同一套列对齐规则） ────────── */
 
-.hero {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--space-6);
-  padding: var(--space-5) 0;
-  border-bottom: var(--rule) solid var(--line);
+.rows.home-ecos .row {
+  grid-template-columns: var(--col-name) var(--col-count);
 }
 
-.hero-readout {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.hero-value {
-  font-family: var(--font-mono);
-  font-size: var(--size-readout);
-  font-weight: 500;
-  line-height: 0.9;
-  letter-spacing: -0.05em;
-  font-variant-numeric: tabular-nums;
-}
-
-.hero-unit {
-  color: var(--ink-2);
-  font-family: var(--font-mono);
-  font-size: 18px;
-}
-
-/* 未测速／测速中：一个破折号占住大号数字的位置，页面不会因为没数据而塌掉。 */
-.hero-void {
-  display: block;
-  width: 84px;
-  color: var(--ink-3);
-  font-family: var(--font-mono);
-  font-size: var(--size-readout-sm);
-  line-height: 1;
-  text-align: center;
-}
-
-.hero-who {
-  padding-bottom: 6px;
-}
-
-.hero-name {
-  color: var(--ink);
-  font-size: var(--size-h3);
-  font-weight: 600;
-}
-
-.hero-flags {
-  display: flex;
-  margin-top: 6px;
-  align-items: center;
-  gap: var(--space-3);
-  min-height: 19px;
-}
-
-.hero-sub {
-  color: var(--ink-3);
-  font-size: var(--size-micro);
-}
-
-.hero-tier {
-  font-size: var(--size-micro);
-}
-
-.hero-tier[data-tier='fast'] {
-  color: var(--ok);
-}
-
-.hero-tier[data-tier='fair'] {
-  color: var(--warn);
-}
-
-.hero-tier[data-tier='slow'] {
-  color: var(--bad);
-}
-
-.hero-action {
-  margin-left: auto;
-  padding-bottom: 6px;
-}
-
-/* ── 排名表 ───────────────────────────────────────────────────────────── */
-
-.home-rank {
-  margin-top: var(--space-6);
-}
-
-/* ── 页脚：一行口径 + 一行数据来源 ─────────────────────────────────────── */
-
-.footline {
-  display: flex;
-  margin-top: var(--space-5);
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-6);
-  color: var(--ink-3);
-  font-size: var(--size-micro);
-}
-
-.footline a {
-  color: var(--ink-2);
-}
-
-/* ── 右列：四块真实数据 ───────────────────────────────────────────────── */
+/* ── 右列：真实数据 ───────────────────────────────────────────────────── */
 
 .page-meta {
   min-width: 0;
@@ -245,7 +140,7 @@
 /* ── 宽度适配 ─────────────────────────────────────────────────────────── */
 
 @media (max-width: 1199px) {
-  /* 右列不再并排：改成正文下方的一带四栏，避免挤压排名表的刻度列。 */
+  /* 右列不再并排：改成正文下方的一带两栏。 */
   .page {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -269,27 +164,18 @@
     gap: var(--space-6);
   }
 
-  .hero {
-    flex-wrap: wrap;
-    gap: var(--space-4);
-    align-items: center;
+  /* 生态目录只有两列，窄屏上不必像排名表那样拆成三行。 */
+  .rows.home-ecos .row {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .hero-value {
-    font-size: var(--size-readout-sm);
-  }
-
-  .hero-action {
-    margin-left: 0;
+  .rows.home-ecos .row-count {
+    grid-row: 1;
+    grid-column: 2;
   }
 
   .page-meta {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .footline {
-    flex-direction: column;
-    gap: var(--space-1);
   }
 
   .page[data-searching='true'] {

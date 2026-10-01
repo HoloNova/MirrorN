@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { RouterLink } from 'vue-router';
 
 import type { Ecosystem } from '@mirrorn/shared';
 import { SYNC_UNKNOWN } from '@mirrorn/shared/sync';
@@ -40,9 +39,7 @@ const {
   platforms,
   shells,
   versions,
-  versionLabel,
   guide,
-  detectionNote,
   mirrorPinned,
   setOs,
   setShell,
@@ -59,19 +56,14 @@ const troubleshooting = getTroubleshooting(props.ecosystem.id);
 // 不让整页打不开（失败原因见浏览器控制台）。
 const probeTargets = toProbeTargets(mirrors);
 
-// 先建状态接入，再建测速接入：同步状态参与推荐评分，而状态里的网络指纹变化要作废测量结果。
+// 先建状态接入，再建测速接入：同步状态参与推荐评分，而状态里的网络指纹变化要重测。
 // 指纹回调只会在后续检查里触发，因此这里用可变引用破掉两者之间的循环依赖。
-let invalidateProbes: () => void = () => undefined;
+let refreshOnNetworkChange: () => void = () => undefined;
 const statusAccess = useMirrorStatus({
   autoStart: false,
-  onFingerprintChange: () => invalidateProbes(),
+  onFingerprintChange: () => refreshOnNetworkChange(),
 });
-const {
-  enabled: statusEnabled,
-  meta: statusMeta,
-  recordFor: statusRecordFor,
-  statusFor,
-} = statusAccess;
+const { meta: statusMeta, recordFor: statusRecordFor, statusFor } = statusAccess;
 
 /**
  * 同步状态的**响应式快照**。
@@ -99,10 +91,8 @@ const {
   refreshing: probeRefreshing,
   offline: probeOffline,
   lastMeasuredAt,
-  lastRoundFailures,
   refresh: refreshProbes,
   revalidate: revalidateProbes,
-  invalidate: invalidateProbesInternal,
 } = createMirrorProbeAccess({
   getTargets: () => probeTargets,
   getFingerprint: () => statusAccess.fingerprintValue.value,
@@ -110,7 +100,8 @@ const {
   autoStart: false,
 });
 
-invalidateProbes = invalidateProbesInternal;
+// 换了网络（出口指纹变了）时旧的耗时不代表当前链路：refresh 会清掉这些来源的旧值重测。
+refreshOnNetworkChange = refreshProbes;
 
 /** 同步状态文案：评分用状态值，展示用文案，口径集中在 lib/statusView.ts。 */
 function syncFor(mirrorIdValue: string) {
@@ -155,20 +146,6 @@ const rankRows = computed<RankRow[]>(() =>
 );
 
 const selectedMirror = computed(() => mirrors.find((mirror) => mirror.id === mirrorId.value));
-
-const statusSourceNote = computed<string | undefined>(() => {
-  if (!statusEnabled) {
-    return undefined;
-  }
-  const meta = statusMeta.value;
-  if (meta.fetchedAt === undefined) {
-    return '本次访问没有取到同步数据（首次同步可能正在进行），同步状态按“未知”展示。';
-  }
-  const available = meta.sources.filter((source) => source.ok).length;
-  const updated = new Date(meta.fetchedAt).toLocaleString('zh-CN', { hour12: false });
-  const freshness = meta.stale ? '，可能已过期' : '';
-  return `同步数据更新于 ${updated}，来源 ${available}/${meta.sources.length} 可用${freshness}`;
-});
 
 // 推荐结果在探测过程中会变；一旦用户手动点过来源，guideParams 自身会忽略后续推荐。
 watch(recommendedMirrorId, (value) => applyRecommendation(value), { immediate: true });
@@ -451,12 +428,6 @@ function jumpTo(id: GuideSectionId): void {
             @select="setMirror"
           />
 
-          <p v-if="lastRoundFailures > 0" class="note">
-            本次测速没有成功，仍在显示上次成功的结果。
-          </p>
-
-          <p v-if="statusSourceNote" class="note">{{ statusSourceNote }}</p>
-
           <p v-if="probeOffline" class="note" data-tone="warn">
             浏览器报告当前处于离线状态，已停止测速；联网后可以点右上角的测速。
           </p>
@@ -470,11 +441,6 @@ function jumpTo(id: GuideSectionId): void {
 
           <p v-if="selectedMirror?.kind === 'official'" class="note">
             官方源就是默认行为，通常不需要换源；要清掉已有的镜像配置，用第 04 节的还原命令。
-          </p>
-
-          <p class="hint">
-            数字是响应耗时估算，不是下载速度。
-            <RouterLink :to="{ name: 'help', params: { id: 'probe' } }">口径见帮助</RouterLink>
           </p>
         </section>
 
@@ -524,13 +490,7 @@ function jumpTo(id: GuideSectionId): void {
             </div>
 
             <p v-if="placeholders.length > 0" class="note">
-              复制后请把 {{ placeholders.join('、') }} 替换成你要安装的包名；占位符不会自动展开。
-            </p>
-
-            <p v-if="mirrorInfo" class="hint">
-              当前来源 {{ mirrorInfo.name
-              }}<template v-if="versionLabel">，适用系统 {{ versionLabel }}</template
-              ><template v-if="!mirrorInfo.supportsPublish">，该来源不支持发布包</template>。
+              复制后请把 {{ placeholders.join('、') }} 替换成你要安装的包名。
             </p>
 
             <label class="check-row">
@@ -599,13 +559,6 @@ function jumpTo(id: GuideSectionId): void {
           <h2><span class="toc-no num">05</span>常见问题</h2>
           <TroubleshootingList :entries="troubleshooting" />
         </section>
-
-        <p v-if="detectionNote" class="hint">{{ detectionNote }}</p>
-
-        <p class="footline">
-          <span>数字是响应耗时估算，不是下载速度。</span>
-          <span v-if="mirrorInfo" class="num">数据核对于 {{ mirrorInfo.checkedAt }}</span>
-        </p>
       </main>
     </div>
   </div>

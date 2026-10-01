@@ -29,7 +29,6 @@ describe('presentReadout', () => {
     const readout = presentReadout({
       hasProbe: true,
       pending: false,
-      stale: false,
       result: okResult(375),
     });
 
@@ -53,22 +52,18 @@ describe('presentReadout', () => {
       const readout = presentReadout({
         hasProbe: true,
         pending: false,
-        stale: false,
         result: okResult(durationMs),
       });
       expect(readout.tierLabel, String(durationMs)).toBe(label);
     }
 
-    expect(
-      presentReadout({ hasProbe: true, pending: true, stale: false }).tierLabel,
-    ).toBeUndefined();
+    expect(presentReadout({ hasProbe: true, pending: true }).tierLabel).toBeUndefined();
   });
 
   it('耗时超过超时阈值时分数夹到 0，而不是负数', () => {
     const readout = presentReadout({
       hasProbe: true,
       pending: false,
-      stale: false,
       result: okResult(4200),
     });
 
@@ -80,7 +75,6 @@ describe('presentReadout', () => {
     const readout = presentReadout({
       hasProbe: true,
       pending: false,
-      stale: false,
       result: okResult(null),
     });
 
@@ -91,13 +85,12 @@ describe('presentReadout', () => {
 
   it('未测过、测试中、超时、失败、无法测量都只给状态词，没有刻度', () => {
     const cases = [
-      { input: { hasProbe: true, pending: false, stale: false }, state: 'untested' },
-      { input: { hasProbe: true, pending: true, stale: false }, state: 'pending' },
+      { input: { hasProbe: true, pending: false }, state: 'untested' },
+      { input: { hasProbe: true, pending: true }, state: 'pending' },
       {
         input: {
           hasProbe: true,
           pending: false,
-          stale: false,
           result: { ...okResult(null), status: 'timeout' as const },
         },
         state: 'timeout',
@@ -106,7 +99,6 @@ describe('presentReadout', () => {
         input: {
           hasProbe: true,
           pending: false,
-          stale: false,
           result: { ...okResult(null), status: 'failed' as const },
         },
         state: 'failed',
@@ -115,7 +107,6 @@ describe('presentReadout', () => {
         input: {
           hasProbe: false,
           pending: false,
-          stale: false,
           unavailableReason: 'no-probe' as const,
         },
         state: 'unavailable',
@@ -124,7 +115,6 @@ describe('presentReadout', () => {
         input: {
           hasProbe: false,
           pending: false,
-          stale: false,
           unavailableReason: 'probing-disabled' as const,
         },
         state: 'unavailable',
@@ -139,24 +129,10 @@ describe('presentReadout', () => {
     }
   });
 
-  it('结果过期时保留刻度与耗时，同时带上说明', () => {
-    const readout = presentReadout({
-      hasProbe: true,
-      pending: false,
-      stale: true,
-      result: okResult(300),
-    });
-
-    expect(readout.state).toBe('measured');
-    expect(readout.value).toBe('300');
-    expect(readout.detail).toContain('过期');
-  });
-
   it('超时说明里带上实际的超时阈值', () => {
     const readout = presentReadout({
       hasProbe: true,
       pending: false,
-      stale: false,
       result: { ...okResult(null), status: 'timeout' },
       timeoutMs: 2000,
     });

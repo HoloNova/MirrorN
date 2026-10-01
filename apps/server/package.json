@@ -3,20 +3,36 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "tsx watch src/index.ts --port 8787",
     "build": "tsc -p tsconfig.build.json",
-    "build:bundle": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/server.js",
+    "build:bundle": "esbuild src/index.ts --bundle --packages=external --platform=node --target=node24 --format=esm --outfile=dist/server.js && esbuild src/indexing/worker-entry.ts --bundle --packages=external --platform=node --target=node24 --format=esm --outfile=dist/index-worker.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.7",
+    "@iarna/toml": "2.2.5",
     "@mirrorn/shared": "workspace:*",
-    "hono": "^4.6.14"
+    "@renovatebot/pep440": "5.0.1",
+    "@streamparser/json": "0.0.22",
+    "bullmq": "5.61.0",
+    "deb-version-compare": "1.2.1",
+    "fast-xml-parser": "5.11.2",
+    "hono": "^4.6.14",
+    "htmlparser2": "12.0.0",
+    "p-queue": "8.1.0",
+    "semver": "7.7.2",
+    "tar-stream": "3.2.1",
+    "xz-decompress": "0.2.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
+    "@types/semver": "7.8.0",
+    "@types/tar-stream": "3.1.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

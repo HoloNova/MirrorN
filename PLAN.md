@@ -313,3 +313,117 @@
 > 请阅读 MAIN.md 和 PLAN.md，检查仓库当前状态，实现 PLAN.md 的任务 X.Y。只做本任务及必要依赖，不提前实现后续功能，不引入计划外架构。补充相关测试并执行适用检查。结束时列出变更文件、实际验证结果和未完成项；遇到上游接口、规则或平台行为不明确时先核实，不要猜测。
 
 阶段完成门槛：该阶段任务和验收全部通过；外部阻塞或人工验证缺口必须明确保留，不能提前标记完成。
+
+## 七、首版之后的实际进展（进度记录）
+
+首版（阶段 1–6）于 2026-09-19 上线。之后按用户提出的需求逐轮推进，每轮的规则是：先给方案与取舍、用户确认后实现、只在公网验收。
+本节只记"事实进度"（做了什么、部署到哪、是否提交），每轮的**理由**记在 `docs/decisions.md`。
+
+### 2026-09-19 首版上线
+
+阶段 1–6 完成并部署（`https://mirror.campuslink.vip`，静态产物 + 同域 `/api`）。提交 `a4f5865`。
+
+### 2026-09-20～09-21 上午：文案/UX 规范、界面拆分、视觉重做
+
+按仓库根目录的规范文档 `优化方案与文案规范.md` 落地，并在其之上做了两轮结构与视觉改造。提交 `e303fb1`（07:37）与 `e9b199f`（17:09）。
+
+1. **测量口径与探针**：每个来源连续尝试 3 次、取最快两次的平均（`lib/probeAggregate.ts`）；界面统一称「响应耗时（估算）」，取消一切 RTT / 延迟 / 下载速度的说法。
+2. **改动对照（Config Diff）**：`lib/configDiff.ts` + `components/ConfigDiff.vue`，只在 apt 与 docker-ce 显示（用同一个生成器渲染官方默认与所选镜像两份配置再逐行比对）。
+3. **界面结构**：首页拆成「首页（搜索）/ 站点 / 帮助」三模块，两种外壳形态（`app` / `doc`，见 `apps/web/src/router.ts` 的 `meta.layout`）；站点目录与站点详情为纯静态信息；帮助页用自写的极简 Markdown 渲染器承载两篇文档。
+4. **视觉重做**：新配色（纸白/近黑 + 一根饱和蓝）、所有来源共用固定刻度轴 0–300 ms、首页只列最快 3 个、清单类改为按列对齐的 `.rows`。
+5. **测速策略**：打开页面即自动测速；结果只存本机 `localStorage`，3 小时内不重复测；缓存绑定出口网络指纹（`/api/net-fingerprint` 的网段 HMAC），换网即作废；手动测速只留在生态文档页，首页只在异常态给「重试」。
+
+### 2026-09-21 晚：测量数据口径收敛、界面去掉机制小字（**未提交**）
+
+部署快照 `20260921-210855`、`20260921-211816`（当时产物 `index-B90e6bL9.js` / `index-CwWVD87S.css`）。该批改动**尚未提交**，已与下述首页改动叠加在当前工作区；当时质量门禁通过（typecheck、220 条 web 单测、lint 0 error、format）。
+
+1. **数据只有一种**：3 小时内的成功结果算数据，过期即没有数据（不展示、不参与推荐）；失败的尝试不产生数值，只留状态词（超时 / 失败）与 10 分钟冷却；手动重测先 `cache.drop()` 掉这批来源的旧记录，避免旧值从缓存里复活。
+2. **不再订阅 `navigator.connection` 的 `change`**：Chromium 在 `effectiveType` / `http_rtt` / `downlink` 变化时都会派发它，而页面自身流量就会推动这些估算值——它会带来"没有换网却全量重测"。换网只由出口指纹判定。
+3. **界面不再留机制与口径小字**（用户口径：机制只在帮助页写一次，需要补充时用户自己加）。
+4. **删除 `优化方案与文案规范.md`**（该轮文案已落地；历史版本可用 `git show e9b199f:"优化方案与文案规范.md"` 取回）。
+5. 修掉侧栏在首页出现两根蓝色刻度的问题（品牌行也是指向首页的链接，选择器收窄到 `.side-list`）。
+
+### 2026-09-28：首页退出测速（**未提交**）
+
+首页不再自动探测镜像站或请求 `/api/net-fingerprint`，删除测速区、重试按钮、推荐排名及仅供首页使用的测速候选选择器；搜索结果也不再显示本机缓存的毫秒数。首页现在只提供搜索、生态目录和静态覆盖数据，生态文档页的测速与推荐保持原状。理由见 `docs/decisions.md`「首页退出测速，只作为生态入口」。
+
+子代理完成代码和配套帮助文案、人工验收清单；人工审阅后移除首页残留的缓存读数和探针统计。web typecheck、定向 lint/format 和现有 web 单测（215 条）通过；`pnpm build:web` 包含数据校验并成功。部署快照 `20260928-185855`，公网产物 `index-BmgSnvuO.js` / `index-B3ZBoGvX.css`：`https://mirror.campuslink.vip/` 与 `/api/mirrors` 返回 200，公网 JS/CSS 字节与部署目录一致。界面行为待用户按人工清单在公网验收；**尚未提交**。
+
+### 2026-09-28：镜像站优先的仓库抽样目录（**已部署，未提交；待人工验收**）
+
+已从调研候选独立核对真实小包 GET 与哈希，剔除错误 URL、跳到官方的“镜像”、仅索引和 Debian 元数据过旧的组合。站点由 9 扩到 28（新增 19），`data/site-repositories.json` 按站点和稳定仓库 ID 保存 33 条尚无向导的仓库抽样（Go 6、Maven 4、Cargo 6、Debian 14、Alpine 3），并在站点目录/详情/搜索呈现；USTC pip、华为 npm 经索引/元数据和包体复核后接入现有向导（可配置来源 15 → 17）。未新建 SQLite，未对五个新生态生成命令、测速或推荐，也未增加上游状态源。理由与排除条件见 `docs/decisions.md`「站点优先收录，抽样仓库与可配置向导分层」。
+
+shared 仓库证据 schema + 站点/生态引用与重复映射校验、受影响纯逻辑测试（shared 19 条、web 22 条）、类型检查、定向 lint/格式和 `pnpm build:web` 均通过；未运行全项目构建/测试，也未做 UI 自动化。2026-09-28 通过 `sudo scripts/deploy-static.sh` 发布到 `/srv/mirror.campuslink.vip/current`，快照 `/srv/mirror.campuslink.vip/releases/20260928-204424`；公网产物 `index-CCiC1vzT.js` / `index-B9D1StrJ.css` 与部署目录字节一致，首页及 `/api/mirrors` 返回 200。公网界面行为待用户按 `docs/acceptance-checklist.md` 人工验收；**尚未提交**。
+
+### 2026-09-28：主线改为「教程 + 直链下载」，北大 Miniconda 样板（**已部署，未提交；待人工验收**）
+
+用户在评审首批站点目录后否决了“每个仓库都找换源命令”的方向：面向低阶开发者应该给**可下载链接**，教程写**装好之后怎么做**；站点侧主要记录测速方式与支持的生态。上一轮的 `data/site-repositories.json`（抽样仓库）因此删除——抽样是验证证据，不是站点清单（北大只显示一条 Debian 即由此暴露）。理由与边界见 `docs/decisions.md`「主线改为「教程 + 直链下载」」。
+
+本轮落地：
+
+1. **数据**：新增 `data/site-inventories/pku.json`（北大官方公布的全部 **40 条**仓库，来源 `/monitor/mirrors`）；删除 `data/site-repositories.json`、`apps/web/src/lib/sites.ts(+test)`、`apps/web/src/lib/search.ts(+test)`。`mirrors.json` 仍为 28 站、站点身份唯一来源，北大新增一个探针（`no-cors` HEAD `ubuntu-releases/24.04/SHA256SUMS`）。
+2. **后端**：新增 `apps/server/src/upstream/pku.ts` + `state/pkuStore.ts`，以及两个接口 `GET /api/sites/pku/status`、`GET /api/sites/pku/miniconda`。状态**按每个仓库**记录抓取时间、滑窗（3 小时）观测与过期标记；过期只显示“未知”，读接口不刷新有效期；快照原子写、启动先读快照；上游只解析北大公开的 `/monitor/status` 与 `/files/anaconda/miniconda/`，安装器直链必须是北大域上的同名文件。
+3. **前端**：首页搜索只索引**教程**（不再搜站点）；站点页为“站点 / 性质 / 官方域名 / 目录进度”；站点详情：北大展示 40 条官方目录 + 逐仓库任务状态 + 手动「测一下本站响应」，未整理目录的站点写“整理中”并只给官方入口；新增教程页 `/#/tutorials/miniconda`（默认按本机系统/架构预选、默认选该镜像站该平台**最新**版本、可手动改，下载按钮直连北大文件，正文是安装后操作的 Markdown 教程）；`/#/ecosystems/*` 重定向回首页。
+4. **发布脚本**：`scripts/deploy-api.sh` 修两个真实故障——原先一律拒绝“端口被占用”导致**生产 API 自己阻止更新**（改为占用者就是本服务 MainPID 时允许就地更新）；`pipefail` + `| head -1` 会让脚本收到 SIGPIPE 后**无输出地退出 1**（去掉 `head`，健康检查改为 8 次重试并在失败时打印日志）。
+
+检查：`validate:data` 通过（28 镜像 / 1 份官方目录 40 条 / 15 条排错）；shared 40 条、server 74 条、web 196 条单测通过；web 与 server 类型检查、定向 lint（0 error）、format 通过；`pnpm build:web` 与 `pnpm --filter @mirrorn/server build:bundle` 成功。未运行全仓库测试，未做 UI 自动化。
+
+发布：静态快照 `/srv/mirror.campuslink.vip/releases/20260928-222941`（公网产物 `index-CePbTn3D.js` / `index-DDWkmhSd.css`），后端 `sudo scripts/deploy-api.sh` 重新发布（健康检查、`/api/mirrors`、两个新接口都通过）。核对：公网首页 200 且引用新产物；`/api/sites/pku/miniconda` 200（**899** 个安装器，`stale=false`）；`/api/sites/pku/status` 200（40 条中 `done` 39 / `error` 1）；部署目录、构建产物与公网 JS 三者 md5 一致。界面行为待用户按 `docs/acceptance-checklist.md` 人工验收；**尚未提交**。
+
+### 2026-09-29：站点资源入库（检索/筛选/直链下载 + Markdown 教程）（**已部署，未提交；待人工验收**）
+
+用户明确要求：**拉取镜像站的资源 → 存数据库 → 站内展示 → 按生态筛选 → 可搜索，搜索结果是我们的 Markdown 页面（下载链接 + 我们整理的教程）**；并否决“站点页直接跳到源站”。理由与边界见 `docs/decisions.md`「站点资源进数据库」。
+
+本轮落地：
+
+1. **新数据**：`data/ecosystem-taxonomy.json`（30 个生态）、`data/site-resources/pku.json`（北大 40 条资源的生态归类，逐条带证据）、`data/tutorials.json`（教程清单）。校验新增：生态引用、资源与官方目录一一对应、下载入口必须同域、教程文件存在。
+2. **数据库**（`node:sqlite`，零新依赖）：`apps/server/src/db/{database,catalog,loadData}.ts`，落盘 `/var/lib/mirrorn/mirrorn.sqlite`；表 `sites/ecosystems/resources/artifacts/crawl_runs`；启动时按 `data/*.json` 全量对齐（不在数据里的行删掉）。
+3. **抓取器**：`apps/server/src/crawl/{siteFiles,filenames}.ts`，只抓安装器型资源；生产首轮结果：`pku:anaconda` 899 个文件 / 1 次请求，`pku:nodejs-release` 45 个文件 / 4 次请求（只取最新 3 个版本目录）；每 6 小时一轮，每轮写 `crawl_runs`。
+4. **接口**：`GET /api/ecosystems`、`GET /api/resources?q=&ecosystem=&site=&kind=&tutorials=1`、`GET /api/resources/:id`（资源 + 文件清单 + 抓取时间）、`GET /api/sites/:id/resources`；`/api/sites/pku/status` 保留（作业状态），旧的 `/api/sites/pku/miniconda` 删除。
+5. **前端**：首页 = 搜索 + 生态 chips 筛选 + 资源列表（带教程优先，右侧显示抓到的文件数）；新资源页 `/#/resources/:id`（默认本机系统与最新版本的下载表 + 我们的 Markdown 教程 + 作业状态）；站点详情 = 「这个站点能下什么」（行内跳站内资源页，原站目录降为“原始清单”）；`#/tutorials/miniconda` 与 `#/ecosystems/*` 保留跳转。教程新增第二篇 Node.js（安装后：验证、第一个程序、npm 与全局包、排查；26 条官方文档出处）。
+6. **发布脚本**：修掉上一轮遗留的 `/api/sites/pku/miniconda` 健康检查（端点已删，`curl -f` 会让发布失败）→ 改查 `/api/ecosystems`、`/api/resources`、`/api/sites/pku/status`。
+
+检查：`validate:data` 通过（28 镜像 / 40 条仓库 / 40 条资源归类 / 30 个生态 / 2 篇教程）；shared 40 条、server **80** 条（含新增的目录解析、版本排序、抓取与入库、按仓库过期与快照往返）、web **200** 条单测通过；两侧类型检查、定向 lint（0 error）、format 通过；`pnpm build:web` 与 server bundle 成功。未跑全仓库测试，未做 UI 自动化。
+
+发布与核对：静态快照 `/srv/mirror.campuslink.vip/releases/20260929-075105`（`index-muoKQgrR.js` / `index-Bg2Kku7n.css`）；后端健康检查与三个新接口均通过。公网实测：`/api/ecosystems` 200（30 个生态）、`/api/resources?q=python` 200、`/api/resources?ecosystem=nodejs` 200、`/api/resources/pku%3Aanaconda` 200（899 个文件、教程 `miniconda`）；搜索抽查 `北大`=40 条、`debian`=5、`ubuntu`=4、`conda`=1、`node`=1。界面待用户按 `docs/acceptance-checklist.md` 人工验收；**尚未提交**。
+
+### 2026-09-29（下午）：抓取范围扩到“能给具体文件”的资源，界面按反馈重排（**已部署，未提交**）
+
+用户反馈：界面“乱”（资源页内容被挤进右列）、不该有任务状态、不该有解释性段落；下载组件要可折叠、教程放下载下面并跟着所选版本走；Debian-nonfree 这类“没有下载按钮”的页面要说清原因；并要一份抓取策略说明。落地内容：资源页改单列（下载在上、可折叠；教程在下）、教程正文支持 `{{filename}}`/`{{version}}`/`{{platform}}` 等占位符按当前选择替换、站点详情去掉任务状态列与解释段落；抓取范围从“只有安装器”扩到 `installer|iso|files|dataset`（发行版软件源仍不抓文件，改为指向同生态安装镜像）；修掉三个抓取 bug（PKU 把 ISO 标成 `type:"other"` 导致整份索引被丢弃、失败原因被写成“没有可识别的文件”、`artifacts` 按文件名去重导致多版本只剩一条 → 改按 URL 去重并自动迁移）。本轮实测：40 条资源全部处理，9 条抓到文件共 **1831** 个（Miniconda 1605、Node.js 110、OPNsense 48、Debian 固件 24、Debian 安装镜像 13、数据集 20、Ubuntu 安装镜像 11）；静态快照 `20260929-082643`，产物 `index-Bu6UvTXw.js`。抓取策略：服务启动跑一轮、之后每 6 小时一轮；每资源最多 3 层 / 每层 6 个目录，整轮 80 次；此前误写“每资源最多 8 次”，实际 Debian CD 曾占 43 次（在下轮予以修正）；每轮写 `crawl_runs`。详见 `docs/decisions.md`「抓取范围扩到「能给具体文件」的资源」。
+
+### 2026-09-29（晚）：北大下载目录统一与按需直链（**已部署，未提交；待公网人工验收**）
+
+经生产接口核对发现，北大 40 条资源中先前只有 9 条有文件直链；其余大量仓库被定时抓取器主动跳过，但首页依旧标「下载」。Ubuntu-cdimage 的 ISO 已入库却因版本为空被页面过滤；通用平台 ISO 也会被系统筛选隐藏。审核与方案见 `docs/resource-product-unification-proposal.md`，实施理由见 `docs/decisions.md`「下载目录单一视图与按需直链」。
+
+1. 首页搜索、生态筛选、站点详情与资源页统一查询 SQLite 目录 API；北大 40 个官方目录作为依据，不再在前端另维护搜索用资源表。Ubuntu / Debian 的安装镜像与软件源归入同一生态，按资源用途区分。模式清楚分成「具体文件」「按目录查找」「按包名查找」，不拿目录根当文件直链；不以有没有教程决定是否可下载，原有两篇教程未改。
+2. 修正文件选择器的空版本和通用平台处理；失败抓取保留旧文件快照并告知过期，部分目录索引标明范围，轮次预算优先让最久未处理的资源先执行。`crawl_runs` 记录 complete/partial/failed 与请求次数；不再运行无界面调用的北大专用任务状态存储。北大软件源/多项目归档用后端按需读取 `/files/`，PyPI 只按包名解析 simple 索引；10 分钟目录缓存、最多 24 小时旧目录回退。返回的直链只允许北大域名，文件字节仍由源站提供。抓取计划保持启动和每 6 小时刷新少量安装器/ISO/有限数据集，不扫描海量软件包仓库。
+3. 发布前对 WAL 模式的 `/var/lib/mirrorn/mirrorn.sqlite` 做 SQLite 一致性备份：`/var/lib/mirrorn/mirrorn.before-directory-unification.20260929-112230.sqlite`（`PRAGMA integrity_check=ok`）；对既有表增量迁移，Node 最低版本与 Docker 镜像升至 24。发布 API 后现场发现 3 条北大下载入口缺末尾 `/` 导致 PyPI 返回 404，修正数据并加校验后再次发布；实际公网按需查 `six` 得 47 个文件，CTAN/Termux 的目录各 200。公开 `/api/resources?q=北大&downloadable=1` 返回 40 条，`ecosystem=debian` 返回 5 条；Debian hello 文件目录提供北大域名直链。
+4. 定向检查：服务端 83 条单测、shared 数据校验和 19 条校验测试、web 下载解析 9 条测试、shared/server/web 类型检查、定向 ESLint/格式及 web 构建与服务端 bundle 全通过；未跑全项目测试或 UI 自动化。公网入口首页、API 200；公网 JS/CSS 与部署目录 sha256 一致。静态快照 `/srv/mirror.campuslink.vip/releases/20260929-192557`（`index-DtsXlZnk.js` / `index-CqjWSAXm.css`）；API `mirrorn-api` 已更新，SQLite 完整性检查 `ok`。人工验收见 `docs/acceptance-checklist.md`；**未提交**。
+
+### 2026-10-01：北大后台索引统一（**本地实现，未部署、未提交**）
+
+用户确认只做功能、测速不动、教程占位：只有后台启动/定时任务抓源站；文件清单不静态维护、不导入旧目录缓存；前端和读取API只查数据库，不再按访问抓取或呈现文件夹树。实现计划与覆盖边界见 `docs/background-index-implementation-plan.md`。
+
+核心实现集中于 `apps/server/src/indexing/`（BullMQ/Redis持久任务、每次启动强制刷新、每6小时调度、请求限流、协议解析与后台线程）和 `db/snapshots.ts`/`db/fileQueries.ts`（SQLite暂存/发布批次、失败保旧、跨切换游标和包名/版本/发行版/架构筛选）。任务、入库和查询只启用北大；其它站点身份保留。旧browse/package接口返回410。前端仅做数据库接口接线和教程占位，不做视觉重设计、不改测速。包索引优先从元数据提取文件身份与链接；源包、固件、ISO与安装器分别记录用途，索引文件不当下载项。
+
+检查：后台96项回归、3项真实Redis/BullMQ集成、9项下载逻辑检查、server/web类型和定向lint通过；真实北大Debian `bookworm/contrib/amd64` 以2次元数据请求取得302条记录、214,029字节，长度与SHA256比对通过，未下载包体。主进程/后台线程独立打包验证了Redis不可达时旧库查询200、旧目录410、其它站资源404。辅助子代理工作流两次状态丢失，未取得可用报告，以上证据由主会话完成，不计为独立子代理审核。
+
+生产仍为静态快照 `20260929-192557` 与原API；**本轮无部署快照、无提交**。系统Redis尚未安装，临时验证进程已停止。发布须另确认并先备份数据库、准备Redis >=6.2（AOF/noeviction）。APK v3、部分原生版本排序、完整子范围撤销与生产全量覆盖/容量仍是明确缺口，不宣称40库已全部采完。
+
+### 尚未开始 / 待办
+
+1. **逐站官方目录整理**：北大已整理完（40 条）。其余站点仍是“只有官方入口、目录待整理”。清华 `static/tunasync.json` + `static/js/options.json`、USTC `static/json/index.json`（只有更新时间）、腾讯 `source.js`（JS 包裹，需受限解析，不可执行）都无 CORS，需经后端代理；**在把 USTC/腾讯接入通用状态源之前，必须先修掉通用 `statusStore` 里“所有源共用一个最近成功时间”的过期判断**。北大旧状态任务已从运行时移除；文件索引的新鲜度只按资源本身记录。
+2. **教程扩展**：当前有 Miniconda、Node.js 两篇。教程页结构（平台/版本选择 + 直链 + 安装后操作）可复用，但每篇都需要官方依据与真实文件核对；“默认选镜像站最新”与“软件官方最新”的差异需要在页面上继续如实说明（北大 `nodejs-release` 任务 `done` 但目录停在 v24.1.0）。
+3. **旧换源向导的去留**：`/#/ecosystems/*` 已重定向，`data/ecosystems/*.json`、`data/troubleshooting/*.json` 与向导组件/纯逻辑仍在仓库且仍被数据校验，但已无界面入口。下一轮决定：删除，或把 `ecosystems/*.json` 改造成“站点支持的生态/测速方式”数据（用户要求站点侧记录的内容）。
+4. **站点侧元数据**：用户要求站点主要存储“测速方式 + 支持的生态”。目前站点只有 1 个通用探针 + 1 份官方目录；为其余站点补测速目标与生态支持仍待逐站核实。
+5. **MirrorZ 的数据许可 / 公开接口询问**：需用户账号发 issue，agent 不代发（`docs/decisions.md` 与项目规则）。
+6. **帮助页正文**（`apps/web/src/help/documents.ts`）已按新主线重写（怎么用、资源状态与测速），待用户审阅措辞。
+7. `docs/validation-matrix.md` 里针对换源向导的人工验证缺口（Windows/macOS 模板、zsh、arm64、升级流程、Docker 行为）随向导退出界面而**成为历史记录**；如将来恢复向导再解锁。
+8. **后台索引发布与覆盖确认**：北大的数据库文件筛选、BullMQ后台采集和安全批次切换已本地实现，待Redis准备与发布确认；上线后记录首轮各协议实际覆盖、容量、耗时及明确缺口。线上仍是旧按需目录版本；其它27站本阶段不启用资源采集和下载查询。`docs/background-index-implementation-plan.md` 是当前实施依据，`docs/site-index-data-model-draft.md` 是历史草案。
+9. **其它既有计划**：资源共享中心与 LLM 识别继续独立排期；大文件带宽测试仍未做。
+
+### 部署与回滚（当前）
+
+- 静态站点：`sudo scripts/deploy-static.sh` → 构建 → rsync 到 `/srv/mirror.campuslink.vip/current` → 快照 `/srv/mirror.campuslink.vip/releases/<时间戳>`（保留最近 5 份）。
+- 后端 API：线上目前仍为原单文件程序；新候选由 `scripts/prepare-api-runtime.sh <空目录>` 生成 `dist/server.js`、`dist/index-worker.js` 与生产依赖，`sudo scripts/deploy-api.sh` 先检查Redis再切换systemd服务（127.0.0.1:8788、Caddy同域反代），须另获发布确认。
+- 回滚：`rm -rf /srv/mirror.campuslink.vip/current && cp -a /srv/mirror.campuslink.vip/releases/<时间戳> /srv/mirror.campuslink.vip/current`。

@@ -3,122 +3,72 @@ import { Search, X } from '@lucide/vue';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
-import type { Ecosystem } from '@mirrorn/shared';
-
-import { toProbeTargets } from '../composables/useMirrorProbes';
-import { getCatalog } from '../lib/ecosystems';
+import { loadResources } from '../lib/resourceApi';
+import type { ResourceSummary } from '../lib/downloads';
 import { isEditableElement, moveIndex, resolveSearchKey, shouldFocusSearch } from '../lib/keys';
-import { createProbeCache, selectCachedResults } from '../lib/probeCache';
-import { createSearchIndex, type MirrorHit, type SearchHit } from '../lib/search';
+type SearchHit = ResourceSummary;
 
 const emit = defineEmits<{ 'update:active': [boolean] }>();
 
 const router = useRouter();
-const catalog = getCatalog();
-const index = createSearchIndex(catalog);
-
-/**
- * 搜索只展示缓存里的测量值，不发起新的探测：每次键入都全量扫描会浪费带宽，
- * 也会让结果列表在输入过程中不停变化。真正发起测速的是首页的测速入口与生态页。
- */
-const probeCache = createProbeCache();
-const probeTargets = toProbeTargets(catalog.mirrors);
 
 const query = ref('');
 const focused = ref(false);
 const activeIndex = ref(-1);
-const expandedMirrorId = ref<string | null>(null);
 const inputRef = ref<HTMLInputElement | null>(null);
 const composing = ref(false);
 
 const hasQuery = computed(() => query.value.trim().length > 0);
 
 /**
- * 搜索态：点一下输入框就进入（首页据此把框拉到视觉中心、收起测速区），
+ * 搜索态：点一下输入框就进入（首页据此把框拉到视觉中心、收起其它内容），
  * 不是等用户敲了字才进入——否则第一下点击“什么都没发生”。
  */
 const active = computed(() => focused.value || hasQuery.value);
 const showResults = computed(() => hasQuery.value);
 
-/**
- * 结果按类型分段：生态在前、镜像站在后。
- * `kind` 相同的保持索引给出的相关度顺序，只做分组不做重排。
- */
-const grouped = computed<Array<{ kind: SearchHit['kind']; label: string; hits: SearchHit[] }>>(
-  () => {
-    const ecosystems = index.search(query.value).filter((hit) => hit.kind === 'ecosystem');
-    const mirrors = index.search(query.value).filter((hit) => hit.kind === 'mirror');
-    const groups: Array<{ kind: SearchHit['kind']; label: string; hits: SearchHit[] }> = [];
-    if (ecosystems.length > 0) {
-      groups.push({ kind: 'ecosystem', label: '生态', hits: ecosystems });
-    }
-    if (mirrors.length > 0) {
-      groups.push({ kind: 'mirror', label: '镜像站', hits: mirrors });
-    }
-    return groups;
-  },
-);
+const hits = ref<SearchHit[]>([]);
+const searching = ref(false);
+const failure = ref('');
+let timer: ReturnType<typeof setTimeout> | undefined;
+let controller: AbortController | undefined;
+let generation = 0;
 
-/** 键盘导航按“拍平后的顺序”走，与界面上下顺序一致。 */
-const hits = computed<SearchHit[]>(() => grouped.value.flatMap((group) => group.hits));
+watch(query, (value) => {
+  generation += 1;
+  const current = generation;
+  if (timer) clearTimeout(timer);
+  controller?.abort();
+  hits.value = [];
+  failure.value = '';
+  searching.value = value.trim() !== '';
+  if (!searching.value) return;
+  timer = setTimeout(() => {
+    controller = new AbortController();
+    void loadResources({ query: value.trim(), downloadableOnly: true }, controller.signal)
+      .then((items) => {
+        if (generation === current) hits.value = items.slice(0, 8);
+      })
+      .catch((error: unknown) => {
+        if (generation === current)
+          failure.value = error instanceof Error ? error.message : '搜索暂不可用';
+      })
+      .finally(() => {
+        if (generation === current) searching.value = false;
+      });
+  }, 180);
+});
 const activeHit = computed(() => hits.value[activeIndex.value]);
 
-const ecosystemById = computed(() => new Map(catalog.ecosystems.map((item) => [item.id, item])));
-
-const cachedProbes = computed(() => {
-  const mirrorIds = new Set(
-    hits.value.filter((hit) => hit.kind === 'mirror').map((hit) => hit.mirrorId),
-  );
-  // 搜索结果只借用缓存里的数字，因此不参与“要不要重测”的决定（decisions 丢掉）。
-  // 也不传网络指纹：这里只显示一个 ≈ 值，判断网络是否变化是页面（首页 / 生态页）的事。
-  const { results: selected } = selectCachedResults(probeCache.read(), probeTargets, Date.now());
-
-  for (const mirrorId of [...selected.keys()]) {
-    if (!mirrorIds.has(mirrorId)) {
-      selected.delete(mirrorId);
-    }
-  }
-
-  return selected;
-});
-
-/** 过期的测量值不参与展示：结果行太窄，说不清“可能已过期”只会造成误导。 */
-function cachedLatency(mirrorId: string): string | undefined {
-  const cached = cachedProbes.value.get(mirrorId);
-  if (
-    !cached ||
-    cached.stale ||
-    cached.result.status !== 'ok' ||
-    cached.result.durationMs === null
-  ) {
-    return undefined;
-  }
-  return `≈ ${cached.result.durationMs} ms`;
-}
-
-function ecosystemsFor(hit: MirrorHit): Ecosystem[] {
-  return hit.ecosystemIds
-    .map((id) => ecosystemById.value.get(id))
-    .filter((item): item is Ecosystem => item !== undefined);
-}
-
-function openEcosystem(ecosystemId: string): void {
-  void router.push({ name: 'ecosystem', params: { id: ecosystemId } });
+function openResource(hit: SearchHit): void {
+  void router.push({ name: 'resource', params: { id: hit.id } });
   activeIndex.value = -1;
 }
 
 function activate(hit: SearchHit | undefined): void {
-  if (!hit) {
-    return;
+  if (hit) {
+    openResource(hit);
   }
-
-  if (hit.kind === 'ecosystem') {
-    openEcosystem(hit.ecosystemId);
-    return;
-  }
-
-  // 镜像不是一个独立页面：展开它在本地数据中真正支持的生态，由用户选择下一步。
-  expandedMirrorId.value = expandedMirrorId.value === hit.mirrorId ? null : hit.mirrorId;
 }
 
 function onKeydown(event: KeyboardEvent): void {
@@ -137,7 +87,6 @@ function onKeydown(event: KeyboardEvent): void {
     if (query.value.length > 0) {
       query.value = '';
       activeIndex.value = -1;
-      expandedMirrorId.value = null;
     } else {
       inputRef.value?.blur();
     }
@@ -176,7 +125,6 @@ function onGlobalKeydown(event: KeyboardEvent): void {
 function clearQuery(): void {
   query.value = '';
   activeIndex.value = -1;
-  expandedMirrorId.value = null;
   inputRef.value?.focus();
 }
 
@@ -192,7 +140,6 @@ function onBlur(): void {
 
 watch(query, () => {
   activeIndex.value = -1;
-  expandedMirrorId.value = null;
 });
 
 watch(hits, (value) => {
@@ -208,6 +155,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  if (timer) clearTimeout(timer);
+  controller?.abort();
   window.removeEventListener('keydown', onGlobalKeydown);
 });
 
@@ -223,12 +172,12 @@ defineExpose({ focus: () => inputRef.value?.focus() });
         v-model="query"
         type="search"
         role="combobox"
-        aria-label="搜索生态、镜像站或系统"
+        aria-label="搜索生态或软件"
         aria-autocomplete="list"
         aria-controls="search-results"
         :aria-expanded="showResults"
         :aria-activedescendant="activeHit ? `search-hit-${activeHit.id}` : undefined"
-        placeholder="搜索生态、镜像站或系统"
+        placeholder="搜索生态或软件（如 Python、Debian、Node.js）"
         autocomplete="off"
         @keydown="onKeydown"
         @focus="focused = true"
@@ -256,43 +205,27 @@ defineExpose({ focus: () => inputRef.value?.focus() });
       aria-label="搜索结果"
       @mousedown.prevent
     >
-      <p v-if="hits.length === 0" class="search-empty">没有匹配项。换个关键词试试。</p>
+      <p v-if="searching" class="search-empty">搜索中…</p>
+      <p v-else-if="failure" class="search-empty" role="alert">{{ failure }}</p>
+      <p v-else-if="hits.length === 0" class="search-empty">没有匹配的下载资源。</p>
 
-      <template v-for="group in grouped" :key="group.kind">
-        <span class="search-group">{{ group.label }}</span>
+      <span v-if="hits.length > 0" class="search-group">资源</span>
 
-        <template v-for="hit in group.hits" :key="hit.id">
-          <div
-            :id="`search-hit-${hit.id}`"
-            class="search-hit"
-            role="option"
-            :aria-selected="hits[activeIndex]?.id === hit.id"
-            tabindex="-1"
-            @mouseenter="activeIndex = hits.findIndex((item) => item.id === hit.id)"
-            @click="activate(hit)"
-          >
-            <span class="hit-title">{{ hit.title }}</span>
-            <span v-if="hit.kind === 'mirror' && cachedLatency(hit.mirrorId)" class="hit-latency">
-              {{ cachedLatency(hit.mirrorId) }}
-            </span>
-            <span class="hit-subtitle">{{ hit.subtitle }}</span>
-            <span class="hit-kind">{{ group.label }}</span>
-          </div>
-
-          <div v-if="hit.kind === 'mirror' && expandedMirrorId === hit.mirrorId" class="hit-chips">
-            <span class="hit-chips-label">选择要配置的生态：</span>
-            <button
-              v-for="ecosystem in ecosystemsFor(hit)"
-              :key="ecosystem.id"
-              type="button"
-              class="chip"
-              @click.stop="openEcosystem(ecosystem.id)"
-            >
-              {{ ecosystem.name }}
-            </button>
-          </div>
-        </template>
-      </template>
+      <div
+        v-for="hit in hits"
+        :id="`search-hit-${hit.id}`"
+        :key="hit.id"
+        class="search-hit"
+        role="option"
+        :aria-selected="hits[activeIndex]?.id === hit.id"
+        tabindex="-1"
+        @mouseenter="activeIndex = hits.findIndex((item) => item.id === hit.id)"
+        @click="activate(hit)"
+      >
+        <span class="hit-title">{{ hit.ecosystemLabel }} · {{ hit.name }}</span>
+        <span class="hit-subtitle">{{ hit.siteName }}</span>
+        <span class="hit-kind">{{ hit.downloadMode === 'files' ? '文件直链' : '尚未入库' }}</span>
+      </div>
     </div>
 
     <p v-if="showResults && hits.length > 0" class="search-keys">

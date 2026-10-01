@@ -74,6 +74,25 @@
   grid-template-columns: var(--col-name) var(--col-url);
 }
 
+.rows.site-repos .row-url {
+  overflow: visible;
+  white-space: normal;
+}
+
+.rows.site-repos .repo-url {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rows.site-repos .repo-sample {
+  display: block;
+  color: var(--ink-3);
+  font-family: var(--font-sans);
+  font-size: var(--size-micro);
+}
+
 /* ── 核对来源（右列） ─────────────────────────────────────────────────── */
 
 .src-list {
@@ -104,5 +123,38 @@
   .rows.site-repos .row {
     gap: var(--space-1) var(--space-3);
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* 官方目录按仓库展示；右列区分已有文件与按需查找。 */
+.rows.pku-entries .row {
+  grid-template-columns: minmax(140px, 0.7fr) minmax(240px, 1.4fr) 108px;
+}
+.rows.pku-entries .row-url {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  padding: 10px 0;
+}
+.rows.pku-entries .row-url small,
+.rows.pku-entries .row-url a {
+  display: block;
+}
+.site-probe {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+@media (max-width: 700px) {
+  .rows.pku-entries .row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    padding: 12px 0;
+  }
+  .rows.pku-entries .row.head {
+    display: none;
+  }
+  .site-probe {
+    flex-wrap: wrap;
   }
 }

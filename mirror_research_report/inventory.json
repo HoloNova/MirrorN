@@ -1,0 +1,1005 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-09-28T18:45:00+08:00",
+  "surveyor": "Antigravity Research Engine for MirrorN",
+  "networkEnvironment": {
+    "executionLocation": "Tokyo, Japan (AS14593 SpaceX Starlink)",
+    "ipVersion": "IPv4/IPv6 dual-stack egress",
+    "probeClient": "Python 3.14.6 urllib & curl 8.x",
+    "probeCriteria": "Low-frequency, small-flow metadata/header verification (<100KB), non-intrusive"
+  },
+  "sites": [
+    {
+      "id": "tsinghua",
+      "name": "清华大学开源软件镜像站",
+      "operator": "清华大学信息化工作办公室 / 清华大学 TUNA 协会",
+      "homepageUrl": "https://mirrors.tuna.tsinghua.edu.cn/",
+      "aliases": ["tuna", "tsinghua", "thu", "清华源", "清华大学"],
+      "evidence": [
+        "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json",
+        "https://mirrors.tuna.tsinghua.edu.cn/help/crates.io-index/",
+        "https://mirrors.tuna.tsinghua.edu.cn/help/debian/"
+      ],
+      "statusEndpoint": "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json",
+      "inventoryEndpoint": "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "cargo",
+          "repositoryUrl": "sparse+https://mirrors.tuna.tsinghua.edu.cn/crates.io-index/",
+          "versions": [],
+          "sourceUrl": "https://mirrors.tuna.tsinghua.edu.cn/help/crates.io-index/",
+          "verification": {
+            "method": "GET https://mirrors.tuna.tsinghua.edu.cn/crates.io-index/config.json",
+            "timestamp": "2026-09-28T18:41:40+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/json",
+            "cors": "unknown",
+            "sampleResponse": "{\"dl\":\"https://static.crates.io/crates\",\"api\":\"https://crates.io\"}"
+          },
+          "statusEndpoint": "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json (job: crates.io-index)",
+          "inventoryEndpoint": "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json",
+          "limitations": "其 config.json 中的 dl 字段指向官方 static.crates.io，即仅镜像 sparse/git 元数据索引，crate 实际二进制包下载会回源到官方源或需配合代理。"
+        },
+        {
+          "ecosystem": "debian",
+          "repositoryUrl": "https://mirrors.tuna.tsinghua.edu.cn/debian/",
+          "versions": ["bookworm", "trixie", "bullseye"],
+          "sourceUrl": "https://mirrors.tuna.tsinghua.edu.cn/help/debian/",
+          "verification": {
+            "method": "HEAD https://mirrors.tuna.tsinghua.edu.cn/debian/dists/bookworm/InRelease",
+            "timestamp": "2026-09-28T18:42:14+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "InRelease size 151075 bytes"
+          },
+          "statusEndpoint": "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json (job: debian)",
+          "inventoryEndpoint": "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json",
+          "limitations": "法律与政策声明标明不对欧盟用户服务；robots.txt 带 query 参数会返回 403。"
+        },
+        {
+          "ecosystem": "archlinux",
+          "repositoryUrl": "https://mirrors.tuna.tsinghua.edu.cn/archlinux/",
+          "versions": ["x86_64"],
+          "sourceUrl": "https://mirrors.tuna.tsinghua.edu.cn/help/archlinux/",
+          "verification": {
+            "method": "HEAD https://mirrors.tuna.tsinghua.edu.cn/archlinux/core/os/x86_64/core.db",
+            "timestamp": "2026-09-28T18:42:14+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "core.db size 129884 bytes"
+          },
+          "statusEndpoint": "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json (job: archlinux)",
+          "inventoryEndpoint": "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json",
+          "limitations": "Tier 1 官方同步源，更新频率高。"
+        },
+        {
+          "ecosystem": "alpine",
+          "repositoryUrl": "https://mirrors.tuna.tsinghua.edu.cn/alpine/",
+          "versions": ["v3.18", "v3.19", "v3.20", "v3.21", "edge"],
+          "sourceUrl": "https://mirrors.tuna.tsinghua.edu.cn/help/alpine/",
+          "verification": {
+            "method": "HEAD https://mirrors.tuna.tsinghua.edu.cn/alpine/v3.20/main/x86_64/APKINDEX.tar.gz",
+            "timestamp": "2026-09-28T18:42:14+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "APKINDEX.tar.gz size 473603 bytes"
+          },
+          "statusEndpoint": "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json (job: alpine)",
+          "inventoryEndpoint": "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json",
+          "limitations": "none"
+        }
+      ]
+    },
+    {
+      "id": "ustc",
+      "name": "中国科学技术大学开源软件镜像站",
+      "operator": "中国科学技术大学 Linux 用户协会 (USTC LUG) / 网络信息中心",
+      "homepageUrl": "https://mirrors.ustc.edu.cn/",
+      "aliases": ["ustc", "lug.ustc", "中科大", "科大源", "中国科大"],
+      "evidence": [
+        "https://mirrors.ustc.edu.cn/static/json/index.json",
+        "https://mirrors.ustc.edu.cn/help/crates.io-index.html",
+        "https://mirrors.ustc.edu.cn/help/debian.html"
+      ],
+      "statusEndpoint": "https://mirrors.ustc.edu.cn/static/json/index.json",
+      "inventoryEndpoint": "https://mirrors.ustc.edu.cn/static/json/index.json",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "cargo",
+          "repositoryUrl": "sparse+https://mirrors.ustc.edu.cn/crates.io-index/",
+          "versions": [],
+          "sourceUrl": "https://mirrors.ustc.edu.cn/help/crates.io-index.html",
+          "verification": {
+            "method": "GET config.json & HEAD crate dl",
+            "timestamp": "2026-09-28T18:42:40+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/json",
+            "cors": "unknown",
+            "sampleResponse": "config.json dl=https://mirrors.ustc.edu.cn/crates.io/api/v1/crates; sample rand dl HTTP 200"
+          },
+          "statusEndpoint": "https://mirrors.ustc.edu.cn/static/json/index.json (name: crates.io-index)",
+          "inventoryEndpoint": "https://mirrors.ustc.edu.cn/static/json/index.json",
+          "limitations": "同时提供 sparse 索引和本地 crate 反向代理缓存，支持 cargo search 与依赖拉取。"
+        },
+        {
+          "ecosystem": "debian",
+          "repositoryUrl": "https://mirrors.ustc.edu.cn/debian/",
+          "versions": ["bookworm", "trixie", "bullseye"],
+          "sourceUrl": "https://mirrors.ustc.edu.cn/help/debian.html",
+          "verification": {
+            "method": "HEAD https://mirrors.ustc.edu.cn/debian/dists/bookworm/InRelease",
+            "timestamp": "2026-09-28T18:42:14+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "InRelease size 151075 bytes"
+          },
+          "statusEndpoint": "https://mirrors.ustc.edu.cn/static/json/index.json (name: debian)",
+          "inventoryEndpoint": "https://mirrors.ustc.edu.cn/static/json/index.json",
+          "limitations": "none"
+        },
+        {
+          "ecosystem": "archlinux",
+          "repositoryUrl": "https://mirrors.ustc.edu.cn/archlinux/",
+          "versions": ["x86_64"],
+          "sourceUrl": "https://mirrors.ustc.edu.cn/help/archlinux.html",
+          "verification": {
+            "method": "HEAD https://mirrors.ustc.edu.cn/archlinux/core/os/x86_64/core.db",
+            "timestamp": "2026-09-28T18:42:14+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "core.db size 129884 bytes"
+          },
+          "statusEndpoint": "https://mirrors.ustc.edu.cn/static/json/index.json (name: archlinux)",
+          "inventoryEndpoint": "https://mirrors.ustc.edu.cn/static/json/index.json",
+          "limitations": "none"
+        },
+        {
+          "ecosystem": "alpine",
+          "repositoryUrl": "https://mirrors.ustc.edu.cn/alpine/",
+          "versions": ["v3.18", "v3.19", "v3.20", "v3.21", "edge"],
+          "sourceUrl": "https://mirrors.ustc.edu.cn/help/alpine.html",
+          "verification": {
+            "method": "HEAD https://mirrors.ustc.edu.cn/alpine/v3.20/main/x86_64/APKINDEX.tar.gz",
+            "timestamp": "2026-09-28T18:42:14+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "APKINDEX size 473603 bytes"
+          },
+          "statusEndpoint": "https://mirrors.ustc.edu.cn/static/json/index.json (name: alpine)",
+          "inventoryEndpoint": "https://mirrors.ustc.edu.cn/static/json/index.json",
+          "limitations": "none"
+        }
+      ]
+    },
+    {
+      "id": "sjtug",
+      "name": "上海交通大学 Linux 用户组开源镜像站 (思源/致远)",
+      "operator": "上海交通大学 Linux 用户组织 (SJTUG) / 网络信息中心",
+      "homepageUrl": "https://mirrors.sjtug.sjtu.edu.cn/",
+      "aliases": ["sjtu", "sjtug", "siyuan", "zhiyuan", "交大源", "上交"],
+      "evidence": [
+        "https://mirrors.sjtug.sjtu.edu.cn/docs/maven-central",
+        "https://mirrors.sjtug.sjtu.edu.cn/crates.io-index/config.json",
+        "https://mirror.sjtu.edu.cn/crates.io/crates/rand/rand-0.8.5.crate"
+      ],
+      "statusEndpoint": "unknown",
+      "inventoryEndpoint": "unknown",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "cargo",
+          "repositoryUrl": "sparse+https://mirrors.sjtug.sjtu.edu.cn/crates.io-index/",
+          "versions": [],
+          "sourceUrl": "https://mirrors.sjtug.sjtu.edu.cn/crates.io-index/config.json",
+          "verification": {
+            "method": "GET config.json & GET crate dl via S3 backend",
+            "timestamp": "2026-09-28T18:40:20+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/x-tar",
+            "cors": "*",
+            "sampleResponse": "config.json dl=https://mirror.sjtu.edu.cn/crates.io/crates/{crate}/{crate}-{version}.crate -> 301 to S3 -> 200 87113 bytes"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "底层采用 S3 对象存储（s3.jcloud.sjtu.edu.cn）承载全量 crate 下载，支持完整 CORS。"
+        },
+        {
+          "ecosystem": "maven",
+          "repositoryUrl": "https://mirrors.sjtug.sjtu.edu.cn/maven-central/",
+          "versions": [],
+          "sourceUrl": "https://mirrors.sjtug.sjtu.edu.cn/docs/maven-central",
+          "verification": {
+            "method": "GET https://mirrors.sjtug.sjtu.edu.cn/maven-central/org/apache/commons/commons-lang3/maven-metadata.xml",
+            "timestamp": "2026-09-28T18:39:50+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/xml",
+            "cors": "unknown",
+            "sampleResponse": "302 redirect from Caddy to https://repo.maven.apache.org/maven2/... then 200"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "实质为 Caddy 反代/重定向层，直接 302 跳转至上游 Maven Central，非本地全量独立物理缓存。"
+        }
+      ]
+    },
+    {
+      "id": "aliyun",
+      "name": "阿里云开发者镜像站",
+      "operator": "阿里云计算有限公司 (Alibaba Cloud)",
+      "homepageUrl": "https://developer.aliyun.com/mirror/",
+      "aliases": ["aliyun", "alibaba", "阿里源", "阿里云"],
+      "evidence": [
+        "https://developer.aliyun.com/mirror/maven",
+        "https://developer.aliyun.com/mirror/goproxy",
+        "https://mirrors.aliyun.com/crates.io-index/config.json"
+      ],
+      "statusEndpoint": "unknown",
+      "inventoryEndpoint": "unknown",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "go",
+          "repositoryUrl": "https://mirrors.aliyun.com/goproxy/",
+          "versions": [],
+          "sourceUrl": "https://developer.aliyun.com/mirror/goproxy",
+          "verification": {
+            "method": "GET https://mirrors.aliyun.com/goproxy/golang.org/x/text/@v/v0.14.0.info",
+            "timestamp": "2026-09-28T18:40:41+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/json",
+            "cors": "unknown",
+            "sampleResponse": "{\"Version\":\"v0.14.0\",\"Time\":\"2023-10-11T21:58:48Z\"}"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "根路径 /goproxy/ 返回 404；必须按照 Go module 协议请求具体包名。Content-Type 统一返回 application/json。"
+        },
+        {
+          "ecosystem": "maven",
+          "repositoryUrl": "https://maven.aliyun.com/repository/public/",
+          "versions": [],
+          "sourceUrl": "https://developer.aliyun.com/mirror/maven",
+          "verification": {
+            "method": "GET https://maven.aliyun.com/repository/public/org/apache/commons/commons-lang3/maven-metadata.xml",
+            "timestamp": "2026-09-28T18:41:15+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/xml",
+            "cors": "unknown",
+            "sampleResponse": "<metadata modelVersion=\"1.1.0\">... commons-lang3"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "聚合 central、jcenter、public 组；根路径返回 404，需直接访问制品路径或在 maven setting.xml 中配置。"
+        },
+        {
+          "ecosystem": "cargo",
+          "repositoryUrl": "sparse+https://mirrors.aliyun.com/crates.io-index/",
+          "versions": [],
+          "sourceUrl": "https://mirrors.aliyun.com/crates.io-index/config.json",
+          "verification": {
+            "method": "GET config.json & HEAD crate dl",
+            "timestamp": "2026-09-28T18:41:40+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "config.json dl=https://mirrors.aliyun.com/crates/api/v1/crates; sample rand dl 200 OK (87113 B)"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "国内 CDN 节点丰富，同时支持 sparse 索引和真实 crate 文件直接拉取。"
+        },
+        {
+          "ecosystem": "debian",
+          "repositoryUrl": "https://mirrors.aliyun.com/debian/",
+          "versions": ["bookworm", "trixie", "bullseye"],
+          "sourceUrl": "https://developer.aliyun.com/mirror/debian",
+          "verification": {
+            "method": "HEAD https://mirrors.aliyun.com/debian/dists/bookworm/InRelease",
+            "timestamp": "2026-09-28T18:42:14+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "InRelease size 151075 bytes"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "none"
+        },
+        {
+          "ecosystem": "alpine",
+          "repositoryUrl": "https://mirrors.aliyun.com/alpine/",
+          "versions": ["v3.18", "v3.19", "v3.20", "v3.21", "edge"],
+          "sourceUrl": "https://developer.aliyun.com/mirror/alpine",
+          "verification": {
+            "method": "HEAD https://mirrors.aliyun.com/alpine/v3.20/main/x86_64/APKINDEX.tar.gz",
+            "timestamp": "2026-09-28T18:42:14+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "APKINDEX size 473603 bytes"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "none"
+        }
+      ]
+    },
+    {
+      "id": "tencent",
+      "name": "腾讯云软件源",
+      "operator": "腾讯云计算（北京）有限责任公司 (Tencent Cloud)",
+      "homepageUrl": "https://mirrors.tencent.com/",
+      "aliases": ["tencent", "tx", "腾讯源", "腾讯云镜像", "mirrors.cloud.tencent.com"],
+      "evidence": [
+        "https://mirrors.tencent.com/source.js",
+        "https://cloud.tencent.com/document/product/213/8623"
+      ],
+      "statusEndpoint": "https://mirrors.tencent.com/source.js",
+      "inventoryEndpoint": "https://mirrors.tencent.com/source.js",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "go",
+          "repositoryUrl": "https://mirrors.tencent.com/go/",
+          "versions": [],
+          "sourceUrl": "https://mirrors.tencent.com/source.js",
+          "verification": {
+            "method": "GET https://mirrors.tencent.com/go/golang.org/x/text/@v/v0.14.0.info",
+            "timestamp": "2026-09-28T18:40:41+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "text/plain; charset=utf-8",
+            "cors": "unknown",
+            "sampleResponse": "{\"Version\":\"v0.14.0\",\"Time\":\"2023-10-11T21:58:48Z\"}"
+          },
+          "statusEndpoint": "https://mirrors.tencent.com/source.js (item: go, status: Success)",
+          "inventoryEndpoint": "https://mirrors.tencent.com/source.js",
+          "limitations": "根路径 /go/ 返回 404；在 source.js 中声明同步状态为 Success。"
+        },
+        {
+          "ecosystem": "maven",
+          "repositoryUrl": "https://mirrors.tencent.com/maven/",
+          "versions": [],
+          "sourceUrl": "https://mirrors.tencent.com/source.js",
+          "verification": {
+            "method": "GET https://mirrors.tencent.com/maven/org/apache/commons/commons-lang3/maven-metadata.xml",
+            "timestamp": "2026-09-28T18:41:15+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/xml",
+            "cors": "unknown",
+            "sampleResponse": "<metadata modelVersion=\"1.1.0\">... commons-lang3"
+          },
+          "statusEndpoint": "https://mirrors.tencent.com/source.js (item: maven, status: Success)",
+          "inventoryEndpoint": "https://mirrors.tencent.com/source.js",
+          "limitations": "同时提供 mirrors.tencent.com/maven/ 与 mirrors.cloud.tencent.com/nexus/repository/maven-public/，前者响应延迟更低。"
+        },
+        {
+          "ecosystem": "debian",
+          "repositoryUrl": "https://mirrors.tencent.com/debian/",
+          "versions": ["bookworm", "trixie", "bullseye"],
+          "sourceUrl": "https://mirrors.tencent.com/source.js",
+          "verification": {
+            "method": "HEAD https://mirrors.tencent.com/debian/dists/bookworm/InRelease",
+            "timestamp": "2026-09-28T18:42:14+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "InRelease size 151075 bytes"
+          },
+          "statusEndpoint": "https://mirrors.tencent.com/source.js (item: debian, status: Success)",
+          "inventoryEndpoint": "https://mirrors.tencent.com/source.js",
+          "limitations": "none"
+        },
+        {
+          "ecosystem": "alpine",
+          "repositoryUrl": "https://mirrors.tencent.com/alpine/",
+          "versions": ["v3.18", "v3.19", "v3.20", "v3.21", "edge"],
+          "sourceUrl": "https://mirrors.tencent.com/source.js",
+          "verification": {
+            "method": "HEAD https://mirrors.tencent.com/alpine/v3.20/main/x86_64/APKINDEX.tar.gz",
+            "timestamp": "2026-09-28T18:42:14+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "APKINDEX size 473603 bytes"
+          },
+          "statusEndpoint": "https://mirrors.tencent.com/source.js (item: alpine, status: Success)",
+          "inventoryEndpoint": "https://mirrors.tencent.com/source.js",
+          "limitations": "none"
+        },
+        {
+          "ecosystem": "cran",
+          "repositoryUrl": "https://mirrors.tencent.com/CRAN/",
+          "versions": [],
+          "sourceUrl": "https://mirrors.tencent.com/source.js",
+          "verification": {
+            "method": "HEAD https://mirrors.tencent.com/CRAN/src/contrib/PACKAGES",
+            "timestamp": "2026-09-28T18:42:14+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "PACKAGES size 7277407 bytes"
+          },
+          "statusEndpoint": "https://mirrors.tencent.com/source.js (item: CRAN, status: Success)",
+          "inventoryEndpoint": "https://mirrors.tencent.com/source.js",
+          "limitations": "none"
+        }
+      ]
+    },
+    {
+      "id": "huaweicloud",
+      "name": "华为开源镜像站",
+      "operator": "华为云计算技术有限公司 (Huawei Cloud)",
+      "homepageUrl": "https://mirrors.huaweicloud.com/",
+      "aliases": [
+        "huawei",
+        "hwcloud",
+        "huaweicloud",
+        "华为源",
+        "华为镜像站",
+        "repo.huaweicloud.com"
+      ],
+      "evidence": [
+        "https://mirrors.huaweicloud.com/mirrorDetail/5be541620a22eb28114f05ba",
+        "https://repo.huaweicloud.com/repository/goproxy/",
+        "https://repo.huaweicloud.com/repository/maven/"
+      ],
+      "statusEndpoint": "unknown",
+      "inventoryEndpoint": "unknown",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "go",
+          "repositoryUrl": "https://repo.huaweicloud.com/repository/goproxy/",
+          "versions": [],
+          "sourceUrl": "https://mirrors.huaweicloud.com/",
+          "verification": {
+            "method": "GET https://repo.huaweicloud.com/repository/goproxy/golang.org/x/text/@v/v0.14.0.info",
+            "timestamp": "2026-09-28T18:40:41+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "text/plain;charset=UTF-8",
+            "cors": "unknown",
+            "sampleResponse": "{\"Version\":\"v0.14.0\",\"Time\":\"2023-10-11T21:58:48Z\"}"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "仓库根路径 /repository/goproxy/ 返回 403 Forbidden，禁止目录遍历；包元数据和源码包正常提供服务。"
+        },
+        {
+          "ecosystem": "maven",
+          "repositoryUrl": "https://repo.huaweicloud.com/repository/maven/",
+          "versions": [],
+          "sourceUrl": "https://mirrors.huaweicloud.com/",
+          "verification": {
+            "method": "GET https://repo.huaweicloud.com/repository/maven/org/apache/commons/commons-lang3/maven-metadata.xml",
+            "timestamp": "2026-09-28T18:41:15+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream;charset=UTF-8",
+            "cors": "unknown",
+            "sampleResponse": "<metadata modelVersion=\"1.1.0\">... commons-lang3"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "根路径 /repository/maven/ 返回 403 Forbidden，需使用具体 artifact 路径。"
+        },
+        {
+          "ecosystem": "debian",
+          "repositoryUrl": "https://repo.huaweicloud.com/debian/",
+          "versions": ["bookworm", "trixie", "bullseye"],
+          "sourceUrl": "https://mirrors.huaweicloud.com/",
+          "verification": {
+            "method": "HEAD https://repo.huaweicloud.com/debian/dists/bookworm/InRelease",
+            "timestamp": "2026-09-28T18:42:14+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "InRelease size 151075 bytes"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "none"
+        },
+        {
+          "ecosystem": "alpine",
+          "repositoryUrl": "https://repo.huaweicloud.com/alpine/",
+          "versions": ["v3.18", "v3.19", "v3.20", "v3.21", "edge"],
+          "sourceUrl": "https://mirrors.huaweicloud.com/",
+          "verification": {
+            "method": "HEAD https://repo.huaweicloud.com/alpine/v3.20/main/x86_64/APKINDEX.tar.gz",
+            "timestamp": "2026-09-28T18:42:14+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "APKINDEX size 473603 bytes"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "none"
+        }
+      ]
+    },
+    {
+      "id": "goproxy-cn",
+      "name": "Goproxy 中国 (goproxy.cn)",
+      "operator": "上海七牛信息技术有限公司 (Qiniu Cloud) / 盛傲飞",
+      "homepageUrl": "https://goproxy.cn/",
+      "aliases": ["goproxy.cn", "七牛go", "qiniu go proxy"],
+      "evidence": ["https://goproxy.cn/", "https://github.com/goproxy/goproxy.cn"],
+      "statusEndpoint": "unknown",
+      "inventoryEndpoint": "unknown",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "go",
+          "repositoryUrl": "https://goproxy.cn",
+          "versions": [],
+          "sourceUrl": "https://goproxy.cn/",
+          "verification": {
+            "method": "GET https://goproxy.cn/golang.org/x/text/@v/v0.14.0.info",
+            "timestamp": "2026-09-28T18:40:41+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "text/plain; charset=utf-8",
+            "cors": "unknown",
+            "sampleResponse": "{\"Version\":\"v0.14.0\",\"Time\":\"2023-10-11T21:58:48Z\"}"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "专注于 Go module proxy 代理服务，中国大陆开发者首选之一。"
+        }
+      ]
+    },
+    {
+      "id": "goproxy-io",
+      "name": "Goproxy.io 社区服务",
+      "operator": "Goproxy.io 开放社区",
+      "homepageUrl": "https://goproxy.io/",
+      "aliases": ["goproxy.io", "goproxy global"],
+      "evidence": ["https://goproxy.io/", "https://github.com/goproxyio/goproxy"],
+      "statusEndpoint": "unknown",
+      "inventoryEndpoint": "unknown",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "go",
+          "repositoryUrl": "https://goproxy.io",
+          "versions": [],
+          "sourceUrl": "https://goproxy.io/",
+          "verification": {
+            "method": "GET https://goproxy.io/golang.org/x/text/@v/v0.14.0.info",
+            "timestamp": "2026-09-28T18:40:41+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "text/plain; charset=UTF-8",
+            "cors": "*",
+            "sampleResponse": "{\"Version\":\"v0.14.0\",\"Time\":\"2023-10-11T21:58:48Z\"}"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "全球与国内双网络路由，支持跨域 CORS 头 (*)。"
+        }
+      ]
+    },
+    {
+      "id": "rsproxy-cn",
+      "name": "RsProxy (字节跳动 Rust 镜像代理)",
+      "operator": "北京字跳网络技术有限公司 / 字节跳动基础架构 Dev Infra",
+      "homepageUrl": "https://rsproxy.cn/",
+      "aliases": ["rsproxy", "rsproxy.cn", "bytedance rust", "字节rust镜像"],
+      "evidence": [
+        "https://rsproxy.cn/",
+        "https://bytedance.feishu.cn/docs/doccn8vZuDB541t8zTJyTUbZZxc"
+      ],
+      "statusEndpoint": "unknown",
+      "inventoryEndpoint": "https://rsproxy.cn/index/config.json",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "cargo",
+          "repositoryUrl": "sparse+https://rsproxy.cn/index/",
+          "versions": [],
+          "sourceUrl": "https://rsproxy.cn/",
+          "verification": {
+            "method": "GET https://rsproxy.cn/index/config.json & GET crate dl",
+            "timestamp": "2026-09-28T18:43:18+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "redirects to https://lf9-static.rsproxy.cn/obj/rsproxy/crates/rand/0.8.5.crate 200 OK 87113 B"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "https://rsproxy.cn/index/config.json",
+          "limitations": "每分钟同步一次；支持 sparse 协议、git 协议、rustup 工具链与 cargo search/publish 代理。"
+        }
+      ]
+    },
+    {
+      "id": "golang-official",
+      "name": "Go 官方 Module 镜像",
+      "operator": "Google LLC / Go Team",
+      "homepageUrl": "https://proxy.golang.org/",
+      "aliases": ["golang official", "proxy.golang.org", "go官方源"],
+      "evidence": ["https://proxy.golang.org/", "https://go.dev/ref/mod#module-proxy"],
+      "statusEndpoint": "unknown",
+      "inventoryEndpoint": "unknown",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "go",
+          "repositoryUrl": "https://proxy.golang.org",
+          "versions": [],
+          "sourceUrl": "https://go.dev/ref/mod#module-proxy",
+          "verification": {
+            "method": "GET https://proxy.golang.org/golang.org/x/text/@v/v0.14.0.info",
+            "timestamp": "2026-09-28T18:40:41+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "text/plain; charset=UTF-8",
+            "cors": "*",
+            "sampleResponse": "{\"Version\":\"v0.14.0\",\"Time\":\"2023-10-11T21:58:48Z\",\"Origin\":...}"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "全球上游基准源；中国大陆网络环境下直接访问受阻或不稳定，需作为 fallback 或海外用户基准。"
+        }
+      ]
+    },
+    {
+      "id": "maven-central-official",
+      "name": "Maven Central 官方仓库",
+      "operator": "Sonatype / Apache Software Foundation",
+      "homepageUrl": "https://central.sonatype.com/",
+      "aliases": ["maven central", "repo1.maven.org", "repo.maven.apache.org", "maven官方源"],
+      "evidence": ["https://repo1.maven.org/maven2/", "https://central.sonatype.com/"],
+      "statusEndpoint": "unknown",
+      "inventoryEndpoint": "unknown",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "maven",
+          "repositoryUrl": "https://repo1.maven.org/maven2/",
+          "versions": [],
+          "sourceUrl": "https://repo1.maven.org/maven2/",
+          "verification": {
+            "method": "GET https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/maven-metadata.xml",
+            "timestamp": "2026-09-28T18:41:15+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "text/xml",
+            "cors": "unknown",
+            "sampleResponse": "<metadata>... commons-lang3"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "全球 Maven 官方主干；国内拉取延迟高，仅适合全球节点或作为上游对比。"
+        }
+      ]
+    },
+    {
+      "id": "crates-official",
+      "name": "Cargo Crates.io 官方源",
+      "operator": "Rust Foundation / Crates.io Team",
+      "homepageUrl": "https://crates.io/",
+      "aliases": ["crates.io", "static.crates.io", "index.crates.io", "cargo官方源"],
+      "evidence": [
+        "https://index.crates.io/config.json",
+        "https://static.crates.io/crates/rand/rand-0.8.5.crate"
+      ],
+      "statusEndpoint": "unknown",
+      "inventoryEndpoint": "https://index.crates.io/config.json",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "cargo",
+          "repositoryUrl": "sparse+https://index.crates.io/",
+          "versions": [],
+          "sourceUrl": "https://doc.rust-lang.org/cargo/reference/registries.html",
+          "verification": {
+            "method": "GET https://index.crates.io/config.json & HEAD crate dl",
+            "timestamp": "2026-09-28T18:41:40+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "*",
+            "sampleResponse": "config.json dl=https://static.crates.io/crates; sample rand dl 200 OK"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "https://index.crates.io/config.json",
+          "limitations": "Rust 官方 sparse 协议基准；全球 Fastly CDN 加速，支持完整 CORS。"
+        }
+      ]
+    },
+    {
+      "id": "volcengine",
+      "name": "火山引擎开源镜像站",
+      "operator": "北京火山引擎科技有限公司 (Volcengine / ByteDance)",
+      "homepageUrl": "https://mirrors.volces.com/",
+      "aliases": ["volces", "volcengine", "火山引擎", "字节跳动镜像"],
+      "evidence": [
+        "https://mirrors.volces.com/debian/dists/bookworm/InRelease",
+        "https://mirrors.volces.com/alpine/v3.20/main/x86_64/APKINDEX.tar.gz"
+      ],
+      "statusEndpoint": "unknown",
+      "inventoryEndpoint": "unknown",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "debian",
+          "repositoryUrl": "https://mirrors.volces.com/debian/",
+          "versions": ["bookworm", "trixie", "bullseye"],
+          "sourceUrl": "https://mirrors.volces.com/",
+          "verification": {
+            "method": "HEAD https://mirrors.volces.com/debian/dists/bookworm/InRelease",
+            "timestamp": "2026-09-28T18:43:39+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "InRelease size 151075 bytes"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "火山引擎官方云镜像，国内访问速度极快。"
+        },
+        {
+          "ecosystem": "alpine",
+          "repositoryUrl": "https://mirrors.volces.com/alpine/",
+          "versions": ["v3.18", "v3.19", "v3.20", "v3.21", "edge"],
+          "sourceUrl": "https://mirrors.volces.com/",
+          "verification": {
+            "method": "HEAD https://mirrors.volces.com/alpine/v3.20/main/x86_64/APKINDEX.tar.gz",
+            "timestamp": "2026-09-28T18:43:39+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "APKINDEX size 473603 bytes"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "none"
+        }
+      ]
+    },
+    {
+      "id": "nju",
+      "name": "南京大学开源软件镜像站",
+      "operator": "南京大学 e-Science 中心 / 网络信息中心",
+      "homepageUrl": "https://mirrors.nju.edu.cn/",
+      "aliases": ["nju", "南大源", "南京大学"],
+      "evidence": [
+        "https://mirrors.nju.edu.cn/crates.io-index/config.json",
+        "https://mirror.nju.edu.cn/crates.io/crates/rand/rand-0.8.5.crate",
+        "https://mirrors.nju.edu.cn/debian/dists/bookworm/InRelease"
+      ],
+      "statusEndpoint": "unknown",
+      "inventoryEndpoint": "https://mirrors.nju.edu.cn/crates.io-index/config.json",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "cargo",
+          "repositoryUrl": "sparse+https://mirrors.nju.edu.cn/crates.io-index/",
+          "versions": [],
+          "sourceUrl": "https://mirrors.nju.edu.cn/crates.io-index/config.json",
+          "verification": {
+            "method": "GET config.json & HEAD crate dl",
+            "timestamp": "2026-09-28T18:44:13+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "config.json dl=https://mirror.nju.edu.cn/crates.io/crates/{crate}/{crate}-{version}.crate -> HTTP 200 (87113 B)"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "https://mirrors.nju.edu.cn/crates.io-index/config.json",
+          "limitations": "真实拉取已验证；但自动化 HTTP 客户端如未携带常规 User-Agent 或遇防护网关时可能触发 302 临时重定向。"
+        },
+        {
+          "ecosystem": "debian",
+          "repositoryUrl": "https://mirrors.nju.edu.cn/debian/",
+          "versions": ["bookworm", "trixie", "bullseye"],
+          "sourceUrl": "https://mirrors.nju.edu.cn/",
+          "verification": {
+            "method": "HEAD https://mirrors.nju.edu.cn/debian/dists/bookworm/InRelease",
+            "timestamp": "2026-09-28T18:43:56+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "application/octet-stream",
+            "cors": "unknown",
+            "sampleResponse": "InRelease size 151075 bytes"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "none"
+        }
+      ]
+    },
+    {
+      "id": "kernel-org",
+      "name": "Kernel.org 镜像网络",
+      "operator": "Linux Kernel Organization, Inc.",
+      "homepageUrl": "https://mirrors.kernel.org/",
+      "aliases": ["kernel.org", "kernel mirrors", "linux kernel org"],
+      "evidence": [
+        "https://mirrors.kernel.org/debian/dists/bookworm/InRelease",
+        "https://mirrors.kernel.org/archlinux/core/os/x86_64/core.db"
+      ],
+      "statusEndpoint": "unknown",
+      "inventoryEndpoint": "unknown",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "debian",
+          "repositoryUrl": "https://mirrors.kernel.org/debian/",
+          "versions": ["bookworm", "trixie", "bullseye"],
+          "sourceUrl": "https://mirrors.kernel.org/",
+          "verification": {
+            "method": "HEAD https://mirrors.kernel.org/debian/dists/bookworm/InRelease",
+            "timestamp": "2026-09-28T18:44:59+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "text/plain; charset=utf-8",
+            "cors": "unknown",
+            "sampleResponse": "InRelease size 151075 bytes"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "全球骨干开源镜像网络，北美与欧洲节点极佳，国内直连视国际出口波动。"
+        },
+        {
+          "ecosystem": "archlinux",
+          "repositoryUrl": "https://mirrors.kernel.org/archlinux/",
+          "versions": ["x86_64"],
+          "sourceUrl": "https://mirrors.kernel.org/",
+          "verification": {
+            "method": "HEAD https://mirrors.kernel.org/archlinux/core/os/x86_64/core.db",
+            "timestamp": "2026-09-28T18:44:59+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "actual_pull_verified",
+            "httpStatus": 200,
+            "contentType": "text/plain; charset=utf-8",
+            "cors": "unknown",
+            "sampleResponse": "core.db size 129884 bytes"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "none"
+        }
+      ]
+    },
+    {
+      "id": "cernet-federation",
+      "name": "CERNET 镜像联盟 302 调度入口",
+      "operator": "中国教育和科研计算机网 (CERNET)",
+      "homepageUrl": "https://mirrors.cernet.edu.cn/",
+      "aliases": ["cernet", "cernet mirror", "教育网镜像联盟"],
+      "evidence": [
+        "https://mirrors.cernet.edu.cn/api/scoring",
+        "https://mirrors.cernet.edu.cn/debian/dists/bookworm/InRelease"
+      ],
+      "statusEndpoint": "https://mirrors.cernet.edu.cn/api/scoring",
+      "inventoryEndpoint": "unknown",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "debian",
+          "repositoryUrl": "https://mirrors.cernet.edu.cn/debian/",
+          "versions": ["bookworm", "trixie", "bullseye"],
+          "sourceUrl": "https://mirrors.cernet.edu.cn/",
+          "verification": {
+            "method": "HEAD https://mirrors.cernet.edu.cn/debian/dists/bookworm/InRelease",
+            "timestamp": "2026-09-28T18:45:00+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "address_verified",
+            "httpStatus": 302,
+            "contentType": "text/html; charset=utf-8",
+            "cors": "unknown",
+            "sampleResponse": "302 Found -> Location: https://mirrors.hit.edu.cn/debian/dists/bookworm/InRelease"
+          },
+          "statusEndpoint": "https://mirrors.cernet.edu.cn/api/scoring",
+          "inventoryEndpoint": "unknown",
+          "limitations": "非独立实体镜像存储！实质为基于客户端出口 IP 的 302 调度网关，动态重定向到哈工大 (HIT)、北外 (BFSU)、清华 (TUNA) 等联盟成员高校。不应作为独立物理镜像录入。"
+        }
+      ]
+    },
+    {
+      "id": "163-netease",
+      "name": "网易开源镜像站",
+      "operator": "网易公司 (NetEase, Inc.)",
+      "homepageUrl": "https://mirrors.163.com/",
+      "aliases": ["163", "netease", "网易源", "网易镜像"],
+      "evidence": ["https://mirrors.163.com/"],
+      "statusEndpoint": "unknown",
+      "inventoryEndpoint": "unknown",
+      "checkedAt": "2026-09-28",
+      "repositories": [
+        {
+          "ecosystem": "maven",
+          "repositoryUrl": "https://mirrors.163.com/maven/",
+          "versions": [],
+          "sourceUrl": "https://mirrors.163.com/",
+          "verification": {
+            "method": "GET https://mirrors.163.com/maven/org/apache/commons/commons-lang3/maven-metadata.xml",
+            "timestamp": "2026-09-28T18:41:15+08:00",
+            "network_location": "Tokyo, Japan (AS14593)",
+            "result": "unavailable_or_unconfirmed",
+            "httpStatus": 0,
+            "contentType": "unknown",
+            "cors": "unknown",
+            "sampleResponse": "Connection timed out (>10s)"
+          },
+          "statusEndpoint": "unknown",
+          "inventoryEndpoint": "unknown",
+          "limitations": "历史主流镜像，但现代构建依赖（Maven/npm等）已长期缺乏维护或网络超时不可用；建议排除。"
+        }
+      ]
+    }
+  ]
+}

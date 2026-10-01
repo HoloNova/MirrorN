@@ -9,8 +9,8 @@ import {
 
 import {
   createProbeCache,
+  PROBE_CACHE_ENTRY_MAX_AGE_MS,
   PROBE_CACHE_MAX_ENTRIES,
-  PROBE_CACHE_STALE_LIMIT_MS,
   PROBE_CACHE_VERSION,
   selectCachedResults,
   type ProbeCacheEntry,
@@ -188,7 +188,7 @@ describe('createProbeCache', () => {
     expect(cache.read()).toEqual([]);
   });
 
-  it('drops entries that expired long ago and caps the number of entries', () => {
+  it('drops expired successful results and caps the number of entries', () => {
     const cache = createProbeCache({ storage: null });
     const target = targets[0];
     if (!target) {
@@ -196,9 +196,10 @@ describe('createProbeCache', () => {
     }
     const now = 1_758_000_000_000;
 
+    // 过期的成功结果不再保留：过期即等于没有数据，不能等下一次读取时又把它当可用结果。
     cache.write(
-      [{ target, result: probeResult() }],
-      now - PROBE_CACHE_STALE_LIMIT_MS - PROBE_CACHE_TTL_MS - 1,
+      [{ target, result: probeResult({ measuredAt: now - PROBE_CACHE_TTL_MS - 1 }) }],
+      now - PROBE_CACHE_TTL_MS - 1,
     );
     cache.write([{ target, result: probeResult({ probeId: 'fresh-probe' }) }], now);
 
@@ -208,6 +209,66 @@ describe('createProbeCache', () => {
       cache.write([{ target, result: probeResult({ probeId: `probe-${index}` }) }], now + index);
     }
     expect(cache.read().length).toBeLessThanOrEqual(PROBE_CACHE_MAX_ENTRIES);
+  });
+
+  it('keeps a failure record only until it can no longer block a retry', () => {
+    const cache = createProbeCache({ storage: null });
+    const alpha = targets[0];
+    if (!alpha) {
+      throw new Error('测试数据缺失');
+    }
+    const beta: ProbeTarget = {
+      mirrorId: 'other-mirror',
+      probe: {
+        id: 'other-robots',
+        url: 'https://other.example.com/robots.txt',
+        mode: 'no-cors',
+        method: 'get',
+        cacheBust: false,
+      },
+    };
+    const now = 1_758_000_000_000;
+
+    cache.writeFailure(
+      [{ target: alpha, result: probeResult({ status: 'failed', durationMs: null }) }],
+      now,
+    );
+    cache.writeFailure(
+      [
+        {
+          target: beta,
+          result: probeResult({
+            probeId: 'other-robots',
+            status: 'failed',
+            durationMs: null,
+            measuredAt: now + PROBE_CACHE_ENTRY_MAX_AGE_MS + 1,
+          }),
+        },
+      ],
+      now + PROBE_CACHE_ENTRY_MAX_AGE_MS + 1,
+    );
+
+    // alpha 的失败记录已经超过保留上限、不可能再阻止重试了，不占存储；beta 的还在。
+    expect(cache.read().map((entry) => entry.probeId)).toEqual(['other-robots']);
+  });
+
+  it('drops only the requested probes', () => {
+    const cache = createProbeCache({ storage: null });
+    const target = targets[0];
+    if (!target) {
+      throw new Error('测试数据缺失');
+    }
+    const now = 1_758_000_000_000;
+
+    cache.write([{ target, result: probeResult() }], now);
+    cache.drop(['example-robots'], now);
+
+    expect(cache.read()).toEqual([]);
+
+    // 没有传探针 id 时什么也不做（不然手动重测会把整份缓存清掉）。
+    cache.write([{ target, result: probeResult() }], now);
+    cache.drop([], now);
+    expect(cache.read()).toHaveLength(1);
   });
 
   it('falls back to memory when localStorage is not usable', () => {
@@ -302,16 +363,17 @@ describe('selectCachedResults', () => {
   it('returns fresh results keyed by mirror id and skips measuring them', () => {
     const { results, decisions } = select([entry()]);
 
-    expect(results.get('example-mirror')).toMatchObject({ stale: false, attemptFailed: false });
+    expect(results.get('example-mirror')?.durationMs).toBe(42);
     expect(decisions.get('example-mirror')).toBe('fresh');
   });
 
-  it('marks expired results as stale instead of hiding them, and plans a re-measure', () => {
+  it('treats an expired result as no data at all, and plans a re-measure', () => {
     const { results, decisions } = select([
       entry({ ok: { result: probeResult(), expiresAt: now - 1 } }),
     ]);
 
-    expect(results.get('example-mirror')?.stale).toBe(true);
+    // 过期的数字不再展示：没有数据就是没有数据，重测到才有（用户口径）。
+    expect(results.size).toBe(0);
     expect(decisions.get('example-mirror')).toBe('measure');
   });
 
@@ -352,7 +414,7 @@ describe('selectCachedResults', () => {
     expect(select([entry()], 'net-b').decisions.get('example-mirror')).toBe('fresh');
   });
 
-  it('shows the last successful value when the latest attempt failed', () => {
+  it('keeps using a result the failed attempt did not supersede', () => {
     const { results, decisions } = select([
       entry({
         ok: { result: probeResult({ durationMs: 42 }), expiresAt: now + 1000 },
@@ -360,10 +422,9 @@ describe('selectCachedResults', () => {
       }),
     ]);
 
-    // 显示的是上一次成功的 42 ms，而不是这次超时；悬停提示由 attemptFailed 说明。
-    expect(results.get('example-mirror')).toMatchObject({ attemptFailed: true });
-    expect(results.get('example-mirror')?.result.durationMs).toBe(42);
-    // 还在有效期内，因此不需要为了这次失败再测一遍。
+    // 这条结果还在 3 小时内：它仍是数据，不因为“手动重测失败了一次”就被丢掉。
+    // （没测到就等于没数据的情形发生在没有有效结果时，见下一条用例。）
+    expect(results.get('example-mirror')?.durationMs).toBe(42);
     expect(decisions.get('example-mirror')).toBe('fresh');
   });
 
@@ -373,15 +434,22 @@ describe('selectCachedResults', () => {
       lastAttempt: { status: 'timeout', at: now - 1000, durationMs: null },
     });
 
-    expect(select([failed]).decisions.get('example-mirror')).toBe('throttled');
-    expect(select([failed]).results.get('example-mirror')?.stale).toBe(true);
+    const throttled = select([failed]);
+    expect(throttled.decisions.get('example-mirror')).toBe('throttled');
+    // 冷却期内展示的是那次失败（没有数值），不是过期的那份旧数据。
+    expect(throttled.results.get('example-mirror')?.durationMs).toBe(null);
+    expect(throttled.results.get('example-mirror')?.status).toBe('timeout');
 
     // 冷却期过后重新允许自动重测。
     const old = entry({
       ok: { result: probeResult(), expiresAt: now - 1 },
       lastAttempt: { status: 'timeout', at: now - PROBE_FAILURE_RETRY_MS - 1, durationMs: null },
     });
-    expect(select([old]).decisions.get('example-mirror')).toBe('measure');
+    const retryable = select([old]);
+    expect(retryable.decisions.get('example-mirror')).toBe('measure');
+    // 能重测了，但屏上仍然没有数值：只有那条失败状态。
+    expect(retryable.results.get('example-mirror')?.durationMs).toBeNull();
+    expect(retryable.results.get('example-mirror')?.status).toBe('timeout');
   });
 
   it('shows the failure itself when there is no successful result to keep', () => {
@@ -392,7 +460,7 @@ describe('selectCachedResults', () => {
       }),
     ]);
 
-    expect(results.get('example-mirror')?.result.status).toBe('failed');
+    expect(results.get('example-mirror')?.status).toBe('failed');
     expect(decisions.get('example-mirror')).toBe('throttled');
   });
 });

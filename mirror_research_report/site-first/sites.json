@@ -1,0 +1,677 @@
+{
+  "schemaVersion": "1.0",
+  "sites": [
+    {
+      "id": "ustc",
+      "name": "中国科学技术大学开源软件镜像站",
+      "operator": "中国科学技术大学 Linux 用户协会 (USTC LUG) / 网络信息中心",
+      "homepageUrl": "https://mirrors.ustc.edu.cn/",
+      "officialDomains": ["mirrors.ustc.edu.cn", "lug.ustc.edu.cn"],
+      "aliases": [
+        "ustc",
+        "lug.ustc",
+        "中科大",
+        "科大源",
+        "中国科大",
+        "mirrors4.ustc.edu.cn",
+        "mirrors6.ustc.edu.cn"
+      ],
+      "siteType": "university",
+      "publicEndpoints": {
+        "inventoryEndpoint": "https://mirrors.ustc.edu.cn/static/json/index.json",
+        "statusEndpoint": "none",
+        "updateTimestampEndpoint": "https://mirrors.ustc.edu.cn/static/json/index.json",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "unknown",
+        "statusFormat": "ustc_index_json"
+      },
+      "supportedEcosystemsSummary": ["apt", "rpm", "archlinux", "cargo", "pip", "docker", "iso"],
+      "unsupportedEcosystems": ["go", "maven", "npm"],
+      "evidence": [
+        "https://mirrors.ustc.edu.cn/static/json/index.json",
+        "https://mirrors.ustc.edu.cn/help/crates.io-index.html",
+        "https://mirrors.ustc.edu.cn/help/debian.html",
+        "https://github.com/ustclug/mirrorhelp"
+      ],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "USTC index.json 仅提供 generatedAt 和各仓库的 updatedAt（如 2026-09-28 17:48:11），未暴露同步作业的细粒度健康状态枚举（如 success/fail）；暂无法直接从接口区分是同步正常完成还是因上游变动未更新；境内三网在不同时段的带宽 QOS 表现未在境外节点充分体现。"
+    },
+    {
+      "id": "tsinghua",
+      "name": "清华大学开源软件镜像站",
+      "operator": "清华大学信息化工作办公室 / 清华大学 TUNA 协会",
+      "homepageUrl": "https://mirrors.tuna.tsinghua.edu.cn/",
+      "officialDomains": ["mirrors.tuna.tsinghua.edu.cn", "tuna.tsinghua.edu.cn"],
+      "aliases": [
+        "tuna",
+        "tsinghua",
+        "thu",
+        "清华源",
+        "清华大学",
+        "ipv4.mirrors.tuna.tsinghua.edu.cn",
+        "ipv6.mirrors.tuna.tsinghua.edu.cn"
+      ],
+      "siteType": "university",
+      "publicEndpoints": {
+        "inventoryEndpoint": "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json",
+        "statusEndpoint": "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json",
+        "updateTimestampEndpoint": "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "https://mirrors.tuna.tsinghua.edu.cn/static/js/options.json",
+        "statusFormat": "tunasync"
+      },
+      "supportedEcosystemsSummary": ["apt", "rpm", "archlinux", "cargo", "pip", "docker", "iso"],
+      "unsupportedEcosystems": ["go", "maven", "npm"],
+      "evidence": [
+        "https://mirrors.tuna.tsinghua.edu.cn/static/tunasync.json",
+        "https://mirrors.tuna.tsinghua.edu.cn/static/js/options.json",
+        "https://mirrors.tuna.tsinghua.edu.cn/help/crates.io-index/",
+        "https://mirrors.tuna.tsinghua.edu.cn/help/pypi/"
+      ],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "TUNA 明确不对欧盟用户提供服务；反爬机制较严格，探测时附带 query 参数会导致 403 Forbidden；crates.io 镜像仅在本地镜像 sparse/git 元数据索引，crate 二进制下载回源官方，其历史 git 归档中是否存在全量缓存未在当前 sparse 端点公开。"
+    },
+    {
+      "id": "sjtug",
+      "name": "上海交通大学 Linux 用户组开源镜像站 (思源/致远)",
+      "operator": "上海交通大学 Linux 用户组织 (SJTUG) / 网络信息中心",
+      "homepageUrl": "https://mirrors.sjtug.sjtu.edu.cn/",
+      "officialDomains": ["mirrors.sjtug.sjtu.edu.cn", "mirror.sjtu.edu.cn"],
+      "aliases": ["sjtu", "sjtug", "siyuan", "zhiyuan", "交大源", "上交"],
+      "siteType": "university",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "unknown",
+        "statusFormat": "html_directory"
+      },
+      "supportedEcosystemsSummary": ["apt", "rpm", "archlinux", "maven", "cargo", "docker", "iso"],
+      "unsupportedEcosystems": ["go", "npm"],
+      "evidence": [
+        "https://mirrors.sjtug.sjtu.edu.cn/docs/maven-central",
+        "https://mirrors.sjtug.sjtu.edu.cn/crates.io-index/config.json",
+        "https://github.com/sjtug/mirror-requests"
+      ],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "SJTUG 未提供全局机器可读的状态文件（如 tunasync.json 或 mirrorz.json）；Maven 仓库实质为 Caddy 302 重定向至官方 Maven Central，无法确认其服务端是否有持久本地缓存；S3 存储的外部下载配额限制未公开。"
+    },
+    {
+      "id": "aliyun",
+      "name": "阿里云开发者镜像站",
+      "operator": "阿里云计算有限公司 (Alibaba Cloud)",
+      "homepageUrl": "https://developer.aliyun.com/mirror/",
+      "officialDomains": ["developer.aliyun.com", "mirrors.aliyun.com", "maven.aliyun.com"],
+      "aliases": ["aliyun", "alibaba", "阿里源", "阿里云", "aliyun mirror"],
+      "siteType": "commercial_cloud",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "unknown",
+        "statusFormat": "none"
+      },
+      "supportedEcosystemsSummary": ["go", "maven", "cargo", "pip", "npm", "apt", "rpm", "docker"],
+      "unsupportedEcosystems": [],
+      "evidence": [
+        "https://developer.aliyun.com/mirror/goproxy",
+        "https://developer.aliyun.com/mirror/maven",
+        "https://mirrors.aliyun.com/crates.io-index/config.json",
+        "https://developer.aliyun.com/mirror/pypi"
+      ],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "阿里云未对外公开任何机器可读的同步状态 JSON；其 Go、Maven 根目录均返回 404，需逐个协议路径探测；无法获知其上游同步延迟的具体秒级时差；海外节点访问部分源可能会触发阿里云 CDN 边缘调度跳转。"
+    },
+    {
+      "id": "tencent",
+      "name": "腾讯云开源软件镜像站",
+      "operator": "腾讯云计算（北京）有限责任公司 (Tencent Cloud)",
+      "homepageUrl": "https://mirrors.tencent.com/",
+      "officialDomains": ["mirrors.tencent.com", "mirrors.cloud.tencent.com"],
+      "aliases": ["tencent", "txcloud", "腾讯源", "腾讯云镜像"],
+      "siteType": "commercial_cloud",
+      "publicEndpoints": {
+        "inventoryEndpoint": "https://mirrors.tencent.com/static/source.js",
+        "statusEndpoint": "https://mirrors.tencent.com/static/source.js",
+        "updateTimestampEndpoint": "https://mirrors.tencent.com/static/source.js",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "https://mirrors.tencent.com/help/",
+        "statusFormat": "tencent_source_js"
+      },
+      "supportedEcosystemsSummary": [
+        "go",
+        "maven",
+        "npm",
+        "apt",
+        "rpm",
+        "archlinux",
+        "alpine",
+        "docker"
+      ],
+      "unsupportedEcosystems": ["cargo"],
+      "evidence": [
+        "https://mirrors.tencent.com/static/source.js",
+        "https://mirrors.tencent.com/go/rsc.io/quote/@v/v1.5.2.zip",
+        "https://mirrors.tencent.com/maven/javax/inject/javax.inject/1/javax.inject-1.jar",
+        "https://mirrors.tencent.com/npm/is-number/-/is-number-7.0.0.tgz"
+      ],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "腾讯云前端依赖 source.js 渲染清单与状态枚举（如 sync_status: 1）；但其 Cargo 虽有帮助文档，实际 crates 代理并不对外提供稳定服务（返回 404）；公网访问与腾讯云 VPC 内网调度策略存在差异。"
+    },
+    {
+      "id": "huaweicloud",
+      "name": "华为开源镜像站",
+      "operator": "华为软件技术有限公司 (Huawei Cloud)",
+      "homepageUrl": "https://mirrors.huaweicloud.com/",
+      "officialDomains": ["mirrors.huaweicloud.com", "repo.huaweicloud.com"],
+      "aliases": ["huawei", "hwcloud", "华为源", "华为镜像"],
+      "siteType": "commercial_cloud",
+      "publicEndpoints": {
+        "inventoryEndpoint": "https://mirrors.huaweicloud.com/mirrorDetail/list",
+        "statusEndpoint": "https://mirrors.huaweicloud.com/mirrorDetail/list",
+        "updateTimestampEndpoint": "https://mirrors.huaweicloud.com/mirrorDetail/list",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "https://mirrors.huaweicloud.com/home",
+        "statusFormat": "huawei_json_api"
+      },
+      "supportedEcosystemsSummary": ["go", "maven", "npm", "apt", "rpm", "docker"],
+      "unsupportedEcosystems": ["cargo"],
+      "evidence": [
+        "https://mirrors.huaweicloud.com/mirrorDetail/list",
+        "https://repo.huaweicloud.com/repository/goproxy/rsc.io/quote/@v/v1.5.2.zip",
+        "https://repo.huaweicloud.com/repository/maven/javax/inject/javax.inject/1/javax.inject-1.jar",
+        "https://repo.huaweicloud.com/repository/npm/is-number/-/is-number-7.0.0.tgz"
+      ],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "华为云将语言包统一部署在 repo.huaweicloud.com 域名下；其镜像详情接口具有较严的反爬与签名机制；Cargo 仅提供简单索引指引，不提供独立可靠的 crate 二进制存储代理。"
+    },
+    {
+      "id": "volcengine",
+      "name": "火山引擎开源软件镜像站",
+      "operator": "北京火山引擎科技有限公司 (ByteDance)",
+      "homepageUrl": "https://mirrors.volces.com/",
+      "officialDomains": ["mirrors.volces.com"],
+      "aliases": ["volces", "bytedance", "火山源", "字节跳动镜像"],
+      "siteType": "commercial_cloud",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "unknown",
+        "statusFormat": "html_directory"
+      },
+      "supportedEcosystemsSummary": ["apt", "rpm", "alpine", "archlinux", "docker"],
+      "unsupportedEcosystems": ["go", "maven", "cargo", "npm", "pip"],
+      "evidence": [
+        "https://mirrors.volces.com/debian/dists/bookworm/InRelease",
+        "https://mirrors.volces.com/alpine/v3.20/main/x86_64/APKINDEX.tar.gz"
+      ],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "火山引擎镜像站主打 Linux 基础操作系统与容器镜像，未发现官方 Go/Maven/npm 语言包反向代理；同步状态未公开 JSON 接口。"
+    },
+    {
+      "id": "goproxy-cn",
+      "name": "Goproxy 中国 (goproxy.cn)",
+      "operator": "七牛云 (Qiniu Cloud) / 盛傲飞团队",
+      "homepageUrl": "https://goproxy.cn/",
+      "officialDomains": ["goproxy.cn"],
+      "aliases": ["goproxy.cn", "七牛 go 源"],
+      "siteType": "specialized_language_proxy",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "https://goproxy.cn/",
+        "statusFormat": "none"
+      },
+      "supportedEcosystemsSummary": ["go"],
+      "unsupportedEcosystems": ["maven", "cargo", "npm", "pip", "apt"],
+      "evidence": ["https://goproxy.cn/rsc.io/quote/@v/v1.5.2.zip"],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "国内使用最广泛的专有 Go 模块代理，针对中国开发者网络专门优化；不提供其他语言包。"
+    },
+    {
+      "id": "goproxy-io",
+      "name": "Goproxy.io 全球模块代理",
+      "operator": "Goproxy.io 团队",
+      "homepageUrl": "https://goproxy.io/",
+      "officialDomains": ["goproxy.io"],
+      "aliases": ["goproxy.io"],
+      "siteType": "specialized_language_proxy",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "https://goproxy.io/",
+        "statusFormat": "none"
+      },
+      "supportedEcosystemsSummary": ["go"],
+      "unsupportedEcosystems": ["maven", "cargo", "npm", "pip", "apt"],
+      "evidence": ["https://goproxy.io/rsc.io/quote/@v/v1.5.2.zip"],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "全球性 Go 代理，海外速度优异，中国大陆直连路由偶有波动；不提供非 Go 生态服务。"
+    },
+    {
+      "id": "rsproxy-cn",
+      "name": "RsProxy (字节跳动 Rust 镜像源)",
+      "operator": "北京火山引擎科技有限公司 / 字节跳动基础架构团队",
+      "homepageUrl": "https://rsproxy.cn/",
+      "officialDomains": ["rsproxy.cn"],
+      "aliases": ["rsproxy", "bytedance rust proxy", "字节 rust 源"],
+      "siteType": "specialized_language_proxy",
+      "publicEndpoints": {
+        "inventoryEndpoint": "https://rsproxy.cn/crates.io-index/config.json",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "https://rsproxy.cn/",
+        "statusFormat": "sparse_index_config"
+      },
+      "supportedEcosystemsSummary": ["cargo"],
+      "unsupportedEcosystems": ["go", "maven", "npm", "pip", "apt"],
+      "evidence": [
+        "https://rsproxy.cn/crates.io-index/config.json",
+        "https://rsproxy.cn/api/v1/crates/lazy_static/1.4.0/download"
+      ],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "专为国内 Rust 开发者构建的 Sparse 索引与 Crate 二进制下载双加速代理，实测下载体验极佳；非通用全生态镜像站。"
+    },
+    {
+      "id": "npmmirror",
+      "name": "npmmirror 镜像站",
+      "operator": "npmmirror 团队 / 阿里巴巴集团",
+      "homepageUrl": "https://npmmirror.com/",
+      "officialDomains": ["npmmirror.com", "registry.npmmirror.com"],
+      "aliases": ["npmmirror", "taobao npm", "淘宝 npm 源"],
+      "siteType": "specialized_language_proxy",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "https://registry.npmmirror.com/",
+        "updateTimestampEndpoint": "https://registry.npmmirror.com/",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "https://npmmirror.com/",
+        "statusFormat": "npm_json"
+      },
+      "supportedEcosystemsSummary": ["npm"],
+      "unsupportedEcosystems": ["go", "maven", "cargo", "pip", "apt"],
+      "evidence": [
+        "https://registry.npmmirror.com/is-number/7.0.0",
+        "https://registry.npmmirror.com/is-number/-/is-number-7.0.0.tgz"
+      ],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "继承原淘宝 npm 镜像体系，专为 JavaScript 生态提供高速同步与 tarball 二进制分发；不支持其他语言生态。"
+    },
+    {
+      "id": "bfsu",
+      "name": "北京外国语大学开源软件镜像站",
+      "operator": "北京外国语大学信息技术中心 / 清华大学 TUNA 协会技术支持",
+      "homepageUrl": "https://mirrors.bfsu.edu.cn/",
+      "officialDomains": ["mirrors.bfsu.edu.cn"],
+      "aliases": ["bfsu", "北外源", "北外镜像"],
+      "siteType": "university",
+      "publicEndpoints": {
+        "inventoryEndpoint": "https://mirrors.bfsu.edu.cn/static/tunasync.json",
+        "statusEndpoint": "https://mirrors.bfsu.edu.cn/static/tunasync.json",
+        "updateTimestampEndpoint": "https://mirrors.bfsu.edu.cn/static/tunasync.json",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "https://mirrors.bfsu.edu.cn/static/js/options.json",
+        "statusFormat": "tunasync"
+      },
+      "supportedEcosystemsSummary": ["apt", "rpm", "archlinux", "cargo", "pip", "iso"],
+      "unsupportedEcosystems": ["go", "maven", "npm"],
+      "evidence": [
+        "https://mirrors.bfsu.edu.cn/static/tunasync.json",
+        "https://mirrors.bfsu.edu.cn/crates.io-index/config.json"
+      ],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "采用 TUNA tunasync 技术栈；其 crates.io 镜像仅保留 sparse 索引配置，下载端点回源官方。"
+    },
+    {
+      "id": "hit",
+      "name": "哈尔滨工业大学开源镜像站",
+      "operator": "哈尔滨工业大学网络安全和信息化办公室",
+      "homepageUrl": "https://mirrors.hit.edu.cn/",
+      "officialDomains": ["mirrors.hit.edu.cn"],
+      "aliases": ["hit", "哈工大源", "哈工大镜像"],
+      "siteType": "university",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "https://mirrors.hit.edu.cn/",
+        "statusFormat": "html_directory"
+      },
+      "supportedEcosystemsSummary": ["apt", "rpm", "archlinux", "iso"],
+      "unsupportedEcosystems": ["go", "maven", "cargo", "npm", "pip"],
+      "evidence": ["https://mirrors.hit.edu.cn/debian/dists/bookworm/InRelease"],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "东北地区核心教育网节点，专注于主流 Linux 发行版与开源系统安装介质，无专有语言模块代理。"
+    },
+    {
+      "id": "pku",
+      "name": "北京大学开源镜像站",
+      "operator": "北京大学计算中心",
+      "homepageUrl": "https://mirrors.pku.edu.cn/",
+      "officialDomains": ["mirrors.pku.edu.cn"],
+      "aliases": ["pku", "北大源", "北大镜像"],
+      "siteType": "university",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "https://mirrors.pku.edu.cn/",
+        "statusFormat": "html_directory"
+      },
+      "supportedEcosystemsSummary": ["apt", "rpm", "archlinux", "iso"],
+      "unsupportedEcosystems": ["go", "maven", "cargo", "npm", "pip"],
+      "evidence": ["https://mirrors.pku.edu.cn/debian/dists/bookworm/InRelease"],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "定位于基础 Linux 发行版镜像，未暴露全局结构化同步状态 JSON，无现代语言包反代。"
+    },
+    {
+      "id": "nju",
+      "name": "南京大学开源镜像站",
+      "operator": "南京大学 e-Science 中心 / 南京大学 Linux 用户组",
+      "homepageUrl": "https://mirrors.nju.edu.cn/",
+      "officialDomains": ["mirrors.nju.edu.cn", "mirror.nju.edu.cn"],
+      "aliases": ["nju", "南大源", "南大镜像"],
+      "siteType": "university",
+      "publicEndpoints": {
+        "inventoryEndpoint": "https://mirrors.nju.edu.cn/api/mirrors",
+        "statusEndpoint": "https://mirrors.nju.edu.cn/api/mirrors",
+        "updateTimestampEndpoint": "https://mirrors.nju.edu.cn/api/mirrors",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "https://mirrors.nju.edu.cn/",
+        "statusFormat": "nju_api_json"
+      },
+      "supportedEcosystemsSummary": ["apt", "rpm", "archlinux", "cargo", "pip", "docker", "iso"],
+      "unsupportedEcosystems": ["go", "maven", "npm"],
+      "evidence": [
+        "https://mirrors.nju.edu.cn/api/mirrors",
+        "https://mirror.nju.edu.cn/crates.io-index/config.json",
+        "https://mirror.nju.edu.cn/crates.io/crates/lazy_static/lazy_static-1.4.0.crate"
+      ],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "南大提供独立的 /api/mirrors 接口，支持 crates 二进制本地反代与缓存，高校镜像中 Rust 生态支持极佳。"
+    },
+    {
+      "id": "zju",
+      "name": "浙江大学开源软件镜像站",
+      "operator": "浙江大学图书与信息中心",
+      "homepageUrl": "https://mirrors.zju.edu.cn/",
+      "officialDomains": ["mirrors.zju.edu.cn"],
+      "aliases": ["zju", "浙大源", "浙大镜像"],
+      "siteType": "university",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "https://mirrors.zju.edu.cn/",
+        "statusFormat": "html_directory"
+      },
+      "supportedEcosystemsSummary": ["apt", "rpm", "archlinux", "iso"],
+      "unsupportedEcosystems": ["go", "maven", "cargo", "npm", "pip"],
+      "evidence": ["https://mirrors.zju.edu.cn/debian/dists/bookworm/InRelease"],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "华东地区主要高校源，以 Linux 发行版和科研软件镜像为主，无专有 Go/Maven/Cargo 代理。"
+    },
+    {
+      "id": "iscas",
+      "name": "中国科学院软件研究所开源镜像站",
+      "operator": "中国科学院软件研究所 (ISCAS) / 开源软件供应链点亮计划",
+      "homepageUrl": "https://mirror.iscas.ac.cn/",
+      "officialDomains": ["mirror.iscas.ac.cn"],
+      "aliases": ["iscas", "中科院软件所源"],
+      "siteType": "academic_research",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "https://mirror.iscas.ac.cn/",
+        "statusFormat": "html_directory"
+      },
+      "supportedEcosystemsSummary": ["apt", "rpm", "openeuler", "riscv", "iso"],
+      "unsupportedEcosystems": ["go", "maven", "cargo", "npm", "pip"],
+      "evidence": ["https://mirror.iscas.ac.cn/debian/dists/bookworm/InRelease"],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "在 openEuler 及 RISC-V 交叉编译与系统镜像方面具有鲜明特色，无主流语言模块代理。"
+    },
+    {
+      "id": "kernel-org",
+      "name": "Kernel.org 官方镜像网络",
+      "operator": "Linux Kernel Organization, Inc.",
+      "homepageUrl": "https://mirrors.kernel.org/",
+      "officialDomains": ["mirrors.kernel.org", "kernel.org"],
+      "aliases": ["kernel.org", "kernel mirrors", "linux kernel org"],
+      "siteType": "official_upstream",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "unknown",
+        "statusFormat": "html_directory"
+      },
+      "supportedEcosystemsSummary": ["kernel_source", "apt", "archlinux", "iso"],
+      "unsupportedEcosystems": ["go", "maven", "cargo", "npm", "pip"],
+      "evidence": ["https://mirrors.kernel.org/debian/dists/bookworm/InRelease"],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "全球核心 Linux 基础镜像与 Linux 内核官方发布地，北美与欧洲节点速度极优；中国大陆直连受跨国出口带宽影响。"
+    },
+    {
+      "id": "jaist",
+      "name": "日本北陆先端科技大学院大学开源镜像站",
+      "operator": "Japan Advanced Institute of Science and Technology (JAIST)",
+      "homepageUrl": "https://ftp.jaist.ac.jp/",
+      "officialDomains": ["ftp.jaist.ac.jp"],
+      "aliases": ["jaist", "jaist mirror"],
+      "siteType": "university",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "unknown",
+        "statusFormat": "html_directory"
+      },
+      "supportedEcosystemsSummary": ["apt", "rpm", "archlinux", "foss_source", "iso"],
+      "unsupportedEcosystems": ["go", "maven", "cargo", "npm", "pip"],
+      "evidence": ["https://ftp.jaist.ac.jp/pub/Linux/debian/dists/bookworm/InRelease"],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "亚太地区规模最大的学术镜像之一，涵盖各类 UNIX/Linux 发行版与开源源码包；国内访问受国际网络延迟影响。"
+    },
+    {
+      "id": "golang-official",
+      "name": "Go 官方模块代理 (proxy.golang.org)",
+      "operator": "Google LLC / Go Team",
+      "homepageUrl": "https://proxy.golang.org/",
+      "officialDomains": ["proxy.golang.org", "golang.org"],
+      "aliases": ["golang", "proxy.golang.org", "go upstream"],
+      "siteType": "official_upstream",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "unknown",
+        "statusFormat": "none"
+      },
+      "supportedEcosystemsSummary": ["go"],
+      "unsupportedEcosystems": ["maven", "cargo", "npm", "pip", "apt"],
+      "evidence": ["https://proxy.golang.org/rsc.io/quote/@v/v1.5.2.zip"],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "Go 语言全球默认模块代理；中国大陆直连存在网络重置风险，海外节点作为全球标准对比基准。"
+    },
+    {
+      "id": "maven-central-official",
+      "name": "Maven Central 官方中央仓库 (repo1.maven.org)",
+      "operator": "Sonatype Inc. / Apache Software Foundation",
+      "homepageUrl": "https://central.sonatype.com/",
+      "officialDomains": ["repo1.maven.org", "repo.maven.apache.org", "central.sonatype.com"],
+      "aliases": ["maven central", "repo1", "sonatype central"],
+      "siteType": "official_upstream",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "unknown",
+        "statusFormat": "none"
+      },
+      "supportedEcosystemsSummary": ["maven"],
+      "unsupportedEcosystems": ["go", "cargo", "npm", "pip", "apt"],
+      "evidence": ["https://repo1.maven.org/maven2/javax/inject/javax.inject/1/javax.inject-1.jar"],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "全球 Java 构建事实标准，无公开全局 JSON 状态端点，国内直连受国际出口波动影响。"
+    },
+    {
+      "id": "crates-official",
+      "name": "crates.io 官方注册中心 (crates.io / index.crates.io)",
+      "operator": "Rust Foundation / crates.io Team / AWS",
+      "homepageUrl": "https://crates.io/",
+      "officialDomains": ["crates.io", "index.crates.io", "static.crates.io"],
+      "aliases": ["crates.io", "crates", "rust official"],
+      "siteType": "official_upstream",
+      "publicEndpoints": {
+        "inventoryEndpoint": "https://index.crates.io/config.json",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "unknown",
+        "statusFormat": "sparse_index_config"
+      },
+      "supportedEcosystemsSummary": ["cargo"],
+      "unsupportedEcosystems": ["go", "maven", "npm", "pip", "apt"],
+      "evidence": [
+        "https://index.crates.io/config.json",
+        "https://static.crates.io/crates/lazy_static/lazy_static-1.4.0.crate"
+      ],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "采用 sparse 协议及 S3/CloudFront 分发静态 crate 文件；境内直连下载易受网络扰动影响。"
+    },
+    {
+      "id": "npm-official",
+      "name": "npm 官方注册中心 (registry.npmjs.org)",
+      "operator": "GitHub, Inc. / Microsoft Corporation",
+      "homepageUrl": "https://www.npmjs.com/",
+      "officialDomains": ["registry.npmjs.org", "npmjs.com"],
+      "aliases": ["npm", "npmjs", "npm official"],
+      "siteType": "official_upstream",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "https://status.npmjs.org/api/v2/status.json",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "unknown",
+        "statusFormat": "statuspage_json"
+      },
+      "supportedEcosystemsSummary": ["npm"],
+      "unsupportedEcosystems": ["go", "maven", "cargo", "pip", "apt"],
+      "evidence": ["https://registry.npmjs.org/is-number/-/is-number-7.0.0.tgz"],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "全球 JavaScript 生态源；国内访问偶现延迟与速率限制。"
+    },
+    {
+      "id": "pypi-official",
+      "name": "PyPI 官方索引 (Python Package Index)",
+      "operator": "Python Software Foundation (PSF) / Fastly",
+      "homepageUrl": "https://pypi.org/",
+      "officialDomains": ["pypi.org", "files.pythonhosted.org"],
+      "aliases": ["pypi", "pythonhosted", "pypi official"],
+      "siteType": "official_upstream",
+      "publicEndpoints": {
+        "inventoryEndpoint": "https://pypi.org/simple/",
+        "statusEndpoint": "https://status.python.org/api/v2/status.json",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "unknown",
+        "statusFormat": "html_simple_index"
+      },
+      "supportedEcosystemsSummary": ["pip"],
+      "unsupportedEcosystems": ["go", "maven", "cargo", "npm", "apt"],
+      "evidence": [
+        "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl"
+      ],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "Fastly 全球 CDN 加速分发，国内直连由于国际出口路由可能偶现丢包或被限速。"
+    },
+    {
+      "id": "debian-official",
+      "name": "Debian 官方软件源网络 (deb.debian.org)",
+      "operator": "Debian Project / Software in the Public Interest",
+      "homepageUrl": "https://www.debian.org/mirror/",
+      "officialDomains": ["deb.debian.org", "ftp.debian.org"],
+      "aliases": ["debian official", "deb.debian.org"],
+      "siteType": "official_upstream",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "https://deb.debian.org/",
+        "optionsEndpoint": "https://www.debian.org/mirror/",
+        "statusFormat": "anycast_dispatch"
+      },
+      "supportedEcosystemsSummary": ["apt"],
+      "unsupportedEcosystems": ["go", "maven", "cargo", "npm", "pip"],
+      "evidence": ["https://deb.debian.org/debian/dists/bookworm/InRelease"],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "deb.debian.org 通过 Fastly CDN 与 Anycast/DNS Geo 进行全球分发，国内访问被解析至亚太或海外 CDN 节点。"
+    },
+    {
+      "id": "cernet-federation",
+      "name": "CERNET 镜像联盟 302 调度网关",
+      "operator": "中国教育和科研计算机网 (CERNET)",
+      "homepageUrl": "https://mirrors.cernet.edu.cn/",
+      "officialDomains": ["mirrors.cernet.edu.cn"],
+      "aliases": ["cernet", "cernet mirror", "教育网镜像联盟"],
+      "siteType": "federation_gateway",
+      "publicEndpoints": {
+        "inventoryEndpoint": "https://mirrors.cernet.edu.cn/static/tunasync.json",
+        "statusEndpoint": "https://mirrors.cernet.edu.cn/api/scoring",
+        "updateTimestampEndpoint": "https://mirrors.cernet.edu.cn/static/tunasync.json",
+        "dispatchEndpoint": "https://mirrors.cernet.edu.cn/",
+        "optionsEndpoint": "unknown",
+        "statusFormat": "tunasync_and_scoring"
+      },
+      "supportedEcosystemsSummary": ["network_routing_layer"],
+      "unsupportedEcosystems": [],
+      "evidence": [
+        "https://mirrors.cernet.edu.cn/api/scoring",
+        "https://mirrors.cernet.edu.cn/debian/dists/bookworm/InRelease"
+      ],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "经实测验证，该站点非独立物理存储源，而是根据客户端 IP 返回 302 动态跳转至哈工大、北外、清华等成员节点。不应作为独立物理存储镜像收录。"
+    },
+    {
+      "id": "163-netease",
+      "name": "网易开源镜像站",
+      "operator": "网易公司 (NetEase, Inc.)",
+      "homepageUrl": "https://mirrors.163.com/",
+      "officialDomains": ["mirrors.163.com"],
+      "aliases": ["163", "netease", "网易源", "网易镜像"],
+      "siteType": "deprecated_portal",
+      "publicEndpoints": {
+        "inventoryEndpoint": "unknown",
+        "statusEndpoint": "unknown",
+        "updateTimestampEndpoint": "unknown",
+        "dispatchEndpoint": "none",
+        "optionsEndpoint": "unknown",
+        "statusFormat": "html_directory"
+      },
+      "supportedEcosystemsSummary": ["deprecated"],
+      "unsupportedEcosystems": ["go", "maven", "cargo", "npm", "pip"],
+      "evidence": ["https://mirrors.163.com/"],
+      "checkedAt": "2026-09-28",
+      "unconfirmedAspects": "现代语言包（Maven, npm 等）请求已长期超时（>10s）失修；虽首页仍可访问，但仓库可用性已无法保障，予以排除。"
+    }
+  ]
+}

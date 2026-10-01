@@ -30,15 +30,16 @@ export const NEUTRAL_STABILITY = 0.5;
 
 export interface CandidateInput {
   mirrorId: string;
-  /** 该候选当前展示的结果，可能来自本轮探测，也可能来自缓存。 */
+  /**
+   * 该候选当前可展示的数据（3 小时内的成功结果），或最近一次失败的记录。
+   * 失败的记录没有数值，会被排除出自动推荐（见 `scoreCandidate`）。
+   */
   result?: ProbeResult;
-  /** 结果已过期、正在后台更新：可以展示，但不参与自动推荐。 */
-  stale?: boolean;
   syncStatus?: SyncStatus;
   timeoutMs?: number;
 }
 
-export type CandidateExclusion = 'no-result' | 'probe-failed' | 'stale' | 'sync-blocked';
+export type CandidateExclusion = 'no-result' | 'probe-failed' | 'sync-blocked';
 
 export interface CandidateScore {
   mirrorId: string;
@@ -77,8 +78,6 @@ export function scoreCandidate(input: CandidateInput): CandidateScore {
     excludedBy = 'no-result';
   } else if (input.result.status !== 'ok') {
     excludedBy = 'probe-failed';
-  } else if (input.stale) {
-    excludedBy = 'stale';
   } else if (syncStatus === 'failed' || syncStatus === 'paused') {
     excludedBy = 'sync-blocked';
   }

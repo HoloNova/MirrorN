@@ -1,4 +1,6 @@
-# 部署：静态预览版
+# 部署：静态站点与后台资源索引
+
+**状态（2026-10-01）**：以下早期静态预览与阶段5章节是历史运行记录。公网当前仍为2026-09-29版；BullMQ/Redis采集版尚未发布，待发布方式见本文末节及 `docs/background-index-implementation-plan.md`。
 
 本文档记录 `mirror.campuslink.vip` 的静态部署方式。它对应 `PLAN.md` 6.3 中“静态构建托管”的部分；`PLAN.md` 明确“阶段 3 完成即可发布静态预览版，阶段 6 完成才算首版正式可交付”，因此这里的发布不改变阶段划分。
 
@@ -100,7 +102,7 @@ https://mirrors.aliyun.com https://registry.npmmirror.com https://mirrors.tencen
 | 数据 | `/srv/mirrorn/api/data`（随部署复制）                   | 服务端按 `MIRRORN_DATA_DIR` 读取，与工作区解耦                 |
 | 端口 | `127.0.0.1:8788`                                        | 生产与 dev 分离：dev 后端固定 8787，两者可同时运行             |
 | 快照 | `/var/lib/mirrorn/mirrors-status.json`                  | 重启后先展示上次成功数据；systemd 以 `ReadWritePaths` 单独放行 |
-| Node | `/usr/local/bin/node`（要求≥ 20）                       | 系统 `/usr/bin/node` 可能是 v12，跑打包产物会直接 SIGILL       |
+| Node | `/usr/local/bin/node`（要求≥ 24）                       | 系统 `/usr/bin/node` 可能是 v12，跑打包产物会直接 SIGILL       |
 
 环境文件是 `/etc/mirrorn/api.env`（`0640 root:mirrorn`，模板见 `deploy/api.env.example`）。部署脚本**不会覆盖已存在的环境文件**，因此改端口/改 secret 需要手动编辑该文件后重新运行 `sudo scripts/deploy-api.sh`。
 
@@ -129,8 +131,12 @@ sudo systemctl restart mirrorn-api                               # 强制重新�
 
 ### 两个实测踩过的坑（已在脚本/单元里防住）
 
-1. **Node 版本**：系统 `/usr/bin/node` 是 v12.22.9，运行打包产物直接 `SIGILL`（V8 snapshot 初始化失败）。单元里写死 `/usr/local/bin/node`，部署脚本会先校验 `>= 20` 才继续。
+1. **Node 版本**：系统 `/usr/bin/node` 是 v12.22.9，运行打包产物直接 `SIGILL`（V8 snapshot 初始化失败）。单元里写死 `/usr/local/bin/node`，部署脚本会先校验 `>= 24` 才继续。
 2. **`MemoryDenyWriteExecute=yes`**：这个 systemd 加固选项会让现代 Node 启动时 `V8_Fatal`（`v8::base::OS::SetPermissions`，`Check failed: 12 == errno`），因为 V8 的 JIT 需要可写可执行内存。单元里**刻意不开**它，其余加固项保留。
+
+### 资源目录与数据库
+
+资源库是 `/var/lib/mirrorn/mirrorn.sqlite`（SQLite WAL，同目录有 `-wal` / `-shm`）；审核的站点、归类在 `/srv/mirrorn/api/data/`。新版发布脚本在替换程序前，用Node SQLite备份API取得包含WAL的一致性快照，并检查完整性；不能只复制主文件。待发布版本全部源站请求归后台任务，`browse/package`退出为410，前端只查有效文件批次。每次启动强制采集，之后每6小时调度；不检查过期后才启动，不爬包体。文件字节由源站直接提供，任务状态不展示给用户。
 
 ### 同步行为与上游边界
 
@@ -169,3 +175,21 @@ docker compose down       # 停止，数据卷保留
 - **后端对外只有 /api**：没有管理接口、没有写入接口；`/api/net-fingerprint` 不记录原始 IP，也不声称完全匿名（同网段共享同一指纹，这是设计目标）。
 - **不影响 `pi.campuslink.vip`**：新站点是独立的 site block，不共用 Authelia，也不改现有安全头与日志配置。
 - **不改 DNS、不改防火墙**：80/443 已在服务中，新子域沿用同一套。
+
+## BullMQ后台文件索引版（本地就绪，尚未发布）
+
+运行目录改为 `/srv/mirrorn/api/dist/server.js` 与 `dist/index-worker.js`，同时带生产 `node_modules`、WASM解析资源和 `data/`；不能只复制一个JS文件。`scripts/prepare-api-runtime.sh <空目录>` 生成独立候选，`scripts/deploy-api.sh` 才负责系统服务切换；本轮未执行后者。
+
+队列需要Redis >=6.2，开启AOF、`maxmemory-policy noeviction`，只在本地/内部网络访问；默认URL为 `redis://127.0.0.1:6389/0`，通过 `/etc/mirrorn/api.env` 的 `MIRRORN_REDIS_URL` 覆盖。Debian当前软件源6.0不符合最低要求，不直接使用。`scripts/check-index-redis.mjs <运行目录>` 检查版本、AOF和淘汰策略；检查失败在替换生产程序前退出。Redis不代替SQLite业务库。
+
+`MIRRORN_CRAWL_ENABLED=true` 默认开启北大后台任务；关闭可暂停采集但继续读有效数据库。`MIRRORN_CRAWL_TIMEOUT_MS=30000` 限制连接/网络读等待，不把解析与Redis分批入队耗时当网络超时。Redis不可用时采集等待恢复，API仍读SQLite；systemd线程随API进程一起停止，不另起采集服务。
+
+容器配置已加入内部Redis、AOF持久卷，不暴露Redis宿主机端口；业务数据库使用独立卷。此轮只核对配置，不运行Docker全量构建/启动。临时Node进程和隔离测试Redis结束即停止。
+
+发布须另获确认，先备份SQLite、准备Redis，再切后端与配套静态产物。首轮全量范围/耗时/占用由后台记录，不因API健康200就宣称北大40个仓库全部采集完成。Web界面只由用户在公网人工验收。
+
+### 本机Redis安装（发布准备）
+
+使用单独的 `mirrorn-redis` 用户。将核验过的Redis >=6.2二进制安装到 `/usr/local/lib/mirrorn-redis/redis-server`（CLI同目录），复制 `deploy/mirrorn-redis.conf` 到 `/etc/mirrorn/redis.conf`，数据目录 `/var/lib/mirrorn-redis` 归该用户，安装 `deploy/mirrorn-redis.service` 后启动/启用服务。本次候选为已编译验证的Redis 8.10.2，不使用系统软件源的6.0；本机仅监听127.0.0.1:6389，AOF/everysec、768MiB/noeviction。SQLite仍是业务权威库。
+
+后台每次执行任务前检查数据库所在文件系统剩余空间。低于2GiB时用BullMQ原生RateLimitError延后待办、每分钟重查；不消耗任务重试次数、不删除有效数据，也不截断采集范围。腾出空间后自动继续。API查询不受暂停采集影响。

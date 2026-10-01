@@ -45,10 +45,7 @@ const summary = computed(() => describeConfigDiff(props.diff));
 
     <p class="diff-foot">
       {{ summary }}
-      <span class="diff-caveat"
-        >对照的是官方默认配置，不是你机器上现在的文件：浏览器读不到本机的配置文件，也没有读取过
-        其中的内容。</span
-      >
+      <span class="diff-caveat">对照的是官方默认配置，不是你机器上现在的文件。</span>
     </p>
   </figure>
 </template>

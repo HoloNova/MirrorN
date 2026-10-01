@@ -5,6 +5,10 @@ import { serve } from '@hono/node-server';
 
 import { createApp } from './app.js';
 import { resolveServerEnv } from './config.js';
+import { syncCatalog } from './db/catalog.js';
+import { openDatabase, openReadDatabase } from './db/database.js';
+import { loadCatalogData } from './db/loadData.js';
+import { startIndexWorker } from './indexing/lifecycle.js';
 import { createStatusStore } from './state/statusStore.js';
 import { loadStatusSources, type StatusSourceDefinition } from './upstream/statusSources.js';
 
@@ -24,6 +28,34 @@ const defaultDataDir = resolve(repoRoot, 'data');
 const dataDir = config.dataDir ?? defaultDataDir;
 // 快照目录同理相对仓库根解析（MIRRORN_SNAPSHOT_DIR 给绝对路径时直接用）。
 const snapshotPath = resolve(repoRoot, config.snapshotDir, 'mirrors-status.json');
+// 站点资源库：抓回来的文件清单、版本与抓取历史都在这里（node:sqlite，无额外依赖）。
+const databasePath = resolve(repoRoot, config.snapshotDir, 'mirrorn.sqlite');
+
+type Database = ReturnType<typeof openDatabase>;
+let db: Database | undefined;
+try {
+  db = openDatabase(databasePath);
+  const catalog = await loadCatalogData(dataDir);
+  const synced = syncCatalog(db, catalog);
+  console.log(
+    `资源库：${synced.sites} 个站点、${synced.resources} 条资源、${synced.ecosystems} 个生态（${databasePath}）；只启用北大`,
+  );
+  db.close();
+  db = openReadDatabase(databasePath);
+} catch (error) {
+  db = undefined;
+  console.error(`资源库不可用，资源接口将返回空列表：${String(error)}`);
+}
+
+const indexWorker =
+  db !== undefined && config.crawlEnabled
+    ? startIndexWorker({
+        databasePath,
+        redisUrl: config.redisUrl,
+        timeoutMs: config.crawlTimeoutMs,
+        log: (message) => console.log(`索引：${message}`),
+      })
+    : undefined;
 
 let sources: StatusSourceDefinition[] = [];
 try {
@@ -65,6 +97,7 @@ if (config.syncEnabled && sources.length > 0) {
 
 const app = createApp({
   status: statusStore,
+  ...(db === undefined ? {} : { db }),
   fingerprint: {
     trustProxy: config.trustProxy,
     ...(config.fingerprintSecret === undefined ? {} : { secret: config.fingerprintSecret }),
@@ -99,7 +132,12 @@ server.on('error', (error: NodeJS.ErrnoException) => {
 function shutdown(signal: string): void {
   console.log(`收到 ${signal}，正在退出。`);
   statusStore.stop();
-  server.close(() => process.exit(0));
+  server.close(() => {
+    void (indexWorker?.stop() ?? Promise.resolve()).finally(() => {
+      db?.close();
+      process.exit(0);
+    });
+  });
 }
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {

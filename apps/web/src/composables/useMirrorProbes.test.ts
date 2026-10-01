@@ -212,7 +212,7 @@ describe('createBrowserProbeEnv', () => {
     expect(unsubscribe()).toBeUndefined();
   });
 
-  it('watches window, document and a real connection event target', () => {
+  it('watches window and document, and deliberately not navigator.connection', () => {
     const record: string[] = [];
     const connection = createFakeTarget(record, 'connection');
     vi.stubGlobal('window', createFakeTarget(record, 'window'));
@@ -228,32 +228,15 @@ describe('createBrowserProbeEnv', () => {
           'window.add:offline',
           'window.add:focus',
           'document.add:visibilitychange',
-          'connection.add:change',
         ]),
       );
+      // Chromium 的 connection.change 在“网络质量估算”变化时就派发（与换网无关），
+      // 订阅它会把一次估算抖动变成一次全量重测，所以这里刻意不订阅。
+      expect(record.some((entry) => entry.startsWith('connection'))).toBe(false);
 
       unsubscribe();
-      expect(record).toContain('connection.remove:change');
+      expect(record).toContain('window.remove:online');
       expect(connection.listenerCount('change')).toBe(0);
-    } finally {
-      vi.unstubAllGlobals();
-    }
-  });
-
-  it('ignores a partial navigator.connection instead of throwing during setup', () => {
-    // 部分 WebView / 嵌入式浏览器的 navigator.connection 没有 addEventListener。
-    // 以前这里会抛 TypeError，让整个向导页白屏，而终端没有任何报错。
-    const record: string[] = [];
-    vi.stubGlobal('window', createFakeTarget(record, 'window'));
-    vi.stubGlobal('document', createFakeTarget(record, 'document', { visibilityState: 'visible' }));
-    vi.stubGlobal('navigator', { onLine: true, connection: { effectiveType: '4g' } });
-    try {
-      const env = createBrowserProbeEnv();
-      const unsubscribe = env.subscribe({ onNetworkChange: vi.fn(), onVisible: vi.fn() });
-
-      expect(record.some((entry) => entry.startsWith('connection'))).toBe(false);
-      expect(record).toContain('window.add:online');
-      expect(unsubscribe).toBeTypeOf('function');
     } finally {
       vi.unstubAllGlobals();
     }
@@ -297,8 +280,6 @@ describe('createMirrorProbeAccess', () => {
         mirrorId: 'alpha',
         hasProbe: false,
         pending: false,
-        stale: false,
-        attemptFailed: false,
         unavailableReason: 'probing-disabled',
       });
       expect(probes.recommendedMirrorId.value).toBeUndefined();
@@ -393,7 +374,7 @@ describe('useMirrorProbes', () => {
     context.probes.dispose();
   });
 
-  it('renders an expired measurement immediately and revalidates it', async () => {
+  it('treats an expired measurement as no data and measures it again', async () => {
     const context = setup({
       list: [alpha],
       preload: [
@@ -401,9 +382,9 @@ describe('useMirrorProbes', () => {
       ],
     });
 
-    // SWR：过期值先显示（标注可能已过期），同时后台已经在更新。
-    expect(context.probes.viewFor('alpha').result?.durationMs).toBe(42);
-    expect(context.probes.viewFor('alpha').stale).toBe(true);
+    // 过了 3 小时就等于没有数据：不展示旧数字，直接重测（占位符期间是“测速中”）。
+    expect(context.probes.viewFor('alpha').result).toBeUndefined();
+    expect(context.probes.viewFor('alpha').pending).toBe(true);
     expect(context.fetcher.activeCount).toBe(1);
 
     context.fetcher.resolveAll();
@@ -413,7 +394,7 @@ describe('useMirrorProbes', () => {
     const updated = context.probes.viewFor('alpha').result?.durationMs ?? 0;
     expect(updated).toBeGreaterThan(0);
     expect(updated).not.toBe(42);
-    expect(context.probes.viewFor('alpha').stale).toBe(false);
+    expect(context.probes.viewFor('alpha').pending).toBe(false);
     context.probes.dispose();
   });
 
@@ -433,7 +414,7 @@ describe('useMirrorProbes', () => {
     context.probes.dispose();
   });
 
-  it('keeps the previous measurement when the new attempt fails', async () => {
+  it('leaves no value when the new attempt fails', async () => {
     const context = setup({
       list: [alpha],
       preload: [
@@ -445,23 +426,23 @@ describe('useMirrorProbes', () => {
     context.fetcher.failAll();
     await flush();
 
-    // 失败不覆盖数据：仍然显示上一次成功的 42 ms，并标出“本次没成功”。
-    expect(context.probes.viewFor('alpha').result?.durationMs).toBe(42);
-    expect(context.probes.viewFor('alpha').attemptFailed).toBe(true);
-    expect(context.probes.lastRoundFailures.value).toBe(1);
-    expect(context.cache.read()[0]?.ok?.result.durationMs).toBe(42);
+    // 失败不产生数值：行内只有失败状态，没有毫秒数；过期的那份也不会被拿回来。
+    const view = context.probes.viewFor('alpha');
+    expect(view.result?.status).toBe('failed');
+    expect(view.result?.durationMs).toBeNull();
+    expect(context.cache.read()[0]?.ok).toBeUndefined();
     expect(context.cache.read()[0]?.lastAttempt.status).toBe('failed');
     context.probes.dispose();
   });
 
-  it('shows a failure when there is no earlier measurement to keep', async () => {
+  it('shows the failure state when nothing was measured', async () => {
     const context = setup({ list: [alpha] });
 
     context.fetcher.failAll();
     await flush();
 
     expect(context.probes.viewFor('alpha').result?.status).toBe('failed');
-    expect(context.probes.viewFor('alpha').attemptFailed).toBe(true);
+    expect(context.probes.viewFor('alpha').result?.durationMs).toBeNull();
     context.probes.dispose();
   });
 
@@ -519,44 +500,53 @@ describe('useMirrorProbes', () => {
     context.probes.dispose();
   });
 
-  it('starts no request while offline and discards values from the previous network', async () => {
+  it('starts no request while offline and keeps the values it already has', async () => {
     const context = setup();
     context.fetcher.resolveAll();
     await flush();
     expect(context.cache.read()).toHaveLength(2);
+    const measured = context.probes.viewFor('alpha').result?.durationMs;
 
     context.setOnline(false);
     context.networkChange();
     context.runTimers();
     await flush();
 
+    // 离线只停止发请求：已有数据照旧展示（它还算不算数由有效期与指纹决定），缓存也不动。
     expect(context.probes.offline.value).toBe(true);
     expect(context.fetcher.calls).toBe(2);
-    expect(context.probes.viewFor('alpha').result).toBeUndefined();
-    expect(context.cache.read()).toEqual([]);
+    expect(context.probes.viewFor('alpha').result?.durationMs).toBe(measured);
+    expect(context.cache.read()).toHaveLength(2);
     context.probes.dispose();
   });
 
-  it('discards results after a network change and re-probes once the events settle', async () => {
+  it('measures nothing again on a network event while the data is still within its TTL', async () => {
     const context = setup();
     context.fetcher.resolveAll();
     await flush();
 
     context.networkChange();
-
-    expect(context.probes.viewFor('alpha').result).toBeUndefined();
-    expect(context.cache.read()).toEqual([]);
-    expect(context.fetcher.calls).toBe(2);
-
     context.runTimers();
     await flush();
 
+    // 网络事件不再废弃数据：有 3 小时内的结果就一个请求都不发（是否换网由出口指纹判定）。
+    expect(context.fetcher.calls).toBe(2);
+    expect(context.probes.viewFor('alpha').result).toBeDefined();
+    expect(context.cache.read()).toHaveLength(2);
+
+    // 过了有效期之后再补测，而且是按来源补，不是整批重来。
+    context.advanceClock(PROBE_CACHE_TTL_MS + 1);
+    context.networkChange();
+    context.runTimers();
+    await flush();
     expect(context.fetcher.calls).toBe(4);
+    expect(context.probes.viewFor('alpha').pending).toBe(true);
+
     context.fetcher.resolveAll();
     context.probes.dispose();
   });
 
-  it('shows an expired measurement but keeps it out of the automatic recommendation', async () => {
+  it('has no data and no recommendation until an expired source is measured again', async () => {
     const context = setup({
       list: [alpha],
       preload: [
@@ -564,14 +554,14 @@ describe('useMirrorProbes', () => {
       ],
     });
 
-    expect(context.probes.viewFor('alpha').result?.durationMs).toBe(5);
-    expect(context.probes.viewFor('alpha').stale).toBe(true);
+    // 过期即没有数据：既没有数字，也不会被自动推荐。
+    expect(context.probes.viewFor('alpha').result).toBeUndefined();
     expect(context.probes.recommendedMirrorId.value).toBeUndefined();
 
     context.fetcher.resolveAll();
     await flush();
 
-    expect(context.probes.viewFor('alpha').stale).toBe(false);
+    expect(context.probes.viewFor('alpha').result?.status).toBe('ok');
     expect(context.probes.recommendedMirrorId.value).toBe('alpha');
     context.probes.dispose();
   });
@@ -619,7 +609,6 @@ describe('useMirrorProbes', () => {
     expect(context.probes.viewFor('gamma')).toMatchObject({
       hasProbe: false,
       pending: false,
-      stale: false,
       unavailableReason: 'no-probe',
     });
     expect(context.probes.viewFor('gamma').result).toBeUndefined();
@@ -688,14 +677,15 @@ describe('sync status integration', () => {
   });
 });
 
-describe('invalidate', () => {
-  it('drops cached and in-flight results and measures again', async () => {
+describe('refresh', () => {
+  it('clears the old values and their cache records, then measures everything again', async () => {
     const fetcher = createControllableFetch();
     const fake = createFakeEnv(true);
     const cache = createProbeCache({ storage: null });
 
-    // 预置一份缓存：invalidate 之后它不应再被展示。
+    // 预置两份 3 小时内的缓存：打开页面时命中它们，一个请求都不发。
     cache.write([{ target: alpha, result: probeResult('alpha', 20, 900) }], 900);
+    cache.write([{ target: beta, result: probeResult('beta', 30, 900) }], 900);
 
     let monotonic = 100;
     const probes = useMirrorProbes({
@@ -712,22 +702,22 @@ describe('invalidate', () => {
     });
 
     await flush();
-    // 让首轮结束，这样 invalidate 之后的重新测量就是真实的新请求（而不是复用在途请求）。
-    fetcher.resolveAll();
-    await flush();
-    expect(probes.viewFor('alpha').result).toBeDefined();
+    expect(probes.viewFor('alpha').result?.durationMs).toBe(20);
+    expect(fetcher.calls).toBe(0);
 
-    const callsBefore = fetcher.calls;
-    probes.invalidate();
+    probes.refresh();
 
-    // 旧结果立即消失、缓存被清掉，并立刻发起新一轮测量。
+    // 手动重测：旧值立刻消失（占位符 / 测速中）、缓存记录被清掉，重新发起请求。
     expect(probes.viewFor('alpha').result).toBeUndefined();
-    expect(cache.read()).toEqual([]);
-    expect(fetcher.calls).toBeGreaterThan(callsBefore);
+    expect(cache.read().some((entry) => entry.probeId === 'alpha-robots')).toBe(false);
+    expect(fetcher.calls).toBeGreaterThan(0);
 
-    fetcher.resolveAll();
+    // 这次没测到就保持没有数据：不会把刚才清掉的旧值拿回来。
+    fetcher.failAll();
     await flush();
-    expect(probes.viewFor('alpha').pending).toBe(false);
+    expect(probes.viewFor('alpha').result?.status).toBe('failed');
+    expect(probes.viewFor('alpha').result?.durationMs).toBeNull();
+    expect(cache.read().find((entry) => entry.probeId === 'alpha-robots')?.ok).toBeUndefined();
 
     probes.dispose();
   });

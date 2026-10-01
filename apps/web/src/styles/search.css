@@ -4,7 +4,7 @@
  * 结果列表沿用全站“清单”的语言（hairline 分隔、整行可点、当前项一根左侧刻度），
  * 不套一层带阴影的卡片：它展开在搜索框正下方，是同一块内容，不是浮窗。
  *
- * 首页的搜索态（点一下把框拉到视觉中心、收起测速区）在 home.css 里，因为那是版面行为，
+ * 首页的搜索态（点一下把框拉到视觉中心、收起其它内容）在 home.css 里，因为那是版面行为，
  * 不是搜索组件自己的事。
  */
 
@@ -89,7 +89,7 @@
   margin-top: var(--space-3);
 }
 
-/* 分组标签（生态 / 镜像站）：结果按类型分段，而不是混在一起。 */
+/* 首页只索引可配置生态，分组标题明确当前结果范围。 */
 .search-group {
   display: block;
   padding: var(--space-3) 2px var(--space-1);
@@ -115,7 +115,7 @@
   background: var(--surface-hover);
 }
 
-/* 标题固定成一列：一眼能看出哪些是生态、哪些是站点，也不会每行错位。 */
+/* 标题固定成一列，结果行不会因名称长短错位。 */
 .hit-title {
   flex: none;
   width: 190px;
@@ -124,14 +124,6 @@
   font-size: var(--size-body);
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.hit-latency {
-  flex: none;
-  color: var(--ink-2);
-  font-family: var(--font-mono);
-  font-size: var(--size-micro);
-  font-variant-numeric: tabular-nums;
 }
 
 .hit-subtitle {
@@ -145,19 +137,6 @@
 .hit-kind {
   margin-left: auto;
   flex: none;
-  color: var(--ink-3);
-  font-size: var(--size-micro);
-}
-
-.hit-chips {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  padding: 0 var(--space-2) var(--space-3) 2px;
-}
-
-.hit-chips-label {
   color: var(--ink-3);
   font-size: var(--size-micro);
 }

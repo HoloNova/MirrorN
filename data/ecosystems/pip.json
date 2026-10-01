@@ -49,6 +49,19 @@
           "note": "阿里云官方镜像说明。"
         }
       ]
+    },
+    {
+      "ecosystemId": "pip",
+      "mirrorId": "ustc",
+      "repositoryUrl": "https://mirrors.ustc.edu.cn/pypi/simple/",
+      "supportsPublish": false,
+      "sources": [
+        {
+          "url": "https://mirrors.ustc.edu.cn/help/pypi.html",
+          "checkedAt": "2026-09-28",
+          "note": "USTC 官方帮助与 simple 索引均已核对；从索引链接真实拉取了 six wheel。"
+        }
+      ]
     }
   ],
   "guides": [

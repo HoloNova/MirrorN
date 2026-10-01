@@ -8,7 +8,7 @@
 # 运行：docker compose up --build（推荐，见 docker-compose.yml）
 
 # ---------- 构建阶段：装依赖、构建数据校验 + 前端 + 后端单文件 ----------
-FROM node:22-slim AS builder
+FROM node:24-slim AS builder
 
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
@@ -34,13 +34,13 @@ COPY data data
 COPY scripts scripts
 
 # VITE_API_BASE=/ 表示前端与 API 同源：容器里由同一个进程提供 /api。
-RUN VITE_API_BASE=/ pnpm build:web && pnpm --filter @mirrorn/server build:bundle
+RUN VITE_API_BASE=/ pnpm build:web && bash scripts/prepare-api-runtime.sh /runtime-api
 
 # ---------- 运行阶段：只带运行时需要的东西 ----------
-FROM node:22-slim AS runtime
+FROM node:24-slim AS runtime
 
 LABEL org.opencontainers.image.title="MirrorN" \
-      org.opencontainers.image.description="镜像站导航与配置向导（API + 静态页面）" \
+      org.opencontainers.image.description="镜像资源目录与下载教程（API + 静态页面）" \
       org.opencontainers.image.source="https://mirror.campuslink.vip/"
 
 ENV NODE_ENV=production
@@ -52,9 +52,8 @@ ENV MIRRORN_STATIC_DIR=/app/static
 
 WORKDIR /app
 
-# 单文件后端、数据与静态产物；快照目录交给 volume（compose 里声明）。
-COPY --from=builder /build/apps/server/dist/server.js /app/server.js
-COPY --from=builder /build/data /app/data
+# API、后台线程及外部解析器资源；数据库目录交给volume。
+COPY --from=builder /runtime-api /app
 COPY --from=builder /build/apps/web/dist /app/static
 
 # 非 root 运行：容器里用 UID/GID 10001，快照目录由 compose 的卷挂载进来。
@@ -67,4 +66,4 @@ EXPOSE 8787
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:'+(process.env.MIRRORN_PORT||8787)+'/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-CMD ["node", "/app/server.js"]
+CMD ["node", "/app/dist/server.js"]

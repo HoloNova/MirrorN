@@ -19,7 +19,7 @@ function result(overrides: Partial<ProbeResult> = {}): ProbeResult {
 
 describe('describeProbeView', () => {
   it('says it cannot measure when the data has no probe', () => {
-    const view = describeProbeView({ hasProbe: false, pending: false, stale: false });
+    const view = describeProbeView({ hasProbe: false, pending: false });
 
     expect(view).toMatchObject({ status: 'unavailable', label: '无法测量', tone: 'neutral' });
     expect(view.detail).toContain('数据里没有');
@@ -29,7 +29,6 @@ describe('describeProbeView', () => {
     const view = describeProbeView({
       hasProbe: false,
       pending: false,
-      stale: false,
       unavailableReason: 'probing-disabled',
     });
 
@@ -39,17 +38,14 @@ describe('describeProbeView', () => {
   });
 
   it('distinguishes measuring from never measured', () => {
-    expect(describeProbeView({ hasProbe: true, pending: true, stale: false }).label).toBe('测速中');
-    expect(describeProbeView({ hasProbe: true, pending: false, stale: false }).label).toBe(
-      '未测速',
-    );
+    expect(describeProbeView({ hasProbe: true, pending: true }).label).toBe('测速中');
+    expect(describeProbeView({ hasProbe: true, pending: false }).label).toBe('未测速');
   });
 
   it('uses the estimate wording and flags opaque results as unverified', () => {
     const view = describeProbeView({
       hasProbe: true,
       pending: false,
-      stale: false,
       result: result(),
     });
 
@@ -62,7 +58,6 @@ describe('describeProbeView', () => {
     const view = describeProbeView({
       hasProbe: true,
       pending: false,
-      stale: false,
       result: result({ mode: 'cors', opaque: false, httpStatus: 200 }),
     });
 
@@ -73,7 +68,6 @@ describe('describeProbeView', () => {
     const view = describeProbeView({
       hasProbe: true,
       pending: false,
-      stale: false,
       result: result({ status: 'timeout', durationMs: null, opaque: false }),
     });
 
@@ -87,7 +81,6 @@ describe('describeProbeView', () => {
       describeProbeView({
         hasProbe: true,
         pending: false,
-        stale: false,
         result: result({
           status: 'failed',
           durationMs: null,
@@ -102,28 +95,15 @@ describe('describeProbeView', () => {
       describeProbeView({
         hasProbe: true,
         pending: false,
-        stale: false,
         result: result({ status: 'failed', durationMs: null, opaque: false }),
       }).detail,
     ).toBe('请求没有完成，可能是跨域策略或网络原因');
-  });
-
-  it('marks a cached result as possibly outdated', () => {
-    const view = describeProbeView({
-      hasProbe: true,
-      pending: false,
-      stale: true,
-      result: result(),
-    });
-
-    expect(view.detail).toContain('结果可能已过期');
   });
 
   it('discloses how many attempts produced the number', () => {
     const partial = describeProbeView({
       hasProbe: true,
       pending: false,
-      stale: false,
       result: result({ attempts: 3, samples: 1 }),
     });
     expect(partial.detail).toContain('3 次尝试中只有 1 次有效');
@@ -132,7 +112,6 @@ describe('describeProbeView', () => {
     const full = describeProbeView({
       hasProbe: true,
       pending: false,
-      stale: false,
       result: result({ attempts: 3, samples: 3 }),
     });
     expect(full.detail).toBe('响应完成，内容未验证');
@@ -142,7 +121,6 @@ describe('describeProbeView', () => {
     const view = describeProbeView({
       hasProbe: true,
       pending: false,
-      stale: false,
       result: result({ status: 'timeout', durationMs: null, opaque: false, attempts: 2 }),
     });
 

@@ -1,5 +1,5 @@
 [Unit]
-Description=MirrorN API (MirrorZ sync status aggregation)
+Description=MirrorN resource directory and mirror API
 Documentation=file:/srv/mirrorn/api/README.deploy.md
 After=network-online.target
 Wants=network-online.target
@@ -12,16 +12,16 @@ WorkingDirectory=/srv/mirrorn/api
 EnvironmentFile=/etc/mirrorn/api.env
 # 必须使用现代 Node：Debian/Ubuntu 自带的 /usr/bin/node 可能是 v12，
 # 运行打包产物时会因 V8 版本过旧直接 SIGILL 崩溃（部署脚本会先校验版本）。
-ExecStart=/usr/local/bin/node /srv/mirrorn/api/server.js
+ExecStart=/usr/local/bin/node /srv/mirrorn/api/dist/server.js
 Restart=on-failure
 RestartSec=5
 
-# 收紧权限：服务只需要读自己的目录、写快照目录，不需要任何特权。
+# 收紧权限：服务只需要读自己的目录、写资源库/快照目录，不需要任何特权。
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-# 快照目录必须显式放行：ProtectSystem=strict 下 ReadWritePaths 之外全是只读。
+# SQLite 资源库与快照同在此目录；ProtectSystem=strict 下需显式放行。
 ReadWritePaths=/var/lib/mirrorn
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 LockPersonality=true

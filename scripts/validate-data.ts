@@ -4,12 +4,20 @@ import { fileURLToPath } from 'node:url';
 
 import {
   EcosystemSchema,
+  EcosystemTaxonomySchema,
   MirrorListSchema,
+  SiteInventorySchema,
+  SiteResourceListSchema,
   TroubleshootingListSchema,
+  TutorialListSchema,
   validateDataset,
   type Ecosystem,
+  type EcosystemTaxonomyEntry,
   type Mirror,
+  type SiteInventory,
+  type SiteResourceList,
   type Troubleshooting,
+  type Tutorial,
 } from '@mirrorn/shared';
 
 const projectRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -69,6 +77,14 @@ async function main(): Promise<void> {
     reportProblem(`${mirrorsPath}：无法解析 JSON（${(error as Error).message}）`);
   }
 
+  const inventoryFiles = await readJsonFiles(
+    resolve(dataRoot, 'site-inventories'),
+    'data/site-inventories',
+  );
+  const resourceFiles = await readJsonFiles(
+    resolve(dataRoot, 'site-resources'),
+    'data/site-resources',
+  );
   const ecosystemFiles = await readJsonFiles(resolve(dataRoot, 'ecosystems'), 'data/ecosystems');
   const troubleshootingFiles = await readJsonFiles(
     resolve(dataRoot, 'troubleshooting'),
@@ -79,6 +95,67 @@ async function main(): Promise<void> {
   const mirrors: Mirror[] = mirrorsResult.success ? mirrorsResult.data : [];
   if (!mirrorsResult.success) {
     printZodIssues(mirrorsPath, mirrorsResult.error);
+  }
+
+  const inventories: SiteInventory[] = [];
+  for (const file of inventoryFiles) {
+    const result = SiteInventorySchema.safeParse(file.value);
+    if (result.success) {
+      inventories.push(result.data);
+    } else {
+      printZodIssues(file.path, result.error);
+    }
+  }
+
+  const resourceLists: SiteResourceList[] = [];
+  for (const file of resourceFiles) {
+    const result = SiteResourceListSchema.safeParse(file.value);
+    if (result.success) {
+      resourceLists.push(result.data);
+    } else {
+      printZodIssues(file.path, result.error);
+    }
+  }
+
+  let taxonomy: EcosystemTaxonomyEntry[] = [];
+  try {
+    const value: unknown = JSON.parse(
+      await readFile(resolve(dataRoot, 'ecosystem-taxonomy.json'), 'utf8'),
+    );
+    const result = EcosystemTaxonomySchema.safeParse(value);
+    if (result.success) {
+      taxonomy = result.data;
+    } else {
+      printZodIssues('data/ecosystem-taxonomy.json', result.error);
+    }
+  } catch (error) {
+    reportProblem(`data/ecosystem-taxonomy.json：无法解析 JSON（${(error as Error).message}）`);
+  }
+
+  let tutorials: Tutorial[] = [];
+  try {
+    const value: unknown = JSON.parse(await readFile(resolve(dataRoot, 'tutorials.json'), 'utf8'));
+    const result = TutorialListSchema.safeParse(value);
+    if (result.success) {
+      tutorials = result.data;
+    } else {
+      printZodIssues('data/tutorials.json', result.error);
+    }
+  } catch (error) {
+    reportProblem(`data/tutorials.json：无法解析 JSON（${(error as Error).message}）`);
+  }
+
+  // 教程正文是仓库里的 Markdown：清单与文件必须一致，否则页面会拿到空正文。
+  for (const tutorial of tutorials) {
+    const file = resolve(projectRoot, 'apps/web/src/tutorials', tutorial.file);
+    try {
+      const body = await readFile(file, 'utf8');
+      if (!body.startsWith('# ')) {
+        reportProblem(`apps/web/src/tutorials/${tutorial.file}：教程正文必须以一级标题开头`);
+      }
+    } catch {
+      reportProblem(`data/tutorials.json：教程文件不存在 apps/web/src/tutorials/${tutorial.file}`);
+    }
   }
 
   const ecosystems: Ecosystem[] = [];
@@ -107,7 +184,15 @@ async function main(): Promise<void> {
     return;
   }
 
-  const issues = validateDataset({ mirrors, ecosystems, troubleshooting });
+  const issues = validateDataset({
+    mirrors,
+    ecosystems,
+    troubleshooting,
+    siteInventories: inventories,
+    ecosystemTaxonomy: taxonomy,
+    siteResources: resourceLists,
+    tutorials,
+  });
   if (issues.length > 0) {
     for (const issue of issues) {
       reportProblem(`${issue.path}：${issue.message}`);
@@ -117,7 +202,7 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    `数据校验通过：${mirrors.length} 个镜像，${ecosystems.length} 个生态，${troubleshooting.length} 条排错。`,
+    `数据校验通过：${mirrors.length} 个镜像，${inventories.length} 份官方站点目录（共 ${inventories.reduce((sum, inventory) => sum + inventory.repositories.length, 0)} 条仓库），${resourceLists.reduce((sum, list) => sum + list.resources.length, 0)} 条资源归类，${taxonomy.length} 个生态，${tutorials.length} 篇教程，${troubleshooting.length} 条排错。`,
   );
 }
 
