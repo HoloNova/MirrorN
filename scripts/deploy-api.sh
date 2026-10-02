@@ -6,7 +6,7 @@
 #   sudo scripts/deploy-api.sh
 #
 # 做了什么：
-#   1. 准备API/采集线程与生产依赖的独立运行目录（解析器包含WASM资源）；
+#   1. 准备API/采集线程与生产依赖的独立运行目录（仅保留安装目录解析与BullMQ依赖）；
 #   2. 验证Redis，再同步dist/node_modules/data到 /srv/mirrorn/api；
 #   3. 首次运行时创建系统用户 mirrorn、快照目录与 /etc/mirrorn/api.env（含随机 secret）；
 #   4. 安装/更新 systemd 单元并重启服务；
@@ -47,6 +47,22 @@ echo "==> 使用 $NODE_BIN（$("$NODE_BIN" --version)）"
 
 cd "$REPO_ROOT"
 
+# 升级现有包库时，先由后台准备新的安装目录；不能发布空新库使首页突然消失。
+if [[ -f "$STATE_DIR/mirrorn.sqlite" ]]; then
+  "$NODE_BIN" --input-type=module - "$STATE_DIR/mirrorn-installers.sqlite" <<'NODE'
+import {DatabaseSync} from 'node:sqlite';
+import {existsSync} from 'node:fs';
+const path=process.argv[2];
+if(!existsSync(path))throw new Error('新安装目录未准备好：先执行 scripts/prepare-installer-catalog.ts；本次不替换运行程序');
+const db=new DatabaseSync(path,{readOnly:true});
+try {
+  const ready=db.prepare(`SELECT DISTINCT w.slug FROM catalog_downloads d JOIN catalog_versions v ON v.id=d.version_id JOIN catalog_software w ON w.id=v.software_id`).all();
+  for(const slug of ['nodejs','anaconda-installer','anaconda-distribution','r-cran'])
+    if(!ready.some(row=>row.slug===slug))throw new Error(`${slug}未就绪：不替换现用API`);
+}finally{db.close();}
+NODE
+fi
+
 echo "==> 准备API及采集线程运行目录"
 STAGING="$(mktemp -d /tmp/mirrorn-api-runtime.XXXXXX)"
 trap 'rm -rf "$STAGING"' EXIT
@@ -62,21 +78,8 @@ if [[ "${MIRRORN_CRAWL_ENABLED:-true}" != "false" ]]; then
   MIRRORN_REDIS_URL="${MIRRORN_REDIS_URL:-redis://127.0.0.1:6389/0}" "$NODE_BIN" scripts/check-index-redis.mjs "$STAGING"
 fi
 
-# 在替换运行目录和启动结构升级前，用SQLite备份API取得包含WAL的一致性快照。
-if [[ -f "$STATE_DIR/mirrorn.sqlite" ]]; then
-  DB_BACKUP="$STATE_DIR/mirrorn.before-background-index.$(date -u +%Y%m%d-%H%M%S.%N).sqlite"
-  "$NODE_BIN" --input-type=module - "$STATE_DIR/mirrorn.sqlite" "$DB_BACKUP" <<'NODE'
-import {DatabaseSync,backup} from 'node:sqlite';
-const source=new DatabaseSync(process.argv[2],{readOnly:true});
-try {
-  await backup(source,process.argv[3]);
-  const check=new DatabaseSync(process.argv[3],{readOnly:true});
-  try {if(check.prepare('PRAGMA integrity_check').get().integrity_check!=='ok')throw new Error('备份完整性检查失败');}finally{check.close();}
-}finally{source.close();}
-NODE
-  chmod 0600 "$DB_BACKUP"
-  echo "==> SQLite一致性备份完成：$DB_BACKUP"
-fi
+# 开发阶段抓取数据可重新生成：按用户规则不备份数据库、不复制历史抓取文件。
+echo "==> 抓取数据不备份；新目录就绪后切换API"
 
 echo "==> 创建用户与目录"
 if ! id -u "$SERVICE_USER" >/dev/null 2>&1; then

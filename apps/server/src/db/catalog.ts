@@ -1,7 +1,8 @@
 import type { DatabaseSync } from 'node:sqlite';
-
 import type { Mirror, SiteResourceList, Tutorial } from '@mirrorn/shared';
-import { ENABLED_RESOURCE_SITE } from '../indexing/policy.js';
+import { registerSoftware, syncSites } from './installers.js';
+import { SOFTWARE } from '../indexing/software.js';
+import { compareRepoVersions } from '../indexing/versions.js';
 
 export interface ResourceRow {
   id: string;
@@ -24,12 +25,7 @@ export interface ResourceRow {
   downloadMode: 'files' | 'unavailable';
 }
 
-const RESOURCE_ID = (siteId: string, repoId: string): string => `${siteId}:${repoId}`;
-
-/**
- * 配置只定义身份与采集归类；实际文件完全由后台动态采集产生。
- * 启动时只upsert，不把配置缺项解释成源站删除，也不触碰有效文件。
- */
+/** 配置只同步身份，绝不导入旧包清单。软件下载元数据由后台填充。 */
 export function syncCatalog(
   db: DatabaseSync,
   input: {
@@ -39,157 +35,76 @@ export function syncCatalog(
     tutorials: Tutorial[];
     now?: number;
   },
-): { sites: number; resources: number; ecosystems: number } {
-  const now = input.now ?? Date.now();
-  const tutorialIds = new Set(input.tutorials.map((tutorial) => tutorial.id));
-
-  const upsertSite = db.prepare(
-    `INSERT INTO sites (id, name, kind, homepage_url, aliases, updated_at) VALUES (?, ?, ?, ?, ?, ?)
-     ON CONFLICT(id) DO UPDATE SET name = excluded.name, kind = excluded.kind,
-       homepage_url = excluded.homepage_url, aliases = excluded.aliases, updated_at = excluded.updated_at`,
-  );
-  const upsertEcosystem = db.prepare(
-    `INSERT INTO ecosystems (id, label, category, aliases, updated_at) VALUES (?, ?, ?, ?, ?)
-     ON CONFLICT(id) DO UPDATE SET label = excluded.label, category = excluded.category,
-       aliases = excluded.aliases, updated_at = excluded.updated_at`,
-  );
-  const upsertResource = db.prepare(
-    `INSERT INTO resources (id, site_id, repo_id, name, ecosystem_id, kind, download_entry,
-       versions_hint, crawl_depth, platforms, help_doc_url, tutorial_id, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-     ON CONFLICT(id) DO UPDATE SET site_id = excluded.site_id, repo_id = excluded.repo_id,
-       name = excluded.name, ecosystem_id = excluded.ecosystem_id, kind = excluded.kind,
-       download_entry = excluded.download_entry, versions_hint = excluded.versions_hint,
-       crawl_depth = excluded.crawl_depth,
-       platforms = excluded.platforms, help_doc_url = excluded.help_doc_url,
-       tutorial_id = excluded.tutorial_id, updated_at = excluded.updated_at`,
-  );
-
-  let resources = 0;
-  db.exec('BEGIN');
-  try {
-    for (const mirror of input.mirrors) {
-      upsertSite.run(
-        mirror.id,
-        mirror.name,
-        mirror.kind,
-        mirror.homepageUrl,
-        JSON.stringify(mirror.aliases),
-        now,
-      );
-      db.prepare(
-        'INSERT INTO site_details(site_id,payload) VALUES(?,?) ON CONFLICT(site_id) DO UPDATE SET payload=excluded.payload',
-      ).run(mirror.id, JSON.stringify(mirror));
-    }
-    for (const entry of input.taxonomy) {
-      upsertEcosystem.run(
-        entry.id,
-        entry.label,
-        entry.category,
-        JSON.stringify(entry.aliases),
-        now,
-      );
-    }
-
-    for (const list of input.siteResources) {
-      for (const resource of list.resources) {
-        const id = RESOURCE_ID(list.siteId, resource.id);
-        upsertResource.run(
-          id,
-          list.siteId,
-          resource.id,
-          resource.name,
-          resource.ecosystemId,
-          resource.kind,
-          resource.downloadEntry,
-          resource.versionsHint,
-          resource.crawlDepth ?? null,
-          JSON.stringify(resource.platforms),
-          resource.helpDocUrl,
-          resource.tutorialId !== null && tutorialIds.has(resource.tutorialId)
-            ? resource.tutorialId
-            : null,
-          now,
-        );
-        resources += 1;
-      }
-    }
-
-    db.exec('COMMIT');
-  } catch (error) {
-    db.exec('ROLLBACK');
-    throw error;
-  }
-
-  return { sites: input.mirrors.length, resources, ecosystems: input.taxonomy.length };
+) {
+  syncSites(db, input.mirrors);
+  const tutorials = new Set(input.tutorials.map((item) => item.id));
+  for (const software of SOFTWARE)
+    registerSoftware(db, {
+      ...software,
+      ...(software.tutorialId && !tutorials.has(software.tutorialId)
+        ? { tutorialId: undefined }
+        : {}),
+    });
+  return { sites: input.mirrors.length, resources: SOFTWARE.length, ecosystems: SOFTWARE.length };
 }
 
-interface RawResourceRow {
-  id: string;
-  site_id: string;
+interface Raw {
+  site_id: number;
+  site_slug: string;
   site_name: string;
-  repo_id: string;
+  software_id: number;
+  slug: string;
+  resource_key: string;
   name: string;
-  ecosystem_id: string;
-  ecosystem_label: string;
-  ecosystem_category: string;
-  kind: string;
-  download_entry: string;
-  versions_hint: string;
-  crawl_depth: number | null;
-  platforms: string;
-  help_doc_url: string | null;
+  category: string;
+  repo: string;
   tutorial_id: string | null;
-  artifact_count: number;
-  latest_version: string | null;
-  download_mode: ResourceRow['downloadMode'];
+  count: number;
+  platforms: string | null;
+  entry: string | null;
 }
+const SELECT = `SELECT s.id site_id,s.slug site_slug,s.name site_name,w.id software_id,w.slug,w.resource_key,
+  w.name,w.category,w.repo,w.tutorial_id,COUNT(d.id) count,GROUP_CONCAT(DISTINCT d.platform) platforms,
+  (SELECT directory FROM catalog_scopes c WHERE c.site_id=s.id AND c.software_id=w.id AND c.enabled=1 ORDER BY length(directory) LIMIT 1) entry
+  FROM catalog_sites s CROSS JOIN catalog_software w
+  LEFT JOIN catalog_versions v ON v.software_id=w.id
+  LEFT JOIN catalog_downloads d ON d.version_id=v.id AND d.site_id=s.id`;
 
-function toResourceRow(raw: RawResourceRow): ResourceRow {
+function toResource(db: DatabaseSync, raw: Raw): ResourceRow {
+  const versions = db
+    .prepare(
+      `SELECT DISTINCT v.version FROM catalog_versions v JOIN catalog_downloads d ON d.version_id=v.id
+    WHERE v.software_id=? AND d.site_id=?`,
+    )
+    .all(raw.software_id, raw.site_id) as { version: string }[];
+  versions.sort((a, b) => compareRepoVersions(raw.repo, b.version, a.version));
+  const platforms = raw.platforms?.split(',') ?? [];
   return {
-    id: raw.id,
-    siteId: raw.site_id,
+    id: `${raw.site_slug}:${raw.resource_key}`,
+    siteId: raw.site_slug,
     siteName: raw.site_name,
-    repoId: raw.repo_id,
+    repoId: raw.repo,
     name: raw.name,
-    ecosystemId: raw.ecosystem_id,
-    ecosystemLabel: raw.ecosystem_label,
-    ecosystemCategory: raw.ecosystem_category,
-    kind: raw.kind,
-    downloadEntry: raw.download_entry,
-    versionsHint: raw.versions_hint,
-    crawlDepth: raw.crawl_depth,
-    platforms: JSON.parse(raw.platforms) as string[],
-    helpDocUrl: raw.help_doc_url,
+    ecosystemId: raw.slug,
+    ecosystemLabel: raw.name,
+    ecosystemCategory: raw.category,
+    kind: 'installer',
+    downloadEntry: raw.entry ?? `https://mirrors.pku.edu.cn/${raw.repo}/`,
+    versionsHint: '',
+    crawlDepth: null,
+    platforms: platforms.includes('any')
+      ? [...new Set([...platforms.filter((p) => p !== 'any'), 'windows', 'macos', 'linux'])]
+      : platforms,
+    helpDocUrl: null,
     tutorialId: raw.tutorial_id,
-    artifactCount: raw.artifact_count,
-    latestVersion: raw.latest_version,
-    downloadMode: raw.download_mode,
+    artifactCount: raw.count,
+    latestVersion: versions[0]?.version ?? null,
+    downloadMode: raw.count ? 'files' : 'unavailable',
   };
 }
-
-// 下载资格仅由数据库有效文件决定，不再提供按需抓取。
-const DOWNLOAD_MODE = `CASE WHEN r.site_id = '${ENABLED_RESOURCE_SITE}' AND (
-  EXISTS (SELECT 1 FROM crawl_scopes c JOIN snapshots n ON n.id=c.active_snapshot_id
-    WHERE c.resource_id=r.id AND n.file_count>0)
-  OR (r.kind<>'dataset' AND EXISTS (SELECT 1 FROM artifacts a WHERE a.resource_id=r.id))
-  ) THEN 'files' ELSE 'unavailable' END`;
-const READY = `${DOWNLOAD_MODE} <> 'unavailable'`;
-
-const RESOURCE_SELECT = `
-  SELECT r.id, r.site_id, s.name AS site_name, r.repo_id, r.name, r.ecosystem_id,
-         e.label AS ecosystem_label, e.category AS ecosystem_category, r.kind,
-         r.download_entry, r.versions_hint, r.crawl_depth, r.platforms, r.help_doc_url, r.tutorial_id,
-          COALESCE(totals.artifact_count,0) AS artifact_count,
-          NULL AS latest_version,
-          ${DOWNLOAD_MODE} AS download_mode
-  FROM resources r
-  JOIN sites s ON s.id = r.site_id
-   JOIN ecosystems e ON e.id = r.ecosystem_id
-   LEFT JOIN (SELECT resource_id,file_count AS artifact_count FROM resource_file_stats) totals ON totals.resource_id=r.id`;
-
 export interface SearchOptions {
   query?: string;
+  version?: string;
   ecosystemId?: string;
   siteId?: string;
   kind?: string;
@@ -198,56 +113,57 @@ export interface SearchOptions {
   limit?: number;
 }
 
-/** 搜索与筛选走同一张表，因此“搜到的”和“筛出来的”永远是同一批资源。 */
+/** 生态搜索只查软件名字/别名及版本关系，不扫描全体文件名。 */
 export function searchResources(db: DatabaseSync, options: SearchOptions = {}): ResourceRow[] {
-  const clauses: string[] = [`r.site_id = '${ENABLED_RESOURCE_SITE}'`];
-  const params: Array<string | number> = [];
-
-  const query = options.query?.trim();
-  if (query !== undefined && query !== '') {
-    const like = `%${query}%`;
-    clauses.push(
-      `(r.name LIKE ? OR r.repo_id LIKE ? OR r.versions_hint LIKE ? OR e.label LIKE ? OR e.aliases LIKE ? OR s.name LIKE ? OR s.aliases LIKE ?)`,
-    );
-    params.push(like, like, like, like, like, like, like);
-  }
-  if (options.ecosystemId !== undefined) {
-    clauses.push('r.ecosystem_id = ?');
+  const where = ["s.slug='pku'"];
+  const params: (string | number)[] = [];
+  if (options.ecosystemId) {
+    where.push('w.slug=?');
     params.push(options.ecosystemId);
   }
-  if (options.siteId !== undefined) {
-    clauses.push('r.site_id = ?');
+  if (options.siteId) {
+    where.push('s.slug=?');
     params.push(options.siteId);
   }
-  if (options.kind !== undefined) {
-    clauses.push('r.kind = ?');
-    params.push(options.kind);
+  if (options.kind && options.kind !== 'installer') return [];
+  if (options.onlyTutorials) where.push('w.tutorial_id IS NOT NULL');
+  const escape = (value: string) => value.replace(/[\\%_]/g, '\\$&');
+  const versionMatch = (value: string) => {
+    where.push(`EXISTS(SELECT 1 FROM catalog_versions vv JOIN catalog_downloads dd ON dd.version_id=vv.id
+      WHERE vv.software_id=w.id AND dd.site_id=s.id AND ltrim(vv.version,'v') LIKE ? ESCAPE '\\')`);
+    params.push(`${escape(value.replace(/^v/, ''))}%`);
+  };
+  if (options.version) versionMatch(options.version);
+  for (const term of options.query?.trim().slice(0, 200).split(/\s+/).filter(Boolean) ?? []) {
+    if (/^v?\d+(?:[.\d-]*\w*)?$/.test(term)) {
+      versionMatch(term);
+      continue;
+    }
+    const needle = term.length < 3 ? escape(term) : `%${escape(term)}%`;
+    where.push(`(lower(w.name) LIKE lower(?) ESCAPE '\\' OR lower(w.slug) LIKE lower(?) ESCAPE '\\'
+      OR EXISTS(SELECT 1 FROM json_each(w.aliases) a WHERE lower(a.value) LIKE lower(?) ESCAPE '\\')
+      OR lower(s.name) LIKE lower(?) ESCAPE '\\' OR lower(s.slug)=lower(?)
+      OR EXISTS(SELECT 1 FROM json_each(s.payload,'$.aliases') a WHERE lower(a.value) LIKE lower(?) ESCAPE '\\'))`);
+    params.push(needle, needle, needle, needle, term, needle);
   }
-  if (options.onlyTutorials === true) {
-    clauses.push('r.tutorial_id IS NOT NULL');
-  }
-  if (options.downloadableOnly === true) {
-    clauses.push(READY);
-  }
-
-  const where = clauses.length > 0 ? ` WHERE ${clauses.join(' AND ')}` : '';
-  const limit = Math.min(Math.max(options.limit ?? 50, 1), 200);
-  // 有实际文件的排在前面；教程只作为内容附加，不影响下载资格。
+  const limit = Math.min(200, Math.max(1, options.limit ?? 50));
+  // 首页/站点页只展示真正有安装下载的条目，未接入仓库不冒充下载入口。
   const rows = db
     .prepare(
-      `${RESOURCE_SELECT}${where} ORDER BY (download_mode <> 'files'), e.category, e.label, r.name LIMIT ?`,
+      `${SELECT} WHERE ${where.join(' AND ')} GROUP BY s.id,w.id HAVING COUNT(d.id)>0
+    ORDER BY w.category,w.name LIMIT ?`,
     )
-    .all(...params, limit) as unknown as RawResourceRow[];
-  return rows.map(toResourceRow);
+    .all(...params, limit) as unknown as Raw[];
+  return rows.map((row) => toResource(db, row));
 }
-
 export function getResource(db: DatabaseSync, id: string): ResourceRow | undefined {
-  const row = db
-    .prepare(`${RESOURCE_SELECT} WHERE r.id = ? AND r.site_id = '${ENABLED_RESOURCE_SITE}'`)
-    .get(id) as unknown as RawResourceRow | undefined;
-  return row === undefined ? undefined : toResourceRow(row);
+  const [site, ...parts] = id.split(':');
+  if (site !== 'pku') return undefined;
+  const raw = db
+    .prepare(`${SELECT} WHERE s.slug=? AND w.resource_key=? GROUP BY s.id,w.id`)
+    .get(site, parts.join(':')) as Raw | undefined;
+  return raw ? toResource(db, raw) : undefined;
 }
-
 export interface EcosystemSummary {
   id: string;
   label: string;
@@ -256,98 +172,63 @@ export interface EcosystemSummary {
   siteCount: number;
   tutorialCount: number;
 }
-
 export function listEcosystems(db: DatabaseSync): EcosystemSummary[] {
-  const rows = db
+  return db
     .prepare(
-      `SELECT e.id, e.label, e.category,
-               COUNT(r.id) AS resource_count,
-               COUNT(DISTINCT r.site_id) AS site_count,
-               COUNT(DISTINCT r.tutorial_id) AS tutorial_count
-       FROM ecosystems e
-        LEFT JOIN resources r ON r.ecosystem_id = e.id AND r.site_id = '${ENABLED_RESOURCE_SITE}' AND ${READY}
-        GROUP BY e.id
-        HAVING COUNT(r.id) > 0
-       ORDER BY e.category, e.label`,
+      `SELECT w.slug id,w.name label,w.category,COUNT(DISTINCT s.id) resourceCount,
+    COUNT(DISTINCT s.id) siteCount,CASE WHEN w.tutorial_id IS NULL THEN 0 ELSE 1 END tutorialCount
+    FROM catalog_software w JOIN catalog_versions v ON v.software_id=w.id
+    JOIN catalog_downloads d ON d.version_id=v.id JOIN catalog_sites s ON s.id=d.site_id
+    WHERE s.slug='pku' GROUP BY w.id ORDER BY w.category,w.name`,
     )
-    .all() as unknown as Array<{
-    id: string;
-    label: string;
-    category: string;
-    resource_count: number;
-    site_count: number;
-    tutorial_count: number;
-  }>;
-  return rows.map((row) => ({
-    id: row.id,
-    label: row.label,
-    category: row.category,
-    resourceCount: row.resource_count,
-    siteCount: row.site_count,
-    tutorialCount: row.tutorial_count,
-  }));
+    .all() as unknown as EcosystemSummary[];
 }
-
-/** 上次抓取时间：页面据此说明“文件清单是什么时候抓的”。 */
 export function lastCrawlAt(db: DatabaseSync, resourceId: string): number | undefined {
+  const resource = getResource(db, resourceId);
+  if (!resource) return undefined;
   const row = db
-    .prepare('SELECT MAX(crawled_at) AS at FROM effective_files WHERE resource_id = ?')
-    .get(resourceId) as unknown as { at: number | null } | undefined;
-  return row?.at ?? undefined;
+    .prepare(
+      `SELECT MAX(d.crawled_at) at FROM catalog_downloads d JOIN catalog_versions v ON v.id=d.version_id
+    JOIN catalog_software w ON w.id=v.software_id JOIN catalog_sites s ON s.id=d.site_id WHERE s.slug=? AND w.slug=?`,
+    )
+    .get(resource.siteId, resource.ecosystemId) as { at: number | null };
+  return row.at ?? undefined;
 }
-
 export function latestCrawl(
   db: DatabaseSync,
   resourceId: string,
-):
-  | {
-      result: 'complete' | 'partial' | 'failed' | 'skipped' | 'unknown';
-      checkedAt: number;
-      requests: number;
-    }
-  | undefined {
+): { result: 'complete' | 'failed'; checkedAt: number; requests: number } | undefined {
+  const resource = getResource(db, resourceId);
+  if (!resource) return undefined;
   const row = db
     .prepare(
-      `SELECT result, finished_at, requests FROM crawl_runs
-    WHERE resource_id = ? AND finished_at IS NOT NULL ORDER BY id DESC LIMIT 1`,
+      `SELECT r.state result,r.finished_at checkedAt,r.requests FROM catalog_runs r
+    JOIN catalog_scopes c ON c.id=r.scope_id JOIN catalog_software w ON w.id=c.software_id JOIN catalog_sites s ON s.id=c.site_id
+    WHERE s.slug=? AND w.slug=? AND r.state<>'staging' ORDER BY r.id DESC LIMIT 1`,
     )
-    .get(resourceId) as unknown as
-    | {
-        result: 'complete' | 'partial' | 'failed' | 'skipped' | 'unknown';
-        finished_at: number;
-        requests: number;
-      }
-    | undefined;
-  return row && { result: row.result, checkedAt: row.finished_at, requests: row.requests };
+    .get(resource.siteId, resource.ecosystemId) as
+    { result: 'complete' | 'failed'; checkedAt: number; requests: number } | undefined;
+  return row;
 }
-
 export function listSites(db: DatabaseSync) {
   const rows = db
     .prepare(
-      `SELECT s.id,s.name,s.kind,s.homepage_url,s.aliases,d.payload,
-    (SELECT COUNT(*) FROM resources r WHERE r.site_id=s.id AND r.site_id='pku') AS resource_count
-    FROM sites s LEFT JOIN site_details d ON d.site_id=s.id ORDER BY s.name`,
+      `SELECT s.slug,s.name,s.payload,(SELECT COUNT(DISTINCT v.software_id)
+    FROM catalog_downloads d JOIN catalog_versions v ON v.id=d.version_id WHERE d.site_id=s.id AND s.slug='pku') count
+    FROM catalog_sites s ORDER BY s.name`,
     )
-    .all() as {
-    id: string;
-    name: string;
-    kind: Mirror['kind'];
-    homepage_url: string;
-    aliases: string;
-    payload: string | null;
-    resource_count: number;
-  }[];
+    .all() as { slug: string; name: string; payload: string; count: number }[];
   return rows.map((row) => {
-    const metadata = row.payload ? (JSON.parse(row.payload) as Mirror) : undefined;
+    const mirror = JSON.parse(row.payload) as Mirror;
     return {
-      id: row.id,
+      id: row.slug,
       name: row.name,
-      kind: row.kind,
-      homepageUrl: row.homepage_url,
-      aliases: JSON.parse(row.aliases) as string[],
-      ...(metadata?.probe ? { probe: metadata.probe } : {}),
-      enabled: row.id === 'pku',
-      resourceCount: row.resource_count,
+      kind: mirror.kind,
+      homepageUrl: mirror.homepageUrl,
+      aliases: mirror.aliases,
+      ...(mirror.probe ? { probe: mirror.probe } : {}),
+      enabled: row.slug === 'pku',
+      resourceCount: row.count,
     };
   });
 }

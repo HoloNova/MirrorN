@@ -6,7 +6,7 @@ import { serve } from '@hono/node-server';
 import { createApp } from './app.js';
 import { resolveServerEnv } from './config.js';
 import { syncCatalog } from './db/catalog.js';
-import { openDatabase, openReadDatabase } from './db/database.js';
+import { openInstallerDatabase, openReadDatabase } from './db/database.js';
 import { loadCatalogData } from './db/loadData.js';
 import { startIndexWorker } from './indexing/lifecycle.js';
 import { createStatusStore } from './state/statusStore.js';
@@ -29,22 +29,22 @@ const dataDir = config.dataDir ?? defaultDataDir;
 // 快照目录同理相对仓库根解析（MIRRORN_SNAPSHOT_DIR 给绝对路径时直接用）。
 const snapshotPath = resolve(repoRoot, config.snapshotDir, 'mirrors-status.json');
 // 站点资源库：抓回来的文件清单、版本与抓取历史都在这里（node:sqlite，无额外依赖）。
-const databasePath = resolve(repoRoot, config.snapshotDir, 'mirrorn.sqlite');
+const databasePath = resolve(repoRoot, config.snapshotDir, 'mirrorn-installers.sqlite');
 
-type Database = ReturnType<typeof openDatabase>;
+type Database = ReturnType<typeof openInstallerDatabase>;
 let db: Database | undefined;
 try {
-  db = openDatabase(databasePath);
+  db = openInstallerDatabase(databasePath);
   const catalog = await loadCatalogData(dataDir);
   const synced = syncCatalog(db, catalog);
   console.log(
-    `资源库：${synced.sites} 个站点、${synced.resources} 条资源、${synced.ecosystems} 个生态（${databasePath}）；只启用北大`,
+    `资源库：${synced.sites} 个站点、${synced.resources} 个软件入口、${synced.ecosystems} 个生态（${databasePath}）；只启用北大`,
   );
   db.close();
   db = openReadDatabase(databasePath);
 } catch (error) {
   db = undefined;
-  console.error(`资源库不可用，资源接口将返回空列表：${String(error)}`);
+  console.error(`资源库不可用，资源接口将返回503：${String(error)}`);
 }
 
 const indexWorker =

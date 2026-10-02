@@ -1,6 +1,5 @@
 import { createHash } from 'node:crypto';
 import type { DatabaseSync } from 'node:sqlite';
-import { ENABLED_RESOURCE_SITE, normalizePythonName } from '../indexing/policy.js';
 import { compareRepoVersions } from '../indexing/versions.js';
 
 export interface FileQuery {
@@ -16,301 +15,194 @@ export interface FileQuery {
   cursor?: string;
   limit?: number;
 }
-export class FileQueryError extends Error {}
-interface FileRow {
+export class FileQueryError extends Error {
+  constructor(
+    message: string,
+    readonly status: 400 | 409 = 400,
+  ) {
+    super(message);
+  }
+}
+interface Row {
   id: number;
-  snapshot_id: string;
-  packageName: string;
-  version: string;
+  rank: number;
+  filename: string;
+  url: string;
   platform: string;
   arch: string;
   format: string;
-  filename: string;
-  url: string;
   size: number | null;
-  role: string;
   checksum: string | null;
-  compatibility: string;
-  mtime: string | null;
-  release: string;
-  component: string;
-  occurrence: number;
+  crawled_at: number;
+  version: string;
+  slug: string;
 }
 interface Cursor {
-  frontier: number;
+  revision: number;
   after: number;
+  rank: number;
   at: number;
   fingerprint: string;
 }
-
-/** 游标锁定有效批次，更新切换时不会混入另一批次。所有参数为查询条件，绝不触发后台任务。 */
-export function queryFiles(db: DatabaseSync, input: FileQuery, now = Date.now()) {
-  if (!input.resource.startsWith(`${ENABLED_RESOURCE_SITE}:`))
-    throw new FileQueryError('资源站点未启用');
-  const limit = Math.min(200, Math.max(1, input.limit ?? 50));
-  const filters = [
-    input.resource,
-    input.q ?? '',
-    input.package ?? '',
-    input.version ?? '',
-    input.release ?? '',
-    input.arch ?? '',
-    input.platform ?? '',
-    input.role ?? '',
-    input.format ?? '',
-  ];
-  const fingerprint = createHash('sha256').update(JSON.stringify(filters)).digest('hex');
-  let cursor: Cursor;
-  if (input.cursor) {
-    try {
-      if (input.cursor.length > 2048) throw new Error();
-      cursor = JSON.parse(Buffer.from(input.cursor, 'base64url').toString('utf8')) as Cursor;
-      if (
-        !Number.isSafeInteger(cursor.frontier) ||
-        cursor.frontier < 0 ||
-        !Number.isSafeInteger(cursor.after) ||
-        !Number.isSafeInteger(cursor.at) ||
-        cursor.at > now ||
-        now - cursor.at > 60 * 60 * 1000 ||
-        cursor.fingerprint !== fingerprint
-      )
-        throw new Error();
-    } catch {
-      throw new FileQueryError('分页游标无效或过期，请重新查询');
-    }
-  } else {
-    const { frontier } = db
-      .prepare('SELECT COALESCE(MAX(publication_seq),0) AS frontier FROM snapshots')
-      .get() as { frontier: number };
-    cursor = { frontier, after: Number.MIN_SAFE_INTEGER, at: now, fingerprint };
+const PREFERENCE =
+  "CASE d.format WHEN 'msi' THEN 0 WHEN 'pkg' THEN 0 WHEN 'exe' THEN 1 WHEN 'dmg' THEN 1 WHEN 'sh' THEN 2 WHEN 'AppImage' THEN 2 WHEN 'zip' THEN 4 ELSE 3 END";
+const FROM = `FROM catalog_software w JOIN catalog_versions v ON v.software_id=w.id
+  JOIN catalog_downloads d ON d.version_id=v.id JOIN catalog_sites s ON s.id=d.site_id`;
+function conditions(input: FileQuery) {
+  const [site, ...parts] = input.resource.split(':');
+  if (site !== 'pku') throw new FileQueryError('资源站点未启用');
+  const clauses = ['s.slug=?', 'w.resource_key=?'];
+  const params: (string | number)[] = [site, parts.join(':')];
+  if (input.version) {
+    clauses.push('(v.version=? OR v.version=?)');
+    params.push(
+      input.version,
+      input.version.startsWith('v') ? input.version.slice(1) : `v${input.version}`,
+    );
   }
-  const snapshotClause = `n.publication_seq <= ? AND n.state IN ('active','replaced') AND s.resource_id=?
-    AND NOT EXISTS (SELECT 1 FROM snapshots newer WHERE newer.scope_id=n.scope_id
-      AND newer.publication_seq<=? AND newer.publication_seq>n.publication_seq)`;
-  const sql = `WITH available AS (
-    SELECT f.id, f.snapshot_id, f.package_name AS packageName, f.version, f.platform, f.arch, f.format,
-      f.filename, f.url, f.size, f.role, f.checksum, f.compatibility, f.mtime, s.release, s.component
-    FROM ${input.package || input.q ? 'crawl_scopes s CROSS JOIN snapshots n ON n.scope_id=s.id CROSS JOIN files f ON f.snapshot_id=n.id' : 'files f NOT INDEXED CROSS JOIN snapshots n ON n.id=f.snapshot_id CROSS JOIN crawl_scopes s ON s.id=n.scope_id'}
-    WHERE ${snapshotClause}
-    UNION ALL
-    SELECT -a.rowid, 'legacy', '' AS packageName,a.version,a.platform,a.arch,a.format,a.filename,a.url,a.size,
-      CASE r.kind WHEN 'installer' THEN 'installer' WHEN 'iso' THEN 'iso' ELSE 'firmware' END,
-      NULL,'{}',a.mtime,'','' FROM artifacts a JOIN resources r ON r.id=a.resource_id
-    WHERE a.resource_id=? AND r.kind<>'dataset' AND NOT EXISTS (
-      SELECT 1 FROM snapshots n JOIN crawl_scopes s ON s.id=n.scope_id WHERE ${snapshotClause}
-      AND substr(a.url,1,length(s.base_url))=s.base_url AND instr(substr(a.url,length(s.base_url)+1),'/')=0
-    )
-  )`;
-  const params: (string | number)[] = [
-    cursor.frontier,
-    input.resource,
-    cursor.frontier,
-    input.resource,
-    cursor.frontier,
-    input.resource,
-    cursor.frontier,
-  ];
-  const clauses: string[] = [];
+  for (const [column, value] of [
+    ['d.platform', input.platform],
+    ['d.arch', input.arch],
+  ]) {
+    if (value) {
+      clauses.push(`${column} IN (?,'any','unknown')`);
+      params.push(value);
+    }
+  }
+  if (input.format) {
+    clauses.push('d.format=?');
+    params.push(input.format);
+  }
+  if (input.role && input.role !== 'installer') clauses.push('0');
+  if (input.release) clauses.push('0'); // 不再把发行版包仓库混入软件安装目录。
+  if (input.package) {
+    clauses.push('(w.slug=? OR w.name=?)');
+    params.push(input.package, input.package);
+  }
   if (input.q?.trim()) {
     const query = input.q
       .trim()
       .slice(0, 200)
       .replace(/[\\%_]/g, '\\$&');
-    clauses.push("(packageName LIKE ? ESCAPE '\\' OR filename LIKE ? ESCAPE '\\')");
-    const packageQuery = packageInput(db, input.resource, input.q.trim().slice(0, 200))?.replace(
-      /[\\%_]/g,
-      '\\$&',
-    );
-    params.push(`${packageQuery}%`, `${query}%`);
+    clauses.push("(d.filename LIKE ? ESCAPE '\\' OR w.name LIKE ? ESCAPE '\\')");
+    params.push(`${query}%`, `${query}%`);
   }
-  for (const [column, value] of [
-    ['packageName', packageInput(db, input.resource, input.package)],
-    ['version', input.version],
-    ['release', input.release],
-    ['arch', undefined],
-    ['platform', undefined],
-    ['role', input.role],
-    ['format', input.format],
-  ]) {
-    if (value) {
-      clauses.push(`${column}=?`);
-      params.push(value);
-    }
-  }
-  if (input.platform) {
-    clauses.push("platform IN (?, 'any', 'unknown')");
-    params.push(input.platform);
-  }
-  if (input.arch) {
-    clauses.push("arch IN (?, 'all', 'noarch', 'any', 'unknown')");
-    params.push(input.arch);
-  }
-  const filterClause = clauses.length ? clauses.join(' AND ') : '1=1';
-  const qualifiedFilters = (file: string, scope: string) =>
-    filterClause.replace(
-      /\b(packageName|filename|version|release|arch|platform|role|format)\b/g,
-      (name) =>
-        name === 'release'
-          ? `${scope}.release`
-          : name === 'packageName'
-            ? `${file}.package_name`
-            : `${file}.${name}`,
-    );
-  const rows: FileRow[] = [];
-  let after = cursor.after;
-  const bounded = !input.package && !input.q;
-  const batchSize = Math.max(200, (limit + 1) * 4);
-  while (rows.length <= limit) {
-    const candidates = bounded
-      ? (db
-          .prepare(
-            `SELECT f.id FROM files f NOT INDEXED
-      CROSS JOIN snapshots n ON n.id=f.snapshot_id CROSS JOIN crawl_scopes s ON s.id=n.scope_id
-      WHERE ${snapshotClause} AND ${qualifiedFilters('f', 's')} AND f.id>? ORDER BY f.id LIMIT ?`,
-          )
-          .all(
-            cursor.frontier,
-            input.resource,
-            cursor.frontier,
-            ...params.slice(7),
-            Math.max(after, 0),
-            batchSize,
-          ) as { id: number }[])
-      : [];
-    // 先限量选候选，再核对跨范围重复；候选没填满页面就继续下一窗口，不截掉后续文件。
-    const windowSql = bounded
-      ? sql.replace(
-          `WHERE ${snapshotClause}`,
-          `WHERE ${snapshotClause} AND f.id IN (${candidates.map((c) => c.id).join(',') || '0'})`,
-        )
-      : sql;
-    const page = db
-      .prepare(
-        `${windowSql} SELECT winner.*,1 AS occurrence FROM available winner
-      WHERE ${filterClause} AND winner.id>?
-      AND NOT EXISTS (SELECT 1 FROM crawl_scopes ds CROSS JOIN snapshots dn ON dn.scope_id=ds.id
-        CROSS JOIN files df ON df.snapshot_id=dn.id
-        WHERE ${snapshotClause.replace(/\bn\./g, 'dn.').replace(/\bs\./g, 'ds.')}
-        AND df.url=winner.url AND df.package_name=winner.packageName AND df.version=winner.version AND df.id>winner.id
-        AND ${qualifiedFilters('df', 'ds')}) ORDER BY winner.id LIMIT ?`,
-      )
-      .all(
-        ...params,
-        after,
-        cursor.frontier,
+  return { where: clauses.join(' AND '), params, site, key: parts.join(':') };
+}
+
+/** 更新后提示重新读取分页，不为旧游标复制并保留整批下载数据。 */
+export function queryFiles(db: DatabaseSync, input: FileQuery, now = Date.now()) {
+  const filter = conditions(input);
+  const fingerprint = createHash('sha256')
+    .update(
+      JSON.stringify([
         input.resource,
-        cursor.frontier,
-        ...params.slice(7),
-        limit + 1 - rows.length,
-      ) as unknown as FileRow[];
-    rows.push(...page);
-    if (!bounded || rows.length > limit || candidates.length < batchSize) break;
-    after = candidates.at(-1)!.id;
-  }
-  const hasMore = rows.length > limit;
-  const selected = rows.slice(0, limit);
-  return {
-    items: selected.map((row) => ({
-      id: row.id,
-      packageName: row.packageName,
-      version: row.version,
-      platform: row.platform,
-      arch: row.arch,
-      format: row.format,
-      filename: row.filename,
-      url: row.url,
-      role: row.role,
-      release: row.release,
-      component: row.component,
-      size: row.size ?? undefined,
-      mtime: row.mtime ?? undefined,
-      checksum: row.checksum ? (JSON.parse(String(row.checksum)) as unknown) : undefined,
-      compatibility: JSON.parse(String(row.compatibility)) as unknown,
-    })),
-    nextCursor: hasMore
-      ? Buffer.from(JSON.stringify({ ...cursor, after: Number(selected.at(-1)!.id) })).toString(
-          'base64url',
+        input.q ?? '',
+        input.package ?? '',
+        input.version ?? '',
+        input.release ?? '',
+        input.arch ?? '',
+        input.platform ?? '',
+        input.role ?? '',
+        input.format ?? '',
+      ]),
+    )
+    .digest('hex');
+  const limit = Math.min(200, Math.max(1, input.limit ?? 50));
+  db.exec('BEGIN');
+  try {
+    const revision = (
+      db
+        .prepare(
+          `SELECT COALESCE(SUM(c.revision),0)+COUNT(*) revision FROM catalog_scopes c
+      JOIN catalog_software w ON w.id=c.software_id JOIN catalog_sites s ON s.id=c.site_id WHERE s.slug=? AND w.resource_key=?`,
         )
-      : null,
-    indexedAt: cursor.at,
-  };
+        .get(filter.site, filter.key) as { revision: number }
+    ).revision;
+    let cursor: Cursor = { revision, after: 0, rank: -1, at: now, fingerprint };
+    if (input.cursor) {
+      try {
+        if (input.cursor.length > 2048) throw new Error();
+        cursor = JSON.parse(Buffer.from(input.cursor, 'base64url').toString('utf8')) as Cursor;
+        if (
+          !Number.isSafeInteger(cursor.after) ||
+          cursor.after < 0 ||
+          !Number.isSafeInteger(cursor.rank) ||
+          cursor.rank < 0 ||
+          cursor.rank > 4 ||
+          !Number.isSafeInteger(cursor.revision) ||
+          !Number.isSafeInteger(cursor.at) ||
+          cursor.at > now ||
+          now - cursor.at > 3600000 ||
+          cursor.fingerprint !== fingerprint
+        )
+          throw new Error();
+      } catch {
+        throw new FileQueryError('分页游标无效或过期，请重新查询');
+      }
+      if (cursor.revision !== revision) throw new FileQueryError('文件清单已更新，请重新查询', 409);
+    }
+    const rows = db
+      .prepare(
+        `SELECT d.id,${PREFERENCE} rank,d.filename,d.url,d.platform,d.arch,d.format,d.size,d.checksum,d.crawled_at,v.version,w.slug
+      ${FROM} WHERE ${filter.where} AND (${PREFERENCE}>? OR (${PREFERENCE}=? AND d.id>?)) ORDER BY rank,d.id LIMIT ?`,
+      )
+      .all(...filter.params, cursor.rank, cursor.rank, cursor.after, limit + 1) as unknown as Row[];
+    const selected = rows.slice(0, limit);
+    return {
+      items: selected.map((row) => ({
+        id: row.id,
+        packageName: row.slug,
+        version: row.version,
+        filename: row.filename,
+        url: row.url,
+        platform: row.platform,
+        arch: row.arch,
+        format: row.format,
+        role: 'installer',
+        release: '',
+        component: '',
+        ...(row.size === null ? {} : { size: row.size }),
+        ...(row.checksum ? { checksum: JSON.parse(row.checksum) as unknown } : {}),
+        compatibility: {},
+      })),
+      nextCursor:
+        rows.length > limit
+          ? Buffer.from(
+              JSON.stringify({
+                ...cursor,
+                after: selected.at(-1)!.id,
+                rank: selected.at(-1)!.rank,
+              }),
+            ).toString('base64url')
+          : null,
+      indexedAt: cursor.at,
+    };
+  } finally {
+    db.exec('ROLLBACK');
+  }
 }
 
 export function queryFileOptions(db: DatabaseSync, input: FileQuery) {
-  if (!input.resource.startsWith('pku:')) throw new FileQueryError('资源站点未启用');
-  const clauses = ['resource_id=?'];
-  const args: (string | number)[] = [input.resource];
-  for (const [key, value] of [
-    ['package_name', packageInput(db, input.resource, input.package)],
-    ['release', input.release],
-    ['arch', undefined],
-  ])
-    if (value) {
-      clauses.push(`${key}=?`);
-      args.push(value);
-    }
-  if (input.platform) {
-    clauses.push("platform IN (?, 'any', 'unknown')");
-    args.push(input.platform);
-  }
-  if (input.arch) {
-    clauses.push("arch IN (?, 'all', 'noarch', 'any', 'unknown')");
-    args.push(input.arch);
-  }
-  if (input.q?.trim()) {
-    const value = input.q
-      .trim()
-      .slice(0, 200)
-      .replace(/[\\%_]/g, '\\$&');
-    clauses.push("(package_name LIKE ? ESCAPE '\\' OR filename LIKE ? ESCAPE '\\')");
-    args.push(`${value}%`, `${value}%`);
-  }
-  const where = clauses.join(' AND ');
-  // 元数据维度一次扫描取齐，避免大库每个下拉框各扫一次有效文件视图。
-  const facets = db
-    .prepare(`SELECT DISTINCT platform,arch,release,role FROM effective_files WHERE ${where}`)
-    .all(...args) as Record<string, string>[];
-  const distinct = (column: string) =>
-    ['platform', 'arch', 'release', 'role'].includes(column)
-      ? [...new Set(facets.map((row) => row[column]!))].sort()
-      : (
-          db
-            .prepare(
-              `SELECT DISTINCT ${column} AS value FROM effective_files WHERE ${where} ORDER BY ${column}`,
-            )
-            .all(...args) as { value: string }[]
-        ).map((row) => row.value);
-  const resource = db
-    .prepare('SELECT kind,repo_id FROM resources WHERE id=?')
-    .get(input.resource) as { kind: string; repo_id: string } | undefined;
-  // 不把不同包的版本混成一个下拉；依赖包必须先限定包名。
-  let versions: string[] = [];
-  if (input.package) versions = distinct('version');
-  else if (resource && !['distro-repo', 'language-repo'].includes(resource.kind)) {
-    const softwareWhere = `${where} AND role IN ('installer','iso','firmware')`;
-    const groups = db
-      .prepare(`SELECT DISTINCT package_name FROM effective_files WHERE ${softwareWhere} LIMIT 2`)
-      .all(...args);
-    if (groups.length === 1)
-      versions = (
-        db
-          .prepare(`SELECT DISTINCT version AS value FROM effective_files WHERE ${softwareWhere}`)
-          .all(...args) as { value: string }[]
-      ).map((row) => row.value);
-  }
-  versions.sort((a, b) => compareRepoVersions(resource?.repo_id ?? '', b, a));
+  const filter = conditions({ ...input, version: undefined });
+  const rows = db
+    .prepare(`SELECT DISTINCT d.platform,d.arch,v.version ${FROM} WHERE ${filter.where}`)
+    .all(...filter.params) as { platform: string; arch: string; version: string }[];
+  const repo = db
+    .prepare('SELECT repo FROM catalog_software WHERE resource_key=?')
+    .get(filter.key) as { repo: string } | undefined;
+  const platforms = [
+    ...new Set(
+      rows.flatMap((r) => (r.platform === 'any' ? ['windows', 'macos', 'linux'] : [r.platform])),
+    ),
+  ].sort();
   return {
-    platforms: distinct('platform'),
-    arches: distinct('arch'),
-    versions,
-    releases: distinct('release'),
-    roles: distinct('role'),
+    platforms,
+    arches: [...new Set(rows.map((r) => r.arch))].sort(),
+    versions: [...new Set(rows.map((r) => r.version))].sort((a, b) =>
+      compareRepoVersions(repo?.repo ?? '', b, a),
+    ),
+    releases: [],
+    roles: rows.length ? ['installer'] : [],
   };
-}
-
-function packageInput(db: DatabaseSync, resource: string, value?: string) {
-  if (!value?.trim()) return undefined;
-  const repo = db.prepare('SELECT repo_id FROM resources WHERE id=?').get(resource) as
-    { repo_id: string } | undefined;
-  return repo?.repo_id === 'pypi' ? normalizePythonName(value.trim()) : value.trim();
 }

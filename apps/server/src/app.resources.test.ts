@@ -1,73 +1,76 @@
-import { describe, expect, it, vi } from 'vitest';
+/* eslint vue/one-component-per-file: off -- createApp是Hono HTTP应用，不是Vue组件；本文件只测API。 */
+import { describe, it, expect, vi } from 'vitest';
 import { createApp } from './app.js';
-import { indexFixture, fixtureFile, fixtureSnapshot } from './db/indexFixture.js';
+import { indexFixture, fixtureDownload, fixtureRun } from './db/indexFixture.js';
 
-describe('数据库资源查询与单站边界', () => {
-  it('搜索、详情和文件过滤只读同一有效数据库，任何查询不联网', async () => {
+describe('统一只读安装目录API', () => {
+  it('搜索、生态＋版本、站点、详情、筛选都来自有效数据库，全部禁网', async () => {
     const db = indexFixture();
-    fixtureSnapshot(db, 'one', [fixtureFile()]);
+    fixtureRun(db);
     const network = vi.fn(() => {
       throw new Error('查询不得访问源站');
     });
     vi.stubGlobal('fetch', network);
     try {
       const app = createApp({ db });
-      const home = (await (
-        await app.request('http://localhost/api/resources?q=debian&downloadable=1')
-      ).json()) as { items: { id: string; downloadMode: string }[] };
-      const site = (await (
-        await app.request('http://localhost/api/sites/pku/resources')
-      ).json()) as typeof home;
-      expect(home.items.map((x) => x.id)).toEqual(site.items.map((x) => x.id));
+      const home = (await (await app.request('/api/resources?q=node%2024.1.0')).json()) as {
+        items: { id: string; downloadMode: string }[];
+      };
+      const site = (await (await app.request('/api/sites/pku/resources')).json()) as typeof home;
+      expect(home.items.map((r) => r.id)).toEqual(site.items.map((r) => r.id));
       expect(home.items[0]?.downloadMode).toBe('files');
-      const detail = (await (
-        await app.request('http://localhost/api/resources/pku%3Adebian')
-      ).json()) as { artifacts: { url: string }[] };
+      expect(
+        (await (await app.request('/api/resources?ecosystem=nodejs&version=24.1.0')).json()).items,
+      ).toHaveLength(1);
+      const detail = (await (await app.request('/api/resources/pku%3Anodejs-release')).json()) as {
+        artifacts: { url: string }[];
+      };
       const page = (await (
         await app.request(
-          'http://localhost/api/files?resource=pku%3Adebian&package=hello&arch=amd64',
+          '/api/files?resource=pku%3Anodejs-release&version=v24.1.0&platform=windows&arch=x64',
         )
       ).json()) as { items: { url: string }[] };
-      expect(page.items[0]?.url).toBe(fixtureFile().url);
-      expect(detail.artifacts[0]?.url).toBe(fixtureFile().url);
+      expect(detail.artifacts[0]?.url).toBe(fixtureDownload().url);
+      expect(page.items[0]?.url).toBe(fixtureDownload().url);
+      expect((await app.request('/api/resources/pku%3Anodejs-release/browse')).status).toBe(410);
       expect(
-        (await app.request('http://localhost/api/resources/pku%3Adebian/browse?path=pool')).status,
+        (await app.request('/api/resources/pku%3Anodejs-release/package?name=six')).status,
       ).toBe(410);
-      expect(
-        (await app.request('http://localhost/api/resources/pku%3Adebian/package?name=six')).status,
-      ).toBe(410);
-      expect((await app.request('http://localhost/api/files?resource=ustc%3Adebian')).status).toBe(
-        404,
-      );
-      expect((await app.request('http://localhost/api/resources/ustc%3Adebian')).status).toBe(404);
-      const other = (await (
-        await app.request('http://localhost/api/resources?site=ustc')
-      ).json()) as typeof home;
-      expect(other.items).toHaveLength(0);
+      expect((await app.request('/api/resources/pku%3Adebian')).status).toBe(404);
+      expect((await app.request('/api/resources/ustc%3Anodejs-release')).status).toBe(404);
+      expect((await (await app.request('/api/resources?site=ustc')).json()).items).toEqual([]);
       expect(network).not.toHaveBeenCalled();
     } finally {
       vi.unstubAllGlobals();
       db.close();
     }
   });
-  it('空库资源不冒充可下载；缺库与非法分页明确报错，不进行联网兜底', async () => {
+  it('缺库明确503，空库不冒充下载，非法分页400，跨更新分页409', async () => {
     const db = indexFixture();
     try {
       const app = createApp({ db });
-      const response = (await (
-        await app.request('http://localhost/api/resources?downloadable=1')
-      ).json()) as { items: unknown[] };
-      expect(response.items).toHaveLength(0);
+      expect((await (await app.request('/api/resources')).json()).items).toEqual([]);
+      expect((await app.request('/api/files?resource=pku%3Anodejs-release&limit=0')).status).toBe(
+        400,
+      );
       expect(
-        (await app.request('http://localhost/api/files?resource=pku%3Adebian&limit=0')).status,
+        (await app.request('/api/files?resource=pku%3Anodejs-release&cursor=invalid')).status,
       ).toBe(400);
+      expect((await createApp().request('/api/files?resource=pku%3Anodejs-release')).status).toBe(
+        503,
+      );
+      fixtureRun(db, [fixtureDownload('a.msi'), fixtureDownload('b.msi')], 1);
+      const first = (await (
+        await app.request('/api/files?resource=pku%3Anodejs-release&limit=1')
+      ).json()) as { nextCursor: string };
+      fixtureRun(db, [fixtureDownload('a.msi'), fixtureDownload('c.msi')], 2);
       expect(
-        (await app.request('http://localhost/api/files?resource=pku%3Adebian&cursor=invalid'))
-          .status,
-      ).toBe(400);
-      expect(
-        (await createApp().request('http://localhost/api/files?resource=pku%3Adebian')).status,
-      ).toBe(503);
+        (
+          await app.request(
+            `/api/files?resource=pku%3Anodejs-release&cursor=${encodeURIComponent(first.nextCursor)}`,
+          )
+        ).status,
+      ).toBe(409);
     } finally {
       db.close();
     }

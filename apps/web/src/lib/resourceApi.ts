@@ -10,21 +10,43 @@ import {
   type ResourceSummary,
 } from './downloads';
 
+export class ResourceApiError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
 async function request(path: string, signal?: AbortSignal): Promise<unknown> {
   const base = resolveApiBase();
   if (!base) throw new Error('资源目录接口未配置');
   const response = await fetch(`${base.replace(/\/+$/, '')}${path}`, { cache: 'no-store', signal });
-  if (!response.ok) throw new Error(`资源目录接口不可用（${response.status}）`);
+  if (!response.ok) {
+    const detail = (await response.json().catch(() => ({}))) as { error?: unknown };
+    throw new ResourceApiError(
+      response.status,
+      typeof detail.error === 'string' ? detail.error : `资源目录接口不可用（${response.status}）`,
+    );
+  }
   return (await response.json()) as unknown;
 }
 export async function loadResources(
-  options: { query?: string; ecosystem?: string; site?: string; downloadableOnly?: boolean } = {},
+  options: {
+    query?: string;
+    ecosystem?: string;
+    site?: string;
+    version?: string;
+    downloadableOnly?: boolean;
+  } = {},
   signal?: AbortSignal,
 ): Promise<ResourceSummary[]> {
   const params = new URLSearchParams({ limit: '200' });
   if (options.query) params.set('q', options.query);
   if (options.ecosystem) params.set('ecosystem', options.ecosystem);
   if (options.site) params.set('site', options.site);
+  if (options.version) params.set('version', options.version);
   if (options.downloadableOnly) params.set('downloadable', '1');
   const items = parseResourceList(await request(`/api/resources?${params}`, signal));
   if (!items) throw new Error('资源目录格式不符');

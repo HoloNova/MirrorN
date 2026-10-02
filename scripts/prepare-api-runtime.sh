@@ -15,4 +15,4 @@ pnpm install --frozen-lockfile --prod=false
 cp -a data "$DEST/data"
 test -f "$DEST/dist/server.js"
 test -f "$DEST/dist/index-worker.js"
-echo "API运行目录已准备：$DEST（主进程与后台线程，含Redis客户端/解析器及WASM资源）"
+echo "API运行目录已准备：$DEST（主进程与后台线程，含BullMQ/Redis客户端，无全量包解压解析器）"

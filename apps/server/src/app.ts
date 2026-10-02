@@ -81,10 +81,13 @@ export function createApp(options: AppOptions = {}): Hono {
     const query = context.req.query('q')?.trim();
     const ecosystem = context.req.query('ecosystem')?.trim();
     const site = context.req.query('site')?.trim();
+    const version = context.req.query('version')?.trim();
     const kind = context.req.query('kind')?.trim();
     const tutorialsOnly = context.req.query('tutorials') === '1';
     const downloadableOnly = context.req.query('downloadable') === '1';
     const limit = Number(context.req.query('limit') ?? '50');
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 200)
+      return context.json({ error: 'limit必须为1到200的整数' }, 400);
     if (!options.db) {
       context.header('Cache-Control', 'no-store');
       return context.json({ error: '资源库不可用' }, 503);
@@ -92,6 +95,7 @@ export function createApp(options: AppOptions = {}): Hono {
     const items = searchResources(options.db, {
       ...(query === undefined || query === '' ? {} : { query }),
       ...(ecosystem === undefined || ecosystem === '' ? {} : { ecosystemId: ecosystem }),
+      ...(version === undefined || version === '' ? {} : { version }),
       ...(site === undefined || site === '' ? {} : { siteId: site }),
       ...(kind === undefined || kind === '' ? {} : { kind }),
       ...(tutorialsOnly ? { onlyTutorials: true } : {}),
@@ -99,7 +103,7 @@ export function createApp(options: AppOptions = {}): Hono {
       ...(Number.isFinite(limit) ? { limit } : {}),
     });
     context.header('Cache-Control', 'no-store');
-    return context.json({ items });
+    return context.json({ items, catalog: 'installers-v2' });
   });
 
   // 旧的用户触发源站抓取已退出：兼容地址也不能联网兜底。
@@ -161,7 +165,8 @@ export function createApp(options: AppOptions = {}): Hono {
         }),
       );
     } catch (error) {
-      if (error instanceof FileQueryError) return context.json({ error: error.message }, 400);
+      if (error instanceof FileQueryError)
+        return context.json({ error: error.message }, error.status);
       throw error;
     }
   });

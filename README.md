@@ -1,56 +1,55 @@
 # MirrorN
 
-MirrorN 为初学者在镜像站查找软件安装文件和依赖：搜索软件/生态，按用途、版本、系统及架构找到**镜像站直接提供的下载链接**；已有安装后 Markdown 教程排在下载区下方。本站只存目录和文件索引，不转发文件，也不执行修改本机配置的命令。
+MirrorN 帮助初学者查找软件在 Windows、macOS、Linux 上的安装器／预编译包：搜索软件或生态，选择版本、系统和架构，从镜像站文件直链下载。教程当前占位。本站不下载安装包、不代理包体，不执行修改用户本机配置的命令。
 
-**当前范围（2026-09-29）**：收录 28 个站点，北大站的 40 条官方目录已经归类并接入站内搜索。安装器、ISO 和有限数据集的文件索引定时刷新；北大大型软件仓库按需逐目录查询，PyPI 可按指定包名查文件。其余 27 站尚未整理完整目录；教程目前只有 Miniconda 和 Node.js 两篇，不把有没有教程当成能否提供下载链接的条件。开发决策与现行数据流见 [`docs/resource-product-unification-proposal.md`](docs/resource-product-unification-proposal.md)、[`PLAN.md`](PLAN.md) 第七节及 [`docs/decisions.md`](docs/decisions.md)；`MAIN.md` 后续章节是历史立项规划。
+**当前开发版**收敛为具体软件安装目录，仅启用北大，退出全量发行版／语言依赖仓库采集。软件身份、用途识别规则需要审核；版本、文件名和链接由后台动态发现，不维护静态文件清单。详见 [`docs/software-installer-catalog.md`](docs/software-installer-catalog.md)。**发布状态与实际核对记录见 `PLAN.md`。**
 
 ## 开发
 
-要求 **Node.js >=24**、pnpm 12。镜像站/资源归类先由 `data/` 审核，构建前运行数据校验；首次启动后端会把审核数据导入 SQLite，并抓取少量适合定时索引的文件目录。
+要求 Node.js 24+、pnpm 12、Redis 6.2+。SQLite来自Node内置 `node:sqlite`，不需要数据库容器。Redis只保存BullMQ后台待办；Redis失联不阻止读取已有安装下载。
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-前端：<http://127.0.0.1:5173/>；后端：<http://127.0.0.1:8787/api/health>。前端通过 Vite 代理访问同源 `/api`；**只启动前端并不能浏览下载目录**。开发端口被占用时会预检拒绝启动，以免两份 Vite 共用依赖缓存。可以用 `pnpm dev:web` / `pnpm dev:server` 分别启动，但资源页仍需要后端。离开会话请停止开发进程。
+前端 <http://127.0.0.1:5173/>，后端 <http://127.0.0.1:8787/api/health>。页面资源需要后端，通过同源 `/api` 查询；仅启动前端不能浏览下载。离开会话请停止临时进程。后端 `MIRRORN_*` 配置见 [`docs/deployment.md`](docs/deployment.md)；测速按既有访客浏览器规则工作，不属于后台采集。
 
-后端默认监听 `127.0.0.1`，端口、站点数据路径、数据库目录等由 `MIRRORN_*` 环境变量控制，详见 [`docs/deployment.md`](docs/deployment.md)。本地抓取不能代表访客网络的速度；站点详情的手动测速只测响应耗时，不推导实际下载速度。
+## 数据链路与代码
 
-## 当前数据流
+**后台启动强制刷新／每六小时采集 → 用途识别 → 暂存完整校验 → SQLite事务更新 → 查询API → 下载直链。** 请求源站仅限后台任务、测速及用户点击实际下载；搜索、分页、筛选均不联网补数据。
 
-| 位置                                                                                                  | 职责                                                                       |
-| ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `data/mirrors.json`、`data/site-inventories/`、`data/site-resources/`、`data/ecosystem-taxonomy.json` | 审核的站点身份、官方仓库目录、生态/用途与下载入口；不是运行时文件清单。    |
-| `apps/server/src/db/`                                                                                 | `node:sqlite` 的目录/文件/抓取记录与按需目录缓存；前端统一读取这里的 API。 |
-| `apps/server/src/crawl/`                                                                              | 按用途限量刷新安装器/ISO，或由请求触发北大目录及 PyPI 单包查询。           |
-| `apps/web/src/pages/`、`apps/web/src/lib/resourceApi.ts`                                              | 首页、站点页与下载页使用同一后端目录；文件直链由镜像站提供。               |
-| `apps/web/src/tutorials/`、`data/tutorials.json`                                                      | 现有 Markdown 教程正文与资源关联；无教程的资源仍可下载。                   |
+| 位置                                                    | 职责                                                   |
+| ------------------------------------------------------- | ------------------------------------------------------ |
+| `data/mirrors.json`                                     | 审核站点身份与既有测速信息，不是文件清单               |
+| `apps/server/src/indexing/software.ts`、`installers.ts` | 软件身份、目录入口、文件用途规则与后台动态发现         |
+| `apps/server/src/indexing/source.ts`、`queue.ts`        | 受限元数据HTTP、BullMQ/Redis调度及重试                 |
+| `apps/server/src/db/installers.ts`                      | 四类业务实体、短暂暂存、安全更新；相同URL原位更新      |
+| `apps/server/src/db/catalog.ts`、`fileQueries.ts`       | 软件/版本/站点关系和只读文件查询，不扫描全体依赖包名字 |
+| `apps/web/src/lib/resourceApi.ts`                       | 页面统一读API；跨更新分页自动重新读取首屏              |
+| `data/tutorials.json`、`apps/web/src/tutorials/`        | 教程关联及旧正文素材；当前只占位                       |
 
-旧的命令向导模板与测试仍存放在 `data/ecosystems/`、`packages/shared/src/generators/` 等目录，但没有产品路由；它们是待独立清理的首版遗留内容，**不是当前下载业务的数据来源**。首页不自动测速，也不生成换源命令。
+新库为 `MIRRORN_SNAPSHOT_DIR/mirrorn-installers.sqlite`；旧 `mirrorn.sqlite`不自动导入、删除或复用。旧包采集器、PyPI批量包页队列及复制整批文件的快照实现已退役。旧 `data/site-inventories/` / `site-resources/` 是官方仓库归档，不能等同于当前有下载的软件条目。旧换源模板在共享包保留，但不是现行产品入口。
 
-主要接口：`GET /api/ecosystems`（筛选）、`GET /api/resources?q=&ecosystem=&site=`（统一搜索）、`GET /api/resources/:id`（文件列表）、`GET /api/resources/:id/browse?path=`（北大逐层目录）、`GET /api/resources/:id/package?name=`（北大 PyPI 指定包）。目录请求受路径、域名、响应大小和时效约束；具体策略见 [`docs/resource-product-unification-proposal.md`](docs/resource-product-unification-proposal.md)。
+接口：`/api/ecosystems`、`/api/resources?q=&ecosystem=&version=&site=`、`/api/sites/:id/resources`、`/api/resources/:id`、`/api/files?resource=&version=&platform=&arch=`。只有有效安装下载的条目出现在搜索和站点页。旧 `browse/package` 返回410；未接入条目不联网兜底。
 
-## 公网发布与验收
+## 发布与验收
 
-公网 <https://mirror.campuslink.vip/> 由 Caddy 提供静态文件，同域 `/api` 转发给 systemd `mirrorn-api`；**不暴露开发服务器**。前端需要在构建时设置 `VITE_API_BASE=/`；项目发布脚本会代办。后端资源库在 `/var/lib/mirrorn/mirrorn.sqlite`，改表前应做一致性备份（WAL 数据不一定都在主文件中）。
+公网 <https://mirror.campuslink.vip/> 是Caddy静态产物＋systemd API，同域 `/api`，不是开发服务器。升级前先后台准备新库、检查实际下载，之后直接切换，不备份可重采的抓取数据；部署脚本拒绝把现有包索引直接替换成空安装目录。新库上线且API核对通过后，显式退役旧库、旧队列及抓取备份；开发阶段不保留这些抓取数据备份。步骤见 [`docs/software-installer-catalog.md`](docs/software-installer-catalog.md) 与 [`docs/deployment.md`](docs/deployment.md)。容器形态仍见 `Dockerfile` / `docker-compose.yml`。
 
-```bash
-sudo scripts/deploy-api.sh
-sudo scripts/deploy-static.sh
-```
+不做浏览器自动验收或UI单元测试。人工Todo见 [`docs/acceptance-checklist.md`](docs/acceptance-checklist.md)。
 
-两种部署方式和回滚步骤见 [`docs/deployment.md`](docs/deployment.md)。容器形态见 `Dockerfile` / `docker-compose.yml`，同样要求 Node 24，资源库随数据卷保留。界面只在**公网人工验收**，清单在 [`docs/acceptance-checklist.md`](docs/acceptance-checklist.md)；不使用 Playwright/UI 自动化代验。
-
-## 定向检查
+## 定向验证
 
 ```bash
-pnpm validate:data
+pnpm build:shared
 pnpm --filter @mirrorn/server typecheck
 pnpm --filter @mirrorn/web typecheck
 pnpm --filter @mirrorn/server test
-pnpm build:web
-pnpm --filter @mirrorn/server build:bundle
+MIRRORN_TEST_REDIS_BIN=/兼容Redis路径/redis-server node scripts/test-index-queue.mjs
+pnpm exec tsx scripts/verify-pku-installers.ts
+bash scripts/prepare-api-runtime.sh /tmp/新的空运行目录
+node scripts/smoke-api-runtime.mjs /tmp/新的空运行目录
 ```
 
-`pnpm test` / `pnpm build` 会扩到旧版尚未清理的包；按改动范围选择检查，部署前确保相关代码、数据校验与打包通过。`docs/validation-matrix.md` 和 `MAIN.md` 记录首版配置向导时代的验证与规划，不代表当前下载入口。
+真实源站验证只请求少量目录元数据、用临时新库，不证明全站覆盖。临时Redis及API在验证结束自动停止；不操作生产服务。全项目测试／构建按实际需要运行。

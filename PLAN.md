@@ -435,3 +435,13 @@ shared 仓库证据 schema + 站点/生态引用与重复映射校验、受影�
 - 静态站点：`sudo scripts/deploy-static.sh` → 构建 → rsync 到 `/srv/mirror.campuslink.vip/current` → 快照 `/srv/mirror.campuslink.vip/releases/<时间戳>`（保留最近 5 份）。
 - 后端 API：线上已使用主进程/采集线程独立运行目录；由 `scripts/prepare-api-runtime.sh <空目录>` 生成 `dist/server.js`、`dist/index-worker.js` 与生产依赖，`sudo scripts/deploy-api.sh` 先检查Redis再切换systemd服务（127.0.0.1:8788、Caddy同域反代），每次后续发布仍须用户授权并先备份资源数据库。
 - 回滚：`rm -rf /srv/mirror.campuslink.vip/current && cp -a /srv/mirror.campuslink.vip/releases/<时间戳> /srv/mirror.campuslink.vip/current`。
+
+### 软件安装目录收敛（本轮本地实现，未提交／部署）
+
+用户确认后，将后台采集从全量包库改为具体软件安装器/预编译包：Node.js、Miniconda、独立Anaconda、R安装目录与Apache具体项目bin发行包。源码/数据集/未知用途不靠后缀收录，APT/RPM/PyPI/conda频道依赖采集器及其重复快照机制退役。SQLite新库四类业务实体、整数外键、URL唯一去重；暂存完整后事务原位更新，失败立即清理暂存，旧数据继续可读。分页绑定修订号，更新时409并重新查询，不复制整批文件维持旧游标。
+
+准备独立 `mirrorn-installers.sqlite` 与独立BullMQ命名空间；部署前必须后台准备有效软件下载，不能用空新库替换现用API。发布与人工验收后，才显式备份退役旧包库/WAL/SHM及旧队列。测速、UI布局、教程正文未改。现行结构、范围、验证证据和切换步骤见 `docs/software-installer-catalog.md`；本次未运行生产准备/部署/清理工具。
+
+### 安装目录发布授权与无备份规则
+
+用户明确当前是开发阶段，抓取数据完全不需要备份，并授权提交、推送、部署。发布脚本已退出SQLite备份步骤；新API可用后直接清除旧全量包库、旧队列、目录缓存及抓取备份，保留新库和测速状态。切换前已经暂停旧采集队列，并通过后台元数据在生产独立新库准备好Node.js/Miniconda/Anaconda/R安装链接；不复制旧文件记录。最终上线与清理结果在发布完成后补记。

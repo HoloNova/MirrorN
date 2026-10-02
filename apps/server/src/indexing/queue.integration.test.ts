@@ -1,118 +1,128 @@
 import { QueueEvents } from 'bullmq';
-import { gzipSync } from 'node:zlib';
 import { tmpdir } from 'node:os';
 import { describe, it, expect } from 'vitest';
 import { createIndexQueue, redisConnection, QUEUE_NAME } from './queue.js';
-import { aptScope, indexFixture, fixtureSnapshot, fixtureFile } from '../db/indexFixture.js';
+import { indexFixture, fixtureRun, fixtureDownload, nodeDirectory } from '../db/indexFixture.js';
 import { queryFiles } from '../db/fileQueries.js';
-
+import { beginRun, publishRun } from '../db/installers.js';
+import type { InstallerJob } from './installers.js';
 const redisUrl = process.env.MIRRORN_TEST_REDIS_URL;
-describe.runIf(Boolean(redisUrl))('真实Redis/BullMQ隔离验证', () => {
-  it('即使数据库未过期，每次start都有新的刷新任务；持久队列有定时器', async () => {
+const task: Extract<InstallerJob, { kind: 'directory' }> = {
+  kind: 'directory',
+  family: 'node',
+  software: 'nodejs',
+  directory: nodeDirectory,
+  epoch: Date.now() + 1000,
+  depth: 1,
+};
+function confirmParent(db: ReturnType<typeof indexFixture>, epoch: number) {
+  publishRun(
+    db,
+    beginRun(db, 'pku', 'nodejs', 'https://mirrors.pku.edu.cn/nodejs-release/', epoch),
+    Date.now(),
+    [nodeDirectory],
+  );
+}
+async function clean(queue: ReturnType<typeof createIndexQueue>) {
+  await queue.worker.close();
+  await queue.queue.obliterate({ force: true });
+  await queue.close();
+}
+describe.runIf(Boolean(redisUrl))('真实Redis：安装软件队列', () => {
+  it('每次启动强制刷新，有且只有一个定时器；队列与旧包任务隔离', async () => {
     const db = indexFixture();
-    fixtureSnapshot(db, 'fresh', [fixtureFile()]);
-    const fetchImpl = (async () => Response.json([])) as typeof fetch;
+    fixtureRun(db);
+    const fetchImpl = (async (url) => {
+      const path = new URL(String(url)).pathname;
+      return Response.json(
+        path === '/files/nodejs-release/'
+          ? [{ name: 'v24.1.0', type: 'directory' }]
+          : path === `/files/nodejs-release/v24.1.0/`
+            ? [{ name: fixtureDownload().filename, type: 'other' }]
+            : [{ name: 'README', type: 'other' }],
+      );
+    }) as typeof fetch;
     const events = new QueueEvents(QUEUE_NAME, { connection: redisConnection(redisUrl!) });
     await events.waitUntilReady();
-    let queue = createIndexQueue(db, redisUrl!, () => {}, { fetchImpl });
+    let queue = createIndexQueue(db, redisUrl!, () => {}, { fetchImpl, jobIntervalMs: 10 });
     try {
       const first = await queue.start();
-      expect(first?.id).toMatch(/^startup-/);
       await first!.waitUntilFinished(events, 10000);
-      expect(await queue.queue.getJobSchedulers()).toHaveLength(2);
-      const firstId = first!.id;
+      expect(first!.id).toMatch(/^startup-/);
+      expect(await queue.queue.getJobSchedulers()).toHaveLength(1);
       await queue.close();
-      queue = createIndexQueue(db, redisUrl!, () => {}, { fetchImpl });
+      queue = createIndexQueue(db, redisUrl!, () => {}, { fetchImpl, jobIntervalMs: 10 });
       const second = await queue.start();
-      expect(second?.id).not.toBe(firstId);
       await second!.waitUntilFinished(events, 10000);
-      expect(queryFiles(db, { resource: 'pku:debian' }).items[0]?.packageName).toBe('hello');
+      expect(second!.id).not.toBe(first!.id);
+      expect(QUEUE_NAME).not.toBe('mirrorn-pku-index');
+      await expect(
+        queue.enqueue([{ ...task, directory: 'https://mirrors.ustc.edu.cn/nodejs/' }]),
+      ).rejects.toThrow('其它站点');
+      expect(queryFiles(db, { resource: 'pku:nodejs-release' }).items).toHaveLength(1);
     } finally {
-      await queue.close();
+      await clean(queue);
       await events.close();
       db.close();
     }
   }, 30000);
-  it('503由BullMQ退避重试，完整成功前旧快照持续可读', async () => {
+  it('503由BullMQ重试，完整成功前保旧，重试没有残留暂存文件', async () => {
     const db = indexFixture();
-    fixtureSnapshot(db, 'old', [fixtureFile('old')]);
-    const payload = gzipSync(
-      'Package: hello\nVersion: 2.10-4\nArchitecture: amd64\nFilename: pool/hello.deb\nSize: 10\n\n',
-    );
+    fixtureRun(db);
+    const epoch = Date.now() + 1;
+    confirmParent(db, epoch);
     let calls = 0;
     const events = new QueueEvents(QUEUE_NAME, { connection: redisConnection(redisUrl!) });
     await events.waitUntilReady();
     const queue = createIndexQueue(db, redisUrl!, () => {}, {
-      retryDelayMs: 50,
-      fetchImpl: (async (input) => {
-        if (String(input) !== aptScope.indexUrl) return Response.json([]);
+      retryDelayMs: 10,
+      jobIntervalMs: 10,
+      fetchImpl: (async () => {
         calls++;
         if (calls === 1) {
-          expect(queryFiles(db, { resource: 'pku:debian' }).items[0]?.packageName).toBe('old');
+          expect(queryFiles(db, { resource: 'pku:nodejs-release' }).items[0]?.filename).toBe(
+            fixtureDownload().filename,
+          );
           return new Response('', { status: 503 });
         }
-        return new Response(payload);
+        return Response.json([{ name: 'node-v24.1.0-arm64.msi', type: 'other' }]);
       }) as typeof fetch,
     });
     try {
       const job = await queue.queue.add(
-        'apt-packages',
-        { ...aptScope, kind: 'apt-packages' },
-        { jobId: 'retry-test', attempts: 3, backoff: { type: 'source' }, removeOnComplete: false },
+        'directory',
+        { ...task, epoch },
+        {
+          jobId: 'retry',
+          attempts: 3,
+          backoff: { type: 'source' },
+          removeOnComplete: false,
+        },
       );
-      await job.waitUntilFinished(events, 15000);
+      await job.waitUntilFinished(events, 10000);
       expect(calls).toBe(2);
-      expect(queryFiles(db, { resource: 'pku:debian' }).items[0]?.version).toBe('2.10-4');
-      await job.remove();
+      expect(queryFiles(db, { resource: 'pku:nodejs-release' }).items[0]?.filename).toBe(
+        'node-v24.1.0-arm64.msi',
+      );
+      expect((db.prepare('SELECT COUNT(*) n FROM catalog_staged').get() as { n: number }).n).toBe(
+        0,
+      );
     } finally {
-      await queue.close();
+      await clean(queue);
       await events.close();
       db.close();
     }
-  }, 30000);
-  it('批量包页先入队也不阻挡随后发现的普通索引，实际由BullMQ优先级排序', async () => {
+  }, 20000);
+  it('低磁盘时保留待办和旧数据，不抓源站、不消耗重试次数', async () => {
     const db = indexFixture();
-    const queue = createIndexQueue(db, redisUrl!, () => {}, {
-      fetchImpl: (async () => Response.json([])) as typeof fetch,
-    });
-    try {
-      await queue.worker.waitUntilReady();
-      await queue.worker.pause();
-      await expect(
-        queue.enqueue([{ ...aptScope, resourceId: 'ustc:debian', kind: 'apt-packages' }]),
-      ).rejects.toThrow('禁止入队');
-      await queue.enqueue([
-        {
-          ...aptScope,
-          kind: 'pypi-project',
-          protocol: 'pypi',
-          component: 'pending-project',
-          indexUrl: 'https://mirrors.pku.edu.cn/pypi/web/simple/pending-project/',
-        },
-      ]);
-      await queue.enqueue([{ ...aptScope, kind: 'apt-packages' }]);
-      const pending = await queue.queue.getPrioritized(0, 100);
-      expect(
-        pending.some((job) => 'resourceId' in job.data && job.data.resourceId.startsWith('ustc:')),
-      ).toBe(false);
-      expect(
-        pending
-          .filter((job) => ['apt-packages', 'pypi-project'].includes(job.data.kind))
-          .map((job) => job.data.kind),
-      ).toEqual(['apt-packages', 'pypi-project']);
-    } finally {
-      await queue.close();
-      db.close();
-    }
-  }, 30000);
-  it('容量不足时保留待办和旧文件，不抓源站或耗尽重试', async () => {
-    const db = indexFixture();
-    fixtureSnapshot(db, 'capacity-old', [fixtureFile('old')]);
-    let report!: () => void;
+    fixtureRun(db);
+    const epoch = Date.now() + 1;
+    confirmParent(db, epoch);
+    let report!: () => void,
+      calls = 0;
     const limited = new Promise<void>((resolve) => {
       report = resolve;
     });
-    let calls = 0;
     const queue = createIndexQueue(
       db,
       redisUrl!,
@@ -122,7 +132,7 @@ describe.runIf(Boolean(redisUrl))('真实Redis/BullMQ隔离验证', () => {
       {
         storagePath: tmpdir(),
         minFreeBytes: Number.MAX_SAFE_INTEGER,
-        capacityWaitMs: 50,
+        capacityWaitMs: 100,
         fetchImpl: (async () => {
           calls++;
           return Response.json([]);
@@ -131,17 +141,17 @@ describe.runIf(Boolean(redisUrl))('真实Redis/BullMQ隔离验证', () => {
     );
     try {
       const job = await queue.queue.add(
-        'apt-packages',
-        { ...aptScope, kind: 'apt-packages' },
-        { jobId: 'capacity-test', attempts: 3 },
+        'directory',
+        { ...task, epoch },
+        { jobId: 'capacity', attempts: 3 },
       );
       await limited;
       expect(calls).toBe(0);
-      expect(queryFiles(db, { resource: 'pku:debian' }).items[0]?.packageName).toBe('old');
       expect((await queue.queue.getJob(job.id!))?.attemptsMade).toBe(0);
+      expect(queryFiles(db, { resource: 'pku:nodejs-release' }).items).toHaveLength(1);
     } finally {
-      await queue.close();
+      await clean(queue);
       db.close();
     }
-  }, 30000);
+  }, 10000);
 });

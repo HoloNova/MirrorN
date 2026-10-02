@@ -1,6 +1,6 @@
 # 部署：静态站点与后台资源索引
 
-**状态（2026-10-01/02）**：以下早期静态预览与阶段5章节是历史运行记录。公网已发布BullMQ/Redis后台文件索引版：静态快照 `20261001-201932`，API/采集线程及生产依赖在 `/srv/mirrorn/api/`；SQLite文件查询正常，首轮全量采集受容量限制尚未完成。部署方式见本文末节及 `docs/background-index-implementation-plan.md`。
+**状态**：当前实现已收敛为具体软件安装目录，发布核对见PLAN.md。升级必须先准备 `mirrorn-installers.sqlite`，保留现用 `mirrorn.sqlite` 及旧API至新库有有效下载；完整步骤见 [software-installer-catalog.md](software-installer-catalog.md)。用户已授权提交发布；开发阶段抓取数据不备份，切换后清除旧库/队列及抓取备份。以下早期静态预览、阶段5与全量包索引章节为历史运行记录，不是现行升级步骤。
 
 本文档记录 `mirror.campuslink.vip` 的静态部署方式。它对应 `PLAN.md` 6.3 中“静态构建托管”的部分；`PLAN.md` 明确“阶段 3 完成即可发布静态预览版，阶段 6 完成才算首版正式可交付”，因此这里的发布不改变阶段划分。
 
@@ -201,3 +201,11 @@ docker compose down       # 停止，数据卷保留
 采集默认在可用磁盘不足2GiB时暂停，保留待办和有效数据；不得为“显示完成”而清空待办。首轮未采齐，当前空间不适合直接承诺全库完成。PyPI项目清单持久化SQLite并按小窗口派发，读取API不消费待办、不请求源站。
 
 SQLite备份如需节省空间，完成完整性检查后可压缩为同名`.sqlite.gz`，再运行`gzip -t`核验；恢复时先解压，不把压缩文件直接交给SQLite。不能只备份WAL模式的主文件。当前静态快照 `20261001-201932`，API与采集线程在 `/srv/mirrorn/api/dist/`。
+
+## 安装目录的切换
+
+不要直接重启新程序：它使用独立的 `mirrorn-installers.sqlite`。先按 `docs/software-installer-catalog.md` 显式执行后台准备脚本；现用包库与旧API不动。部署脚本检查Node.js、Miniconda、Anaconda、R均已存在有效安装下载，未准备好就拒绝替换运行目录。准备完成后直接切换API/静态站，不备份可重新采集的数据；启动线程仍强制执行完整新轮次，不因准备数据未过期而跳过。
+
+新队列名 `mirrorn-pku-installers-v2` 与旧 `mirrorn-pku-index` 隔离。新API `/api/resources` 带 `catalog: installers-v2`；搜索只显示实际已有安装下载的软件。验证公网搜索、版本/平台筛选和文件直链，再按人工清单验收。旧Node/Miniconda路由身份保留，旧发行版仓库下载页退出。
+
+新API核对通过后用 `scripts/retire-package-index.mjs /srv/mirrorn/api /var/lib/mirrorn --apply` 退役旧包库/WAL/SHM、旧队列、旧目录缓存及按固定命名识别的抓取备份。默认只读输出计划；--apply在确认新API及新库可用后直接清除，不创建抓取数据备份。保留当前安装目录与既有测速信息，不删除数据库容器/卷。

@@ -13,6 +13,7 @@ import {
   loadFiles,
   loadFileOptions,
   loadResource,
+  ResourceApiError,
   type FileOptions,
   type FileFilters,
 } from '../lib/resourceApi';
@@ -81,7 +82,17 @@ async function update(append = false): Promise<void> {
     files.value = append ? [...files.value, ...page.items] : page.items;
     nextCursor.value = page.nextCursor;
   } catch (error) {
-    if (!request.signal.aborted)
+    if (
+      !request.signal.aborted &&
+      append &&
+      error instanceof ResourceApiError &&
+      error.status === 409
+    ) {
+      // 不保存历史整批文件维持游标；后台更新时重新读取一页，避免混合新旧列表。
+      files.value = [];
+      nextCursor.value = null;
+      await update(false);
+    } else if (!request.signal.aborted)
       failure.value = error instanceof Error ? error.message : '文件查询失败';
   } finally {
     if (!request.signal.aborted) fileLoading.value = false;
