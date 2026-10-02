@@ -445,3 +445,12 @@ shared 仓库证据 schema + 站点/生态引用与重复映射校验、受影�
 ### 安装目录发布授权与无备份规则
 
 用户明确当前是开发阶段，抓取数据完全不需要备份，并授权提交、推送、部署。发布脚本已退出SQLite备份步骤；新API可用后直接清除旧全量包库、旧队列、目录缓存及抓取备份，保留新库和测速状态。切换前已经暂停旧采集队列，并通过后台元数据在生产独立新库准备好Node.js/Miniconda/Anaconda/R安装链接；不复制旧文件记录。最终上线与清理结果在发布完成后补记。
+
+### 安装目录公网发布与旧抓取数据清理完成（2026-10-02）
+
+- 功能提交 `eea6b04` 已推送main并部署API与静态站；CI通过。上线核对发现Miniconda的latest同时包含Python2/3，补丁 `943da70` 已推送并部署后端，同版本优先Python3，历史Python2文件仍可搜索与分页选择。
+- 静态发布记录 `/srv/mirror.campuslink.vip/releases/20261002-112111`；公网首页HTML、`index-DR2fc_3L.js`、`index-CQGr3cd_.css`字节与本地产物一致。公开入口 https://mirror.campuslink.vip/ 。
+- 切换前新库后台准备Node.js/Miniconda/Anaconda/R，共1,936条安装/预编译下载；公开API已核实软件＋版本搜索、站点筛选、不同系统/架构的具体文件直链。首轮后台继续发现历史Node及Apache安装包，不代表全站采齐。
+- 新库 `/var/lib/mirrorn/mirrorn-installers.sqlite` 结构检查通过；发布核对时主文件约1.23MiB，WAL约3.95MiB。Redis失联仍可查询、旧目录410、未接入软件源404已经验证。
+- 按用户开发阶段规则，**未创建抓取数据备份**；直接清除约10.2GiB旧包库/WAL/SHM、旧包队列、旧目录缓存与命名明确的抓取备份。剩余状态为新安装库及其WAL/SHM、`mirrors-status.json`；磁盘可用约15GiB（清理前3.9GiB）。保留源码/静态产物发布记录与测速状态。
+- 人工验收按 `docs/acceptance-checklist.md`：首页搜索软件/版本、北大站点资源、系统/架构切换、默认Miniconda3下载、翻页、教程占位；本轮未使用浏览器自动化。
