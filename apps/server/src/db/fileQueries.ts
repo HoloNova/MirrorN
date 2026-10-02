@@ -44,8 +44,9 @@ interface Cursor {
   at: number;
   fingerprint: string;
 }
+// Miniconda镜像的latest别名同时包含已淘汰Python2；默认优先Python3，旧包仍可查选。
 const PREFERENCE =
-  "CASE d.format WHEN 'msi' THEN 0 WHEN 'pkg' THEN 0 WHEN 'exe' THEN 1 WHEN 'dmg' THEN 1 WHEN 'sh' THEN 2 WHEN 'AppImage' THEN 2 WHEN 'zip' THEN 4 ELSE 3 END";
+  "CASE WHEN d.filename LIKE 'Miniconda2-%' THEN 4 ELSE CASE d.format WHEN 'msi' THEN 0 WHEN 'pkg' THEN 0 WHEN 'exe' THEN 1 WHEN 'dmg' THEN 1 WHEN 'sh' THEN 2 WHEN 'AppImage' THEN 2 WHEN 'zip' THEN 4 ELSE 3 END END";
 const FROM = `FROM catalog_software w JOIN catalog_versions v ON v.software_id=w.id
   JOIN catalog_downloads d ON d.version_id=v.id JOIN catalog_sites s ON s.id=d.site_id`;
 function conditions(input: FileQuery) {

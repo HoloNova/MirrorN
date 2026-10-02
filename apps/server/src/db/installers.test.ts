@@ -227,3 +227,42 @@ describe('安装器优先与分页', () => {
     }
   });
 });
+
+// latest是镜像别名，Python2与Python3可能同时使用；不能按旧入库ID默认选已淘汰的Python2。
+describe('Miniconda默认文件选择', () => {
+  it('同版本优先Python3，Python2仍可通过文件名查询并分页读取', () => {
+    const db = indexFixture();
+    const directory = 'https://mirrors.pku.edu.cn/anaconda/miniconda/';
+    const files = ['Miniconda2-latest-Linux-x86_64.sh', 'Miniconda3-latest-Linux-x86_64.sh'].map(
+      (filename) => ({
+        filename,
+        version: 'latest',
+        url: directory + filename,
+        platform: 'linux' as const,
+        arch: 'x64',
+        format: 'sh',
+        size: 100,
+      }),
+    );
+    try {
+      fixtureRun(db, files, 1, directory, 'anaconda-installer');
+      const query = {
+        resource: 'pku:anaconda',
+        platform: 'linux',
+        arch: 'x64',
+        version: 'latest',
+        limit: 1,
+      };
+      const page = queryFiles(db, query);
+      expect(page.items[0]?.filename).toBe(files[1]!.filename);
+      expect(queryFiles(db, { ...query, cursor: page.nextCursor! }).items[0]?.filename).toBe(
+        files[0]!.filename,
+      );
+      expect(queryFiles(db, { ...query, q: 'Miniconda2' }).items[0]?.filename).toBe(
+        files[0]!.filename,
+      );
+    } finally {
+      db.close();
+    }
+  });
+});
