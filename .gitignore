@@ -11,3 +11,6 @@ coverage/
 *.log
 *.tsbuildinfo
 .superdesign/
+
+# 外部 Agent 原始研究草稿；正式复核结果位于 docs/research/。
+/docs/tmp/

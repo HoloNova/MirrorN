@@ -65,6 +65,9 @@ try {
       'vitest',
       'run',
       'src/indexing/queue.integration.test.ts',
+      '--pool=forks',
+      '--maxWorkers=1',
+      '--minWorkers=1',
     ],
     {
       stdio: 'inherit',

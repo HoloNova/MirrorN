@@ -6,11 +6,13 @@ import { indexFixture, fixtureRun, fixtureDownload, nodeDirectory } from '../db/
 import { queryFiles } from '../db/fileQueries.js';
 import { beginRun, publishRun } from '../db/installers.js';
 import type { InstallerJob } from './installers.js';
+import { loadDownloadRules } from './rules/load.js';
+const rules = loadDownloadRules();
 const redisUrl = process.env.MIRRORN_TEST_REDIS_URL;
 const task: Extract<InstallerJob, { kind: 'directory' }> = {
   kind: 'directory',
-  family: 'node',
-  software: 'nodejs',
+  bindingId: 'pku-nodejs',
+  ruleRevision: rules.revision,
   directory: nodeDirectory,
   epoch: Date.now() + 1000,
   depth: 1,

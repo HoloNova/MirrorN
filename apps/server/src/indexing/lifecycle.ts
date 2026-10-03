@@ -6,6 +6,7 @@ export function startIndexWorker(options: {
   databasePath: string;
   redisUrl: string;
   timeoutMs: number;
+  dataDir: string;
   log: (value: string) => void;
 }) {
   const bundled = fileURLToPath(import.meta.url).endsWith('/server.js');
@@ -47,10 +48,12 @@ function optionsWithoutLog({
   databasePath,
   redisUrl,
   timeoutMs,
+  dataDir,
 }: {
   databasePath: string;
   redisUrl: string;
   timeoutMs: number;
+  dataDir: string;
 }) {
-  return { databasePath, redisUrl, timeoutMs };
+  return { databasePath, redisUrl, timeoutMs, dataDir };
 }

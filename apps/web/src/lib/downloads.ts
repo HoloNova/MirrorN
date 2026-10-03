@@ -10,6 +10,9 @@ export interface Artifact {
   url: string;
   size?: number;
   mtime?: string;
+  platforms?: ArtifactPlatform[];
+  role?: string;
+  compatibility?: Record<string, string | boolean>;
 }
 
 export interface ResourceSummary {
@@ -18,6 +21,7 @@ export interface ResourceSummary {
   siteName: string;
   repoId: string;
   name: string;
+  softwareId?: string;
   ecosystemId: string;
   ecosystemLabel: string;
   ecosystemCategory: string;
@@ -50,6 +54,8 @@ export interface EcosystemSummary {
   resourceCount: number;
   siteCount: number;
   tutorialCount: number;
+  downloadableResourceCount?: number;
+  repositoryCount?: number;
 }
 
 export const PLATFORM_LABELS: Record<string, string> = {
@@ -110,7 +116,11 @@ export function compareVersions(a: string, b: string): number {
 }
 
 export function platformsOf(artifacts: Artifact[]): ArtifactPlatform[] {
-  const present = new Set(artifacts.map((artifact) => artifact.platform));
+  const present = new Set(
+    artifacts.flatMap((artifact) =>
+      artifact.platforms?.length ? artifact.platforms : [artifact.platform],
+    ),
+  );
   const ordered = PLATFORM_ORDER.filter((platform) => present.has(platform as ArtifactPlatform));
   for (const platform of present) {
     if (!ordered.includes(platform)) ordered.push(platform);
@@ -126,6 +136,7 @@ export function versionsFor(artifacts: Artifact[], platform: string, arch = ''):
           (artifact) =>
             (platform === '' ||
               artifact.platform === platform ||
+              artifact.platforms?.includes(platform as ArtifactPlatform) ||
               artifact.platform === 'any' ||
               artifact.platform === 'unknown') &&
             (arch === '' || artifact.arch === arch || artifact.arch === 'unknown'),
@@ -143,6 +154,7 @@ export function artifactsFor(artifacts: Artifact[], version: string, platform: s
         artifact.version === version &&
         (platform === '' ||
           artifact.platform === platform ||
+          artifact.platforms?.includes(platform as ArtifactPlatform) ||
           artifact.platform === 'any' ||
           artifact.platform === 'unknown'),
     )
@@ -202,6 +214,22 @@ function isArtifact(value: unknown, origin: string): value is Artifact {
   }
   if (item.size !== undefined && typeof item.size !== 'number') return false;
   if (item.mtime !== undefined && typeof item.mtime !== 'string') return false;
+  if (
+    item.platforms !== undefined &&
+    (!Array.isArray(item.platforms) ||
+      item.platforms.some((platform) => !['windows', 'macos', 'linux'].includes(String(platform))))
+  )
+    return false;
+  if (
+    item.compatibility !== undefined &&
+    (typeof item.compatibility !== 'object' ||
+      item.compatibility === null ||
+      Array.isArray(item.compatibility) ||
+      Object.values(item.compatibility).some(
+        (value) => !['string', 'boolean'].includes(typeof value),
+      ))
+  )
+    return false;
   return true;
 }
 

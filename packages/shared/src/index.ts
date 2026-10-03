@@ -64,3 +64,21 @@ export type {
 
 export { validateDataset } from './validation.js';
 export type { Dataset, DatasetValidationIssue } from './validation.js';
+
+export {
+  DownloadPlatformSchema,
+  DownloadPurposeSchema,
+  RulePatternSchema,
+  SoftwareIdentitySchema,
+  DownloadMatchSchema,
+  DownloadRuleSchema,
+  DownloadTemplateSchema,
+  DownloadBindingSchema,
+  DownloadManifestSchema,
+} from './downloadRules.js';
+export type {
+  DownloadRule,
+  DownloadMatch,
+  DownloadBinding,
+  SoftwareIdentity,
+} from './downloadRules.js';

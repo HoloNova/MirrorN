@@ -1,0 +1,228 @@
+[
+  {
+    "slug": "nodejs",
+    "resourceKey": "nodejs-release",
+    "name": "Node.js",
+    "aliases": ["node", "javascript", "js"],
+    "ecosystemId": "nodejs",
+    "repo": "nodejs-release",
+    "tutorialId": "nodejs"
+  },
+  {
+    "slug": "apache-tomcat",
+    "resourceKey": "apache-tomcat",
+    "name": "Apache Tomcat",
+    "aliases": ["apache", "tomcat"],
+    "ecosystemId": "apache-archive",
+    "repo": "apache"
+  },
+  {
+    "slug": "apache-kafka",
+    "resourceKey": "apache-kafka",
+    "name": "Apache Kafka",
+    "aliases": ["apache", "kafka"],
+    "ecosystemId": "apache-archive",
+    "repo": "apache"
+  },
+  {
+    "slug": "apache-maven",
+    "resourceKey": "apache-maven",
+    "name": "Apache Maven",
+    "aliases": ["apache", "maven"],
+    "ecosystemId": "apache-archive",
+    "repo": "apache"
+  },
+  {
+    "slug": "texlive",
+    "resourceKey": "texlive",
+    "name": "TeX Live",
+    "aliases": ["texlive"],
+    "ecosystemId": "texlive-ctan",
+    "repo": "ctan"
+  },
+  {
+    "slug": "mactex",
+    "resourceKey": "mactex",
+    "name": "MacTeX",
+    "aliases": ["mactex"],
+    "ecosystemId": "texlive-ctan",
+    "repo": "ctan"
+  },
+  {
+    "slug": "basictex",
+    "resourceKey": "basictex",
+    "name": "BasicTeX",
+    "aliases": ["basictex"],
+    "ecosystemId": "texlive-ctan",
+    "repo": "ctan"
+  },
+  {
+    "slug": "r-cran",
+    "resourceKey": "CRAN",
+    "name": "R",
+    "aliases": ["r-cran"],
+    "ecosystemId": "r-cran",
+    "repo": "CRAN"
+  },
+  {
+    "slug": "rtools",
+    "resourceKey": "rtools",
+    "name": "Rtools",
+    "aliases": ["rtools"],
+    "ecosystemId": "r-cran",
+    "repo": "CRAN"
+  },
+  {
+    "slug": "anaconda-distribution",
+    "resourceKey": "anaconda-distribution",
+    "name": "Anaconda（Python）",
+    "aliases": ["anaconda", "python", "conda"],
+    "ecosystemId": "anaconda-installer",
+    "repo": "anaconda"
+  },
+  {
+    "slug": "anaconda-installer",
+    "resourceKey": "anaconda",
+    "name": "Miniconda（Python）",
+    "aliases": ["miniconda", "python", "conda"],
+    "ecosystemId": "anaconda-installer",
+    "repo": "anaconda",
+    "tutorialId": "miniconda"
+  },
+  {
+    "slug": "ubuntu",
+    "resourceKey": "ubuntu",
+    "name": "Ubuntu",
+    "aliases": ["ubuntu"],
+    "ecosystemId": "ubuntu",
+    "repo": "ubuntu-releases"
+  },
+  {
+    "slug": "debian",
+    "resourceKey": "debian",
+    "name": "Debian",
+    "aliases": ["debian"],
+    "ecosystemId": "debian",
+    "repo": "debian-cd"
+  },
+  {
+    "slug": "archlinux",
+    "resourceKey": "archlinux",
+    "name": "Arch Linux",
+    "aliases": ["archlinux"],
+    "ecosystemId": "archlinux",
+    "repo": "archlinux"
+  },
+  {
+    "slug": "rocky",
+    "resourceKey": "rocky",
+    "name": "Rocky Linux",
+    "aliases": ["rocky"],
+    "ecosystemId": "rocky",
+    "repo": "rocky"
+  },
+  {
+    "slug": "almalinux",
+    "resourceKey": "almalinux",
+    "name": "AlmaLinux",
+    "aliases": ["almalinux"],
+    "ecosystemId": "almalinux",
+    "repo": "almalinux"
+  },
+  {
+    "slug": "openeuler",
+    "resourceKey": "openeuler",
+    "name": "openEuler",
+    "aliases": ["openeuler"],
+    "ecosystemId": "openeuler",
+    "repo": "openeuler"
+  },
+  {
+    "slug": "opensuse-leap",
+    "resourceKey": "opensuse-leap",
+    "name": "openSUSE Leap",
+    "aliases": ["opensuse-leap"],
+    "ecosystemId": "opensuse",
+    "repo": "opensuse"
+  },
+  {
+    "slug": "archriscv",
+    "resourceKey": "archriscv",
+    "name": "Arch Linux RISC-V",
+    "aliases": ["archriscv"],
+    "ecosystemId": "archriscv",
+    "repo": "archriscv"
+  },
+  {
+    "slug": "kubectl",
+    "resourceKey": "kubectl",
+    "name": "kubectl",
+    "aliases": ["kubectl"],
+    "ecosystemId": "kubernetes",
+    "repo": "kubernetes"
+  },
+  {
+    "slug": "kubeadm",
+    "resourceKey": "kubeadm",
+    "name": "kubeadm",
+    "aliases": ["kubeadm"],
+    "ecosystemId": "kubernetes",
+    "repo": "kubernetes"
+  },
+  {
+    "slug": "kubelet",
+    "resourceKey": "kubelet",
+    "name": "kubelet",
+    "aliases": ["kubelet"],
+    "ecosystemId": "kubernetes",
+    "repo": "kubernetes"
+  },
+  {
+    "slug": "cri-tools",
+    "resourceKey": "cri-tools",
+    "name": "CRI tools",
+    "aliases": ["cri-tools"],
+    "ecosystemId": "kubernetes",
+    "repo": "kubernetes"
+  },
+  {
+    "slug": "opensuse-tumbleweed",
+    "resourceKey": "opensuse-tumbleweed",
+    "name": "openSUSE Tumbleweed",
+    "aliases": ["opensuse-tumbleweed"],
+    "ecosystemId": "opensuse",
+    "repo": "opensuse"
+  },
+  {
+    "slug": "apache-spark",
+    "resourceKey": "apache-spark",
+    "name": "Apache Spark",
+    "aliases": ["apache", "spark"],
+    "ecosystemId": "apache-archive",
+    "repo": "apache"
+  },
+  {
+    "slug": "aosc",
+    "resourceKey": "aosc",
+    "name": "AOSC OS",
+    "aliases": ["aosc"],
+    "ecosystemId": "aosc",
+    "repo": "anthon"
+  },
+  {
+    "slug": "kubuntu",
+    "resourceKey": "kubuntu",
+    "name": "Kubuntu",
+    "aliases": ["kubuntu"],
+    "ecosystemId": "ubuntu",
+    "repo": "ubuntu-cdimage"
+  },
+  {
+    "slug": "apache-ant",
+    "resourceKey": "apache-ant",
+    "name": "Apache Ant",
+    "aliases": ["apache", "ant"],
+    "ecosystemId": "apache-archive",
+    "repo": "apache"
+  }
+]

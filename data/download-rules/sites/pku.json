@@ -1,0 +1,337 @@
+[
+  {
+    "id": "pku-nodejs",
+    "siteId": "pku",
+    "repoId": "nodejs-release",
+    "ruleId": "nodejs",
+    "rootPath": "nodejs-release/",
+    "steps": ["^v\\d+\\.\\d+\\.\\d+(?:-[\\w.-]+)?$"],
+    "leaf": "^v\\d[^/]*/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-tomcat",
+    "siteId": "pku",
+    "repoId": "apache",
+    "ruleId": "tomcat",
+    "rootPath": "apache/tomcat/",
+    "steps": ["^tomcat-\\d+$", "^v\\d[\\w.-]*$", "^bin$"],
+    "leaf": "^tomcat-\\d+/v\\d[^/]*/bin/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-kafka",
+    "siteId": "pku",
+    "repoId": "apache",
+    "ruleId": "kafka",
+    "rootPath": "apache/kafka/",
+    "steps": ["^(?:v?\\d[\\w.-]*)$"],
+    "leaf": "^(?:v?\\d[\\w.-]*)/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-maven",
+    "siteId": "pku",
+    "repoId": "apache",
+    "ruleId": "maven",
+    "rootPath": "apache/maven/",
+    "steps": ["^maven-\\d+$", "^(?:v?\\d[\\w.-]*)$", "^binaries$"],
+    "leaf": "^maven-\\d+/(?:v?\\d[\\w.-]*)/binaries/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-texlive",
+    "siteId": "pku",
+    "repoId": "ctan",
+    "ruleId": "texlive",
+    "rootPath": "ctan/systems/texlive/tlnet/",
+    "steps": [],
+    "leaf": "^$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-mactex",
+    "siteId": "pku",
+    "repoId": "ctan",
+    "ruleId": "mactex",
+    "rootPath": "ctan/systems/mac/mactex/",
+    "steps": [],
+    "leaf": "^$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-basictex",
+    "siteId": "pku",
+    "repoId": "ctan",
+    "ruleId": "basictex",
+    "rootPath": "ctan/systems/mac/mactex/",
+    "steps": [],
+    "leaf": "^$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-r-windows",
+    "siteId": "pku",
+    "repoId": "CRAN",
+    "ruleId": "r-windows",
+    "rootPath": "CRAN/bin/windows/base/",
+    "steps": ["^old$", "^\\d+(?:\\.\\d+)+$"],
+    "leaf": "^(?:|old/|old/\\d+(?:\\.\\d+)+/)$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-r-macos",
+    "siteId": "pku",
+    "repoId": "CRAN",
+    "ruleId": "r-macos",
+    "rootPath": "CRAN/bin/macosx/",
+    "steps": [
+      "^(?:base|big-sur-(?:arm64|x86_64)|sonoma-arm64|leopard|tiger|el-capitan)$",
+      "^(?:base|R-\\d+(?:\\.\\d+)*)$"
+    ],
+    "leaf": "^(?:|base/|(?:big-sur-(?:arm64|x86_64)|sonoma-arm64)/(?:base/)?|(?:leopard|tiger|el-capitan)/(?:base/|R-\\d+(?:\\.\\d+)*/)?)$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-rtools",
+    "siteId": "pku",
+    "repoId": "CRAN",
+    "ruleId": "rtools",
+    "rootPath": "CRAN/bin/windows/Rtools/",
+    "steps": ["^(?:rtools\\d+|\\d+\\.\\d+)$", "^files$"],
+    "leaf": "^(?:|(?:rtools\\d+|\\d+\\.\\d+)/(?:files/)?)$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-anaconda",
+    "siteId": "pku",
+    "repoId": "anaconda",
+    "ruleId": "anaconda",
+    "rootPath": "anaconda/archive/",
+    "steps": [],
+    "leaf": "^$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-miniconda",
+    "siteId": "pku",
+    "repoId": "anaconda",
+    "ruleId": "miniconda",
+    "rootPath": "anaconda/miniconda/",
+    "steps": [],
+    "leaf": "^$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-ubuntu",
+    "siteId": "pku",
+    "repoId": "ubuntu-releases",
+    "ruleId": "ubuntu",
+    "rootPath": "ubuntu-releases/",
+    "steps": ["^\\d+\\.\\d+(?:\\.\\d+)*$"],
+    "leaf": "^\\d+\\.\\d+(?:\\.\\d+)*/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-debian",
+    "siteId": "pku",
+    "repoId": "debian-cd",
+    "ruleId": "debian",
+    "rootPath": "debian-cd/",
+    "steps": [
+      "^(?:current|(?:v?\\d[\\w.-]*))$",
+      "^(?:amd64|arm64|i386|armhf|armel|x86_64|aarch64|ppc64el|ppc64le|s390x|riscv64|loongarch64)$",
+      "^iso-(?:cd|dvd)$"
+    ],
+    "leaf": "^(?:current|(?:v?\\d[\\w.-]*))/(?:amd64|arm64|i386|armhf|armel|x86_64|aarch64|ppc64el|ppc64le|s390x|riscv64|loongarch64)/iso-(?:cd|dvd)/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-archlinux",
+    "siteId": "pku",
+    "repoId": "archlinux",
+    "ruleId": "archlinux",
+    "rootPath": "archlinux/iso/",
+    "steps": ["^\\d{4}\\.\\d{2}\\.\\d{2}$"],
+    "leaf": "^\\d{4}\\.\\d{2}\\.\\d{2}/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-rocky",
+    "siteId": "pku",
+    "repoId": "rocky",
+    "ruleId": "rocky",
+    "rootPath": "rocky/",
+    "steps": [
+      "^(?:v?\\d[\\w.-]*)$",
+      "^isos$",
+      "^(?:amd64|arm64|i386|armhf|armel|x86_64|aarch64|ppc64el|ppc64le|s390x|riscv64|loongarch64)$"
+    ],
+    "leaf": "^(?:v?\\d[\\w.-]*)/isos/(?:amd64|arm64|i386|armhf|armel|x86_64|aarch64|ppc64el|ppc64le|s390x|riscv64|loongarch64)/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-almalinux",
+    "siteId": "pku",
+    "repoId": "almalinux",
+    "ruleId": "almalinux",
+    "rootPath": "almalinux/",
+    "steps": [
+      "^(?:v?\\d[\\w.-]*)$",
+      "^isos$",
+      "^(?:amd64|arm64|i386|armhf|armel|x86_64|aarch64|ppc64el|ppc64le|s390x|riscv64|loongarch64)$"
+    ],
+    "leaf": "^(?:v?\\d[\\w.-]*)/isos/(?:amd64|arm64|i386|armhf|armel|x86_64|aarch64|ppc64el|ppc64le|s390x|riscv64|loongarch64)/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-openeuler",
+    "siteId": "pku",
+    "repoId": "openeuler",
+    "ruleId": "openeuler",
+    "rootPath": "openeuler/",
+    "steps": [
+      "^openEuler-\\d[\\w.-]*$",
+      "^ISO$",
+      "^(?:amd64|arm64|i386|armhf|armel|x86_64|aarch64|ppc64el|ppc64le|s390x|riscv64|loongarch64)$"
+    ],
+    "leaf": "^openEuler-\\d[^/]*/ISO/(?:amd64|arm64|i386|armhf|armel|x86_64|aarch64|ppc64el|ppc64le|s390x|riscv64|loongarch64)/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-opensuse-leap",
+    "siteId": "pku",
+    "repoId": "opensuse",
+    "ruleId": "opensuse-leap",
+    "rootPath": "opensuse/distribution/leap/",
+    "steps": ["^\\d+\\.\\d+$", "^iso$"],
+    "leaf": "^\\d+\\.\\d+/iso/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-archriscv",
+    "siteId": "pku",
+    "repoId": "archriscv",
+    "ruleId": "archriscv",
+    "rootPath": "archriscv/images/",
+    "steps": [],
+    "leaf": "^$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-kubernetes-tools",
+    "siteId": "pku",
+    "repoId": "kubernetes",
+    "ruleId": "kubernetes-tools",
+    "rootPath": "kubernetes/core:/stable:/",
+    "steps": [
+      "^v\\d+\\.\\d+$",
+      "^deb$",
+      "^(?:amd64|arm64|i386|armhf|armel|x86_64|aarch64|ppc64el|ppc64le|s390x|riscv64|loongarch64)$"
+    ],
+    "leaf": "^v\\d+\\.\\d+/deb/(?:(?:amd64|arm64|i386|armhf|armel|x86_64|aarch64|ppc64el|ppc64le|s390x|riscv64|loongarch64)/)?$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-opensuse-tumbleweed",
+    "siteId": "pku",
+    "repoId": "opensuse",
+    "ruleId": "opensuse-tumbleweed",
+    "rootPath": "opensuse/tumbleweed/iso/",
+    "steps": [],
+    "leaf": "^$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-spark",
+    "siteId": "pku",
+    "repoId": "apache",
+    "ruleId": "spark",
+    "rootPath": "apache/spark/",
+    "steps": ["^spark-\\d[\\w.-]*$"],
+    "leaf": "^spark-\\d[^/]*/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-aosc",
+    "siteId": "pku",
+    "repoId": "anthon",
+    "ruleId": "aosc",
+    "rootPath": "anthon/aosc-os/",
+    "steps": ["^os-[a-z0-9]+$", "^installer$"],
+    "leaf": "^os-[a-z0-9]+/installer/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-kubuntu",
+    "siteId": "pku",
+    "repoId": "ubuntu-cdimage",
+    "ruleId": "kubuntu",
+    "rootPath": "ubuntu-cdimage/kubuntu/releases/",
+    "steps": ["^\\d+\\.\\d+(?:\\.\\d+)*$", "^release$"],
+    "leaf": "^\\d+\\.\\d+(?:\\.\\d+)*/release/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "pku-ant",
+    "siteId": "pku",
+    "repoId": "apache",
+    "ruleId": "ant",
+    "rootPath": "apache/ant/binaries/",
+    "steps": [],
+    "leaf": "^$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  }
+]

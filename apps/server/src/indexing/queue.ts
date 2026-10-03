@@ -17,9 +17,10 @@ import {
 } from './installers.js';
 import { SourceClient, SourceError } from './source.js';
 import { REFRESH_INTERVAL_MS } from './policy.js';
+import { loadDownloadRules, type RuleSet } from './rules/load.js';
 
 // 隔离旧的全仓库待办；升级不会重新执行APT/PyPI任务，旧队列由退役步骤显式清理。
-export const QUEUE_NAME = 'mirrorn-pku-installers-v2';
+export const QUEUE_NAME = 'mirrorn-pku-download-rules-v3';
 const JOB_OPTIONS: JobsOptions = {
   attempts: 3,
   backoff: { type: 'source' },
@@ -53,8 +54,10 @@ export function createIndexQueue(
     minFreeBytes?: number;
     capacityWaitMs?: number;
     jobIntervalMs?: number;
+    rules?: RuleSet;
   } = {},
 ) {
+  const rules = options.rules ?? loadDownloadRules();
   recoverRuns(db);
   const connection = redisConnection(redisUrl);
   const queue = new Queue<InstallerJob>(QUEUE_NAME, { connection, defaultJobOptions: JOB_OPTIONS });
@@ -67,7 +70,7 @@ export function createIndexQueue(
   );
   const enqueue: InstallerEnqueue = async (jobs) => {
     for (const job of jobs) {
-      if (!['refresh', 'apache', 'directory'].includes(job.kind))
+      if (!['refresh', 'inventory', 'directory'].includes(job.kind))
         throw new SourceError('旧包仓库任务已退出', false);
       if (job.kind === 'directory' && !job.directory.startsWith('https://mirrors.pku.edu.cn/'))
         throw new SourceError('禁止入队其它站点', false);
@@ -81,7 +84,13 @@ export function createIndexQueue(
             ...JOB_OPTIONS,
             jobId: installerTaskKey(data),
             priority:
-              data.kind === 'refresh' ? 1 : data.kind === 'apache' || data.depth === 0 ? 2 : 5,
+              data.kind === 'refresh'
+                ? 1
+                : data.kind === 'inventory'
+                  ? 9
+                  : data.depth === 0
+                    ? 2
+                    : 5,
           },
         })),
       );
@@ -100,7 +109,7 @@ export function createIndexQueue(
       const requests = source.requests,
         bytes = source.bytes;
       try {
-        return await executeInstallerJob(db, job.data, source, enqueue);
+        return await executeInstallerJob(db, job.data, source, enqueue, rules);
       } catch (error) {
         if (
           (error instanceof SourceError && !error.retryable) ||
@@ -111,7 +120,7 @@ export function createIndexQueue(
         throw error;
       } finally {
         log(
-          `${job.name} ${'software' in job.data ? job.data.software : '软件发现'}: ${source.requests - requests}请求/${source.bytes - bytes}字节`,
+          `${job.name} ${'bindingId' in job.data ? job.data.bindingId : '软件发现'}: ${source.requests - requests}请求/${source.bytes - bytes}字节`,
         );
       }
     },
@@ -141,17 +150,17 @@ export function createIndexQueue(
       await queue.waitUntilReady();
       if (stopping) return;
       await queue.upsertJobScheduler(
-        'pku-six-hour-installers',
+        'pku-six-hour-rules',
         { every: options.intervalMs ?? REFRESH_INTERVAL_MS },
         {
           name: 'refresh',
-          data: { kind: 'refresh' },
+          data: { kind: 'refresh', ruleRevision: rules.revision },
           opts: { ...JOB_OPTIONS, priority: 1 },
         },
       );
       return queue.add(
         'refresh',
-        { kind: 'refresh' },
+        { kind: 'refresh', ruleRevision: rules.revision },
         { ...JOB_OPTIONS, jobId: `startup-${randomUUID()}`, priority: 1 },
       );
     },

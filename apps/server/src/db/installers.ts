@@ -49,6 +49,34 @@ export function installCatalog(db: DatabaseSync) {
       size INTEGER, checksum TEXT, PRIMARY KEY(run_id,url)
     );
   `);
+  const add = (table: string, column: string, declaration: string) => {
+    const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+    if (!columns.some((row) => row.name === column))
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${declaration}`);
+  };
+  db.exec(`CREATE TABLE IF NOT EXISTS catalog_ecosystems (
+    id INTEGER PRIMARY KEY,slug TEXT NOT NULL UNIQUE,label TEXT NOT NULL,category TEXT NOT NULL,aliases TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS catalog_sources (
+    site_id INTEGER NOT NULL REFERENCES catalog_sites(id),repo TEXT NOT NULL,ecosystem_id INTEGER NOT NULL REFERENCES catalog_ecosystems(id),
+    name TEXT NOT NULL,payload TEXT NOT NULL,PRIMARY KEY(site_id,repo)
+  );
+  CREATE TABLE IF NOT EXISTS catalog_software_sites (
+    site_id INTEGER NOT NULL REFERENCES catalog_sites(id),software_id INTEGER NOT NULL REFERENCES catalog_software(id),PRIMARY KEY(site_id,software_id)
+  );
+  CREATE TABLE IF NOT EXISTS catalog_pending (
+    binding_id TEXT NOT NULL,reason TEXT NOT NULL,signature TEXT NOT NULL,samples TEXT NOT NULL,
+    observations INTEGER NOT NULL,first_seen INTEGER NOT NULL,last_seen INTEGER NOT NULL,rule_revision TEXT NOT NULL,
+    PRIMARY KEY(binding_id,reason,signature)
+  );`);
+  add('catalog_software', 'ecosystem_id', 'INTEGER REFERENCES catalog_ecosystems(id)');
+  add('catalog_software', 'kind', "TEXT NOT NULL DEFAULT 'installer'");
+  add('catalog_downloads', 'metadata', "TEXT NOT NULL DEFAULT '{}'");
+  add('catalog_staged', 'metadata', "TEXT NOT NULL DEFAULT '{}'");
+  add('catalog_runs', 'rule_revision', "TEXT NOT NULL DEFAULT ''");
+  add('catalog_runs', 'stats', "TEXT NOT NULL DEFAULT '{}'");
+  db.exec(`INSERT INTO catalog_software_sites(site_id,software_id)
+    SELECT DISTINCT d.site_id,v.software_id FROM catalog_downloads d JOIN catalog_versions v ON v.id=d.version_id WHERE 1 ON CONFLICT DO NOTHING;`);
 }
 
 export interface Software {
@@ -59,16 +87,24 @@ export interface Software {
   category: string;
   repo: string;
   tutorialId?: string;
+  ecosystemId?: string;
+  kind?: 'installer' | 'iso';
 }
 export interface Download {
   version: string;
   filename: string;
   url: string;
-  platform: 'windows' | 'macos' | 'linux' | 'any';
+  platform: 'windows' | 'macos' | 'linux' | 'any' | 'unknown';
   arch: string;
   format: string;
   size?: number;
   checksum?: { algorithm: string; value: string };
+  metadata?: {
+    platforms?: string[];
+    purpose?: string;
+    variant?: Record<string, string>;
+    [key: string]: unknown;
+  };
 }
 export class CatalogPublishError extends Error {}
 
@@ -99,9 +135,19 @@ export function registerSoftware(db: DatabaseSync, software: Software): number {
     software.repo,
     software.tutorialId ?? null,
   );
-  return (
+  const id = (
     db.prepare('SELECT id FROM catalog_software WHERE slug=?').get(software.slug) as { id: number }
   ).id;
+  if (software.kind)
+    db.prepare('UPDATE catalog_software SET kind=? WHERE id=?').run(software.kind, id);
+  if (software.ecosystemId)
+    db.prepare(
+      'UPDATE catalog_software SET ecosystem_id=(SELECT id FROM catalog_ecosystems WHERE slug=?) WHERE id=?',
+    ).run(software.ecosystemId, id);
+  db.prepare(
+    "INSERT INTO catalog_software_sites(site_id,software_id) SELECT id,? FROM catalog_sites WHERE slug='pku' ON CONFLICT DO NOTHING",
+  ).run(id);
+  return id;
 }
 
 export function beginRun(
@@ -111,6 +157,7 @@ export function beginRun(
   directory: string,
   epoch: number,
   now = Date.now(),
+  ruleRevision = '',
 ): number {
   if (site !== 'pku') throw new CatalogPublishError('禁止采集未启用站点');
   const root = sourceUrl(directory);
@@ -137,22 +184,24 @@ export function beginRun(
     throw new CatalogPublishError('目录已撤销或任务已过时');
   return Number(
     db
-      .prepare(`INSERT INTO catalog_runs(scope_id,epoch,state,started_at) VALUES(?,?,'staging',?)`)
-      .run(scope.id, epoch, now).lastInsertRowid,
+      .prepare(
+        `INSERT INTO catalog_runs(scope_id,epoch,state,started_at,rule_revision) VALUES(?,?,'staging',?,?)`,
+      )
+      .run(scope.id, epoch, now, ruleRevision).lastInsertRowid,
   );
 }
 
 export function stageDownloads(db: DatabaseSync, run: number, downloads: Download[]) {
   const row = db
     .prepare(
-      `SELECT r.state,s.directory FROM catalog_runs r JOIN catalog_scopes s ON s.id=r.scope_id WHERE r.id=?`,
+      `SELECT r.state,s.directory,s.software_id FROM catalog_runs r JOIN catalog_scopes s ON s.id=r.scope_id WHERE r.id=?`,
     )
-    .get(run) as { state: string; directory: string } | undefined;
+    .get(run) as { state: string; directory: string; software_id: number } | undefined;
   if (!row || row.state !== 'staging') throw new CatalogPublishError('只能写入进行中的采集');
   const insert =
-    db.prepare(`INSERT INTO catalog_staged(run_id,version,filename,url,platform,arch,format,size,checksum)
-    VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(run_id,url) DO UPDATE SET version=excluded.version,
-    filename=excluded.filename,platform=excluded.platform,arch=excluded.arch,format=excluded.format,size=excluded.size,checksum=excluded.checksum`);
+    db.prepare(`INSERT INTO catalog_staged(run_id,version,filename,url,platform,arch,format,size,checksum,metadata)
+    VALUES(?,?,?,?,?,?,?,?,?,?) ON CONFLICT(run_id,url) DO UPDATE SET version=excluded.version,
+    filename=excluded.filename,platform=excluded.platform,arch=excluded.arch,format=excluded.format,size=excluded.size,checksum=excluded.checksum,metadata=excluded.metadata`);
   db.exec('BEGIN IMMEDIATE');
   try {
     for (const file of downloads) {
@@ -161,11 +210,27 @@ export function stageDownloads(db: DatabaseSync, run: number, downloads: Downloa
         !file.version ||
         !file.filename ||
         url.pathname.endsWith('/') ||
-        !['windows', 'macos', 'linux', 'any'].includes(file.platform) ||
+        !['windows', 'macos', 'linux', 'any', 'unknown'].includes(file.platform) ||
         !file.format ||
         (file.size !== undefined && (!Number.isSafeInteger(file.size) || file.size < 0))
       )
         throw new CatalogPublishError('下载条目无效');
+      const owner = db
+        .prepare(
+          `SELECT v.software_id FROM catalog_downloads d JOIN catalog_versions v ON v.id=d.version_id WHERE d.url=?`,
+        )
+        .get(url.href) as { software_id: number } | undefined;
+      if (owner && owner.software_id !== row.software_id)
+        throw new CatalogPublishError('同一URL的软件归属冲突，不能覆盖');
+      const metadata = JSON.stringify(file.metadata ?? {});
+      if (
+        metadata.length > 4096 ||
+        (file.metadata?.platforms &&
+          file.metadata.platforms.some(
+            (platform) => !['windows', 'macos', 'linux'].includes(platform),
+          ))
+      )
+        throw new CatalogPublishError('下载元数据无效或超限');
       insert.run(
         run,
         file.version,
@@ -176,6 +241,7 @@ export function stageDownloads(db: DatabaseSync, run: number, downloads: Downloa
         file.format,
         file.size ?? null,
         file.checksum ? JSON.stringify(file.checksum) : null,
+        metadata,
       );
     }
     db.exec('COMMIT');
@@ -191,8 +257,9 @@ export function publishRun(
   run: number,
   now = Date.now(),
   children?: string[],
+  retainedUrls: readonly string[] = [],
 ): number {
-  db.exec('BEGIN IMMEDIATE');
+  db.exec('SAVEPOINT catalog_publish');
   try {
     const row = db
       .prepare(
@@ -221,19 +288,27 @@ export function publishRun(
     const old = db
       .prepare('SELECT COUNT(*) n FROM catalog_downloads WHERE scope_id=?')
       .get(row.scope_id) as { n: number };
-    if (old.n > 0 && (staged.n === 0 || staged.n < old.n * 0.5))
+    const retain = db.prepare('UPDATE catalog_downloads SET seen_run=? WHERE scope_id=? AND url=?');
+    for (const url of new Set(retainedUrls))
+      retain.run(run, row.scope_id, sourceUrl(url, row.directory).href);
+    const retained = (
+      db
+        .prepare('SELECT COUNT(*) n FROM catalog_downloads WHERE scope_id=? AND seen_run=?')
+        .get(row.scope_id, run) as { n: number }
+    ).n;
+    if (old.n > 0 && (staged.n + retained === 0 || staged.n + retained < old.n * 0.5))
       throw new CatalogPublishError('异常空或数量突降的结果不能覆盖');
     db.prepare(
       `INSERT INTO catalog_versions(software_id,version) SELECT ?,version FROM catalog_staged WHERE run_id=?
       GROUP BY version ON CONFLICT DO NOTHING`,
     ).run(row.software_id, run);
     db.prepare(
-      `INSERT INTO catalog_downloads(version_id,site_id,scope_id,filename,url,platform,arch,format,size,checksum,seen_run,crawled_at)
-      SELECT v.id,?,?,t.filename,t.url,t.platform,t.arch,t.format,t.size,t.checksum,?,?
+      `INSERT INTO catalog_downloads(version_id,site_id,scope_id,filename,url,platform,arch,format,size,checksum,seen_run,crawled_at,metadata)
+      SELECT v.id,?,?,t.filename,t.url,t.platform,t.arch,t.format,t.size,t.checksum,?,?,t.metadata
       FROM catalog_staged t JOIN catalog_versions v ON v.software_id=? AND v.version=t.version WHERE t.run_id=?
       ON CONFLICT(url) DO UPDATE SET version_id=excluded.version_id,site_id=excluded.site_id,scope_id=excluded.scope_id,
       filename=excluded.filename,platform=excluded.platform,arch=excluded.arch,format=excluded.format,size=excluded.size,
-      checksum=excluded.checksum,seen_run=excluded.seen_run,crawled_at=excluded.crawled_at`,
+      checksum=excluded.checksum,seen_run=excluded.seen_run,crawled_at=excluded.crawled_at,metadata=excluded.metadata`,
     ).run(row.site_id, row.scope_id, run, now, row.software_id, run);
     db.prepare('DELETE FROM catalog_downloads WHERE scope_id=? AND seen_run<>?').run(
       row.scope_id,
@@ -268,10 +343,10 @@ export function publishRun(
     );
     db.prepare("UPDATE catalog_runs SET state='complete',finished_at=? WHERE id=?").run(now, run);
     db.prepare('DELETE FROM catalog_staged WHERE run_id=?').run(run);
-    db.exec('COMMIT');
+    db.exec('RELEASE catalog_publish');
     return staged.n;
   } catch (error) {
-    db.exec('ROLLBACK');
+    db.exec('ROLLBACK TO catalog_publish; RELEASE catalog_publish');
     throw error;
   }
 }

@@ -1,0 +1,3051 @@
+{
+  "schemaVersion": "review-draft-1",
+  "scope": "Research fixture assertions only. Never runtime file inventory. Captures are raw, not normalized final DTO fields.",
+  "cases": [
+    {
+      "ruleId": "nodejs",
+      "totalMatchingNamesInReviewedListings": 24,
+      "positives": [
+        {
+          "filename": "node-v22.14.0-arm64.msi",
+          "sourceType": "file",
+          "size": 27324416,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/nodejs-release/v22.14.0/node-v22.14.0-arm64.msi",
+          "expectedPattern": "windows-msi",
+          "expectedCaptures": {
+            "version": "22.14.0",
+            "arch": "arm64",
+            "format": "msi"
+          }
+        },
+        {
+          "filename": "node-v22.14.0-darwin-arm64.tar.gz",
+          "sourceType": "file",
+          "size": 47035396,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/nodejs-release/v22.14.0/node-v22.14.0-darwin-arm64.tar.gz",
+          "expectedPattern": "unix-runtime",
+          "expectedCaptures": {
+            "version": "22.14.0",
+            "platform": "darwin",
+            "arch": "arm64",
+            "format": "tar.gz"
+          }
+        },
+        {
+          "filename": "node-v22.14.0-darwin-arm64.tar.xz",
+          "sourceType": "file",
+          "size": 24386052,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/nodejs-release/v22.14.0/node-v22.14.0-darwin-arm64.tar.xz",
+          "expectedPattern": "unix-runtime",
+          "expectedCaptures": {
+            "version": "22.14.0",
+            "platform": "darwin",
+            "arch": "arm64",
+            "format": "tar.xz"
+          }
+        },
+        {
+          "filename": "node-v22.14.0-darwin-x64.tar.gz",
+          "sourceType": "file",
+          "size": 48656392,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/nodejs-release/v22.14.0/node-v22.14.0-darwin-x64.tar.gz",
+          "expectedPattern": "unix-runtime",
+          "expectedCaptures": {
+            "version": "22.14.0",
+            "platform": "darwin",
+            "arch": "x64",
+            "format": "tar.gz"
+          }
+        },
+        {
+          "filename": "node-v22.14.0-darwin-x64.tar.xz",
+          "sourceType": "file",
+          "size": 26360468,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/nodejs-release/v22.14.0/node-v22.14.0-darwin-x64.tar.xz",
+          "expectedPattern": "unix-runtime",
+          "expectedCaptures": {
+            "version": "22.14.0",
+            "platform": "darwin",
+            "arch": "x64",
+            "format": "tar.xz"
+          }
+        },
+        {
+          "filename": "node-v22.14.0-linux-arm64.tar.gz",
+          "sourceType": "file",
+          "size": 53545640,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/nodejs-release/v22.14.0/node-v22.14.0-linux-arm64.tar.gz",
+          "expectedPattern": "unix-runtime",
+          "expectedCaptures": {
+            "version": "22.14.0",
+            "platform": "linux",
+            "arch": "arm64",
+            "format": "tar.gz"
+          }
+        },
+        {
+          "filename": "node-v22.14.0-linux-arm64.tar.xz",
+          "sourceType": "file",
+          "size": 28636440,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/nodejs-release/v22.14.0/node-v22.14.0-linux-arm64.tar.xz",
+          "expectedPattern": "unix-runtime",
+          "expectedCaptures": {
+            "version": "22.14.0",
+            "platform": "linux",
+            "arch": "arm64",
+            "format": "tar.xz"
+          }
+        },
+        {
+          "filename": "node-v22.14.0-linux-armv7l.tar.gz",
+          "sourceType": "file",
+          "size": 49101526,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/nodejs-release/v22.14.0/node-v22.14.0-linux-armv7l.tar.gz",
+          "expectedPattern": "unix-runtime",
+          "expectedCaptures": {
+            "version": "22.14.0",
+            "platform": "linux",
+            "arch": "armv7l",
+            "format": "tar.gz"
+          }
+        },
+        {
+          "filename": "node-v22.14.0-linux-armv7l.tar.xz",
+          "sourceType": "file",
+          "size": 25414336,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/nodejs-release/v22.14.0/node-v22.14.0-linux-armv7l.tar.xz",
+          "expectedPattern": "unix-runtime",
+          "expectedCaptures": {
+            "version": "22.14.0",
+            "platform": "linux",
+            "arch": "armv7l",
+            "format": "tar.xz"
+          }
+        },
+        {
+          "filename": "node-v22.14.0-linux-ppc64le.tar.gz",
+          "sourceType": "file",
+          "size": 56794300,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/nodejs-release/v22.14.0/node-v22.14.0-linux-ppc64le.tar.gz",
+          "expectedPattern": "unix-runtime",
+          "expectedCaptures": {
+            "version": "22.14.0",
+            "platform": "linux",
+            "arch": "ppc64le",
+            "format": "tar.gz"
+          }
+        },
+        {
+          "filename": "node-v22.14.0-linux-ppc64le.tar.xz",
+          "sourceType": "file",
+          "size": 30281080,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/nodejs-release/v22.14.0/node-v22.14.0-linux-ppc64le.tar.xz",
+          "expectedPattern": "unix-runtime",
+          "expectedCaptures": {
+            "version": "22.14.0",
+            "platform": "linux",
+            "arch": "ppc64le",
+            "format": "tar.xz"
+          }
+        },
+        {
+          "filename": "node-v22.14.0-linux-s390x.tar.gz",
+          "sourceType": "file",
+          "size": 54299134,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/nodejs-release/v22.14.0/node-v22.14.0-linux-s390x.tar.gz",
+          "expectedPattern": "unix-runtime",
+          "expectedCaptures": {
+            "version": "22.14.0",
+            "platform": "linux",
+            "arch": "s390x",
+            "format": "tar.gz"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "SHASUMS256.txt",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "SHASUMS256.txt.asc",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "SHASUMS256.txt.sig",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "node-v22.14.0-headers.tar.gz",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "node-v22.14.0-headers.tar.xz",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/nodejs-release/v22.14.0/",
+          "checkedAt": "2026-10-02T08:00:47.386Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "tomcat",
+      "totalMatchingNamesInReviewedListings": 4,
+      "positives": [
+        {
+          "filename": "apache-tomcat-11.0.26-windows-x64.zip",
+          "sourceType": "file",
+          "size": 16481996,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/tomcat/tomcat-11/v11.0.26/bin/",
+          "checkedAt": "2026-10-02T08:02:01.124Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/tomcat/tomcat-11/v11.0.26/bin/apache-tomcat-11.0.26-windows-x64.zip",
+          "expectedPattern": "windows-runtime",
+          "expectedCaptures": {
+            "version": "11.0.26",
+            "arch": "x64",
+            "format": "zip"
+          }
+        },
+        {
+          "filename": "apache-tomcat-11.0.26.exe",
+          "sourceType": "file",
+          "size": 14956664,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/tomcat/tomcat-11/v11.0.26/bin/",
+          "checkedAt": "2026-10-02T08:02:01.124Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/tomcat/tomcat-11/v11.0.26/bin/apache-tomcat-11.0.26.exe",
+          "expectedPattern": "windows-installer",
+          "expectedCaptures": {
+            "version": "11.0.26",
+            "format": "exe"
+          }
+        },
+        {
+          "filename": "apache-tomcat-11.0.26.tar.gz",
+          "sourceType": "file",
+          "size": 14482233,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/tomcat/tomcat-11/v11.0.26/bin/",
+          "checkedAt": "2026-10-02T08:02:01.124Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/tomcat/tomcat-11/v11.0.26/bin/apache-tomcat-11.0.26.tar.gz",
+          "expectedPattern": "java-runtime",
+          "expectedCaptures": {
+            "version": "11.0.26",
+            "format": "tar.gz"
+          }
+        },
+        {
+          "filename": "apache-tomcat-11.0.26.zip",
+          "sourceType": "file",
+          "size": 15032303,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/tomcat/tomcat-11/v11.0.26/bin/",
+          "checkedAt": "2026-10-02T08:02:01.124Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/tomcat/tomcat-11/v11.0.26/bin/apache-tomcat-11.0.26.zip",
+          "expectedPattern": "java-runtime",
+          "expectedCaptures": {
+            "version": "11.0.26",
+            "format": "zip"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "README.html",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/tomcat/tomcat-11/v11.0.26/bin/",
+          "checkedAt": "2026-10-02T08:02:01.124Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "apache-tomcat-11.0.26-deployer.tar.gz",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/tomcat/tomcat-11/v11.0.26/bin/",
+          "checkedAt": "2026-10-02T08:02:01.124Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "apache-tomcat-11.0.26-deployer.zip",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/tomcat/tomcat-11/v11.0.26/bin/",
+          "checkedAt": "2026-10-02T08:02:01.124Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "apache-tomcat-11.0.26-fulldocs.tar.gz",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/tomcat/tomcat-11/v11.0.26/bin/",
+          "checkedAt": "2026-10-02T08:02:01.124Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "kafka",
+      "totalMatchingNamesInReviewedListings": 1,
+      "positives": [
+        {
+          "filename": "kafka_2.13-4.3.1.tgz",
+          "sourceType": "file",
+          "size": 135852628,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/kafka/4.3.1/",
+          "checkedAt": "2026-10-02T08:02:02.087Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/kafka/4.3.1/kafka_2.13-4.3.1.tgz",
+          "expectedPattern": "scala-binary",
+          "expectedCaptures": {
+            "scalaBuild": "2.13",
+            "version": "4.3.1",
+            "format": "tgz"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "kafka-4.3.1-src.tgz",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/kafka/4.3.1/",
+          "checkedAt": "2026-10-02T08:02:02.087Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "kafka_2.13-4.3.1-site-docs.tgz",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/kafka/4.3.1/",
+          "checkedAt": "2026-10-02T08:02:02.087Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "maven",
+      "totalMatchingNamesInReviewedListings": 2,
+      "positives": [
+        {
+          "filename": "apache-maven-3.10.0-bin.tar.gz",
+          "sourceType": "file",
+          "size": 9979885,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/maven/maven-3/3.10.0/binaries/",
+          "checkedAt": "2026-10-02T07:59:09.729Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/maven/maven-3/3.10.0/binaries/apache-maven-3.10.0-bin.tar.gz",
+          "expectedPattern": "binary",
+          "expectedCaptures": {
+            "version": "3.10.0",
+            "format": "tar.gz"
+          }
+        },
+        {
+          "filename": "apache-maven-3.10.0-bin.zip",
+          "sourceType": "file",
+          "size": 10102082,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/maven/maven-3/3.10.0/binaries/",
+          "checkedAt": "2026-10-02T07:59:09.729Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/maven/maven-3/3.10.0/binaries/apache-maven-3.10.0-bin.zip",
+          "expectedPattern": "binary",
+          "expectedCaptures": {
+            "version": "3.10.0",
+            "format": "zip"
+          }
+        }
+      ],
+      "negatives": []
+    },
+    {
+      "ruleId": "texlive",
+      "totalMatchingNamesInReviewedListings": 2,
+      "positives": [
+        {
+          "filename": "install-tl-unx.tar.gz",
+          "sourceType": "file",
+          "size": 5272943,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/texlive/tlnet/",
+          "checkedAt": "2026-10-02T07:59:23.001Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/ctan/systems/texlive/tlnet/install-tl-unx.tar.gz",
+          "expectedPattern": "unix-network",
+          "expectedCaptures": {
+            "format": "tar.gz"
+          }
+        },
+        {
+          "filename": "install-tl-windows.exe",
+          "sourceType": "file",
+          "size": 20726697,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/texlive/tlnet/",
+          "checkedAt": "2026-10-02T07:59:23.001Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/ctan/systems/texlive/tlnet/install-tl-windows.exe",
+          "expectedPattern": "windows-network",
+          "expectedCaptures": {
+            "format": "exe"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "README.md",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/texlive/tlnet/",
+          "checkedAt": "2026-10-02T07:59:23.001Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "install-tl-iso-windows.exe.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/texlive/tlnet/",
+          "checkedAt": "2026-10-02T07:59:23.001Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "install-tl-iso-windows.exe.sha512.asc",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/texlive/tlnet/",
+          "checkedAt": "2026-10-02T07:59:23.001Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "install-tl-unx.tar.gz.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/texlive/tlnet/",
+          "checkedAt": "2026-10-02T07:59:23.001Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "install-tl-unx.tar.gz.sha512.asc",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/texlive/tlnet/",
+          "checkedAt": "2026-10-02T07:59:23.001Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "install-tl-windows.exe.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/texlive/tlnet/",
+          "checkedAt": "2026-10-02T07:59:23.001Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "mactex",
+      "totalMatchingNamesInReviewedListings": 1,
+      "positives": [
+        {
+          "filename": "mactex-20260324.pkg",
+          "sourceType": "file",
+          "size": 6865013189,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/mac/mactex/",
+          "checkedAt": "2026-10-02T08:02:00.122Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/ctan/systems/mac/mactex/mactex-20260324.pkg",
+          "expectedPattern": "dated-installer",
+          "expectedCaptures": {
+            "releaseDate": "20260324",
+            "format": "pkg"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "BasicTeX.pkg.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/mac/mactex/",
+          "checkedAt": "2026-10-02T08:02:00.122Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "GUI-Applications.pkg.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/mac/mactex/",
+          "checkedAt": "2026-10-02T08:02:00.122Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "Ghostscript.pkg.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/mac/mactex/",
+          "checkedAt": "2026-10-02T08:02:00.122Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "GhostscriptExtras.pkg.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/mac/mactex/",
+          "checkedAt": "2026-10-02T08:02:00.122Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "MacTeX.pkg.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/mac/mactex/",
+          "checkedAt": "2026-10-02T08:02:00.122Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "MacTeXtras.zip.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/mac/mactex/",
+          "checkedAt": "2026-10-02T08:02:00.122Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "basictex",
+      "totalMatchingNamesInReviewedListings": 1,
+      "positives": [
+        {
+          "filename": "mactex-basictex-20260301.pkg",
+          "sourceType": "file",
+          "size": 140394776,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/mac/mactex/",
+          "checkedAt": "2026-10-02T08:02:00.122Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/ctan/systems/mac/mactex/mactex-basictex-20260301.pkg",
+          "expectedPattern": "dated-installer",
+          "expectedCaptures": {
+            "releaseDate": "20260301",
+            "format": "pkg"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "BasicTeX.pkg.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/mac/mactex/",
+          "checkedAt": "2026-10-02T08:02:00.122Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "GUI-Applications.pkg.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/mac/mactex/",
+          "checkedAt": "2026-10-02T08:02:00.122Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "Ghostscript.pkg.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/mac/mactex/",
+          "checkedAt": "2026-10-02T08:02:00.122Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "GhostscriptExtras.pkg.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/mac/mactex/",
+          "checkedAt": "2026-10-02T08:02:00.122Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "MacTeX.pkg.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/mac/mactex/",
+          "checkedAt": "2026-10-02T08:02:00.122Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "MacTeXtras.zip.sha512",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ctan/systems/mac/mactex/",
+          "checkedAt": "2026-10-02T08:02:00.122Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "r-windows",
+      "totalMatchingNamesInReviewedListings": 1,
+      "positives": [
+        {
+          "filename": "R-4.6.1-win.exe",
+          "sourceType": "file",
+          "size": 91749976,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/base/",
+          "checkedAt": "2026-10-02T08:01:58.862Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/windows/base/R-4.6.1-win.exe",
+          "expectedPattern": "windows-r",
+          "expectedCaptures": {
+            "version": "4.6.1",
+            "format": "exe"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "NEWS.R-4.6.1.html",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/base/",
+          "checkedAt": "2026-10-02T08:01:58.862Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "NEWS.R-4.6.1patched.html",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/base/",
+          "checkedAt": "2026-10-02T08:01:58.862Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "NEWS.R-devel.html",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/base/",
+          "checkedAt": "2026-10-02T08:01:58.862Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "README.R-4.6.1",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/base/",
+          "checkedAt": "2026-10-02T08:01:58.862Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "README.R-4.6.1patched",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/base/",
+          "checkedAt": "2026-10-02T08:01:58.862Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "README.R-devel",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/base/",
+          "checkedAt": "2026-10-02T08:01:58.862Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "r-macos",
+      "totalMatchingNamesInReviewedListings": 16,
+      "positives": [
+        {
+          "filename": "R-4.3.0-x86_64.pkg",
+          "sourceType": "file",
+          "size": 96863545,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/macosx/big-sur-x86_64/base/",
+          "checkedAt": "2026-10-02T08:00:44.384Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/macosx/big-sur-x86_64/base/R-4.3.0-x86_64.pkg",
+          "expectedPattern": "mac-r",
+          "expectedCaptures": {
+            "version": "4.3.0",
+            "arch": "x86_64",
+            "format": "pkg"
+          }
+        },
+        {
+          "filename": "R-4.3.1-x86_64.pkg",
+          "sourceType": "file",
+          "size": 96943990,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/macosx/big-sur-x86_64/base/",
+          "checkedAt": "2026-10-02T08:00:44.384Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/macosx/big-sur-x86_64/base/R-4.3.1-x86_64.pkg",
+          "expectedPattern": "mac-r",
+          "expectedCaptures": {
+            "version": "4.3.1",
+            "arch": "x86_64",
+            "format": "pkg"
+          }
+        },
+        {
+          "filename": "R-4.3.2-x86_64.pkg",
+          "sourceType": "file",
+          "size": 98116842,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/macosx/big-sur-x86_64/base/",
+          "checkedAt": "2026-10-02T08:00:44.384Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/macosx/big-sur-x86_64/base/R-4.3.2-x86_64.pkg",
+          "expectedPattern": "mac-r",
+          "expectedCaptures": {
+            "version": "4.3.2",
+            "arch": "x86_64",
+            "format": "pkg"
+          }
+        },
+        {
+          "filename": "R-4.3.3-x86_64.pkg",
+          "sourceType": "file",
+          "size": 98232377,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/macosx/big-sur-x86_64/base/",
+          "checkedAt": "2026-10-02T08:00:44.384Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/macosx/big-sur-x86_64/base/R-4.3.3-x86_64.pkg",
+          "expectedPattern": "mac-r",
+          "expectedCaptures": {
+            "version": "4.3.3",
+            "arch": "x86_64",
+            "format": "pkg"
+          }
+        },
+        {
+          "filename": "R-4.4.0-x86_64.pkg",
+          "sourceType": "file",
+          "size": 100257229,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/macosx/big-sur-x86_64/base/",
+          "checkedAt": "2026-10-02T08:00:44.384Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/macosx/big-sur-x86_64/base/R-4.4.0-x86_64.pkg",
+          "expectedPattern": "mac-r",
+          "expectedCaptures": {
+            "version": "4.4.0",
+            "arch": "x86_64",
+            "format": "pkg"
+          }
+        },
+        {
+          "filename": "R-4.4.1-x86_64.pkg",
+          "sourceType": "file",
+          "size": 100409558,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/macosx/big-sur-x86_64/base/",
+          "checkedAt": "2026-10-02T08:00:44.384Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/macosx/big-sur-x86_64/base/R-4.4.1-x86_64.pkg",
+          "expectedPattern": "mac-r",
+          "expectedCaptures": {
+            "version": "4.4.1",
+            "arch": "x86_64",
+            "format": "pkg"
+          }
+        },
+        {
+          "filename": "R-4.4.2-x86_64.pkg",
+          "sourceType": "file",
+          "size": 100460675,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/macosx/big-sur-x86_64/base/",
+          "checkedAt": "2026-10-02T08:00:44.384Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/macosx/big-sur-x86_64/base/R-4.4.2-x86_64.pkg",
+          "expectedPattern": "mac-r",
+          "expectedCaptures": {
+            "version": "4.4.2",
+            "arch": "x86_64",
+            "format": "pkg"
+          }
+        },
+        {
+          "filename": "R-4.4.3-x86_64.pkg",
+          "sourceType": "file",
+          "size": 104780818,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/macosx/big-sur-x86_64/base/",
+          "checkedAt": "2026-10-02T08:00:44.384Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/macosx/big-sur-x86_64/base/R-4.4.3-x86_64.pkg",
+          "expectedPattern": "mac-r",
+          "expectedCaptures": {
+            "version": "4.4.3",
+            "arch": "x86_64",
+            "format": "pkg"
+          }
+        },
+        {
+          "filename": "R-4.5.0-x86_64.pkg",
+          "sourceType": "file",
+          "size": 104603214,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/macosx/big-sur-x86_64/base/",
+          "checkedAt": "2026-10-02T08:00:44.384Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/macosx/big-sur-x86_64/base/R-4.5.0-x86_64.pkg",
+          "expectedPattern": "mac-r",
+          "expectedCaptures": {
+            "version": "4.5.0",
+            "arch": "x86_64",
+            "format": "pkg"
+          }
+        },
+        {
+          "filename": "R-4.5.1-x86_64.pkg",
+          "sourceType": "file",
+          "size": 104826902,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/macosx/big-sur-x86_64/base/",
+          "checkedAt": "2026-10-02T08:00:44.384Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/macosx/big-sur-x86_64/base/R-4.5.1-x86_64.pkg",
+          "expectedPattern": "mac-r",
+          "expectedCaptures": {
+            "version": "4.5.1",
+            "arch": "x86_64",
+            "format": "pkg"
+          }
+        },
+        {
+          "filename": "R-4.5.2-x86_64.pkg",
+          "sourceType": "file",
+          "size": 104869333,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/macosx/big-sur-x86_64/base/",
+          "checkedAt": "2026-10-02T08:00:44.384Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/macosx/big-sur-x86_64/base/R-4.5.2-x86_64.pkg",
+          "expectedPattern": "mac-r",
+          "expectedCaptures": {
+            "version": "4.5.2",
+            "arch": "x86_64",
+            "format": "pkg"
+          }
+        },
+        {
+          "filename": "R-4.5.3-x86_64.pkg",
+          "sourceType": "file",
+          "size": 105130219,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/macosx/big-sur-x86_64/base/",
+          "checkedAt": "2026-10-02T08:00:44.384Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/macosx/big-sur-x86_64/base/R-4.5.3-x86_64.pkg",
+          "expectedPattern": "mac-r",
+          "expectedCaptures": {
+            "version": "4.5.3",
+            "arch": "x86_64",
+            "format": "pkg"
+          }
+        }
+      ],
+      "negatives": []
+    },
+    {
+      "ruleId": "rtools",
+      "totalMatchingNamesInReviewedListings": 2,
+      "positives": [
+        {
+          "filename": "rtools45-6768-6492.exe",
+          "sourceType": "file",
+          "size": 483090888,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/Rtools/rtools45/files/",
+          "checkedAt": "2026-10-02T08:01:59.531Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/windows/Rtools/rtools45/files/rtools45-6768-6492.exe",
+          "expectedPattern": "toolchain",
+          "expectedCaptures": {
+            "series": "45",
+            "build": "6768-6492",
+            "format": "exe"
+          }
+        },
+        {
+          "filename": "rtools45-aarch64-6768-6492.exe",
+          "sourceType": "file",
+          "size": 561639456,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/Rtools/rtools45/files/",
+          "checkedAt": "2026-10-02T08:01:59.531Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/CRAN/bin/windows/Rtools/rtools45/files/rtools45-aarch64-6768-6492.exe",
+          "expectedPattern": "toolchain",
+          "expectedCaptures": {
+            "series": "45",
+            "arch": "aarch64",
+            "build": "6768-6492",
+            "format": "exe"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "rtools45-toolchain-libs-base-6768.tar.zst",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/Rtools/rtools45/files/",
+          "checkedAt": "2026-10-02T08:01:59.531Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "rtools45-toolchain-libs-base-aarch64-6768.tar.zst",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/Rtools/rtools45/files/",
+          "checkedAt": "2026-10-02T08:01:59.531Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "rtools45-toolchain-libs-cross-6768.tar.zst",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/Rtools/rtools45/files/",
+          "checkedAt": "2026-10-02T08:01:59.531Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "rtools45-toolchain-libs-cross-aarch64-6768.tar.zst",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/Rtools/rtools45/files/",
+          "checkedAt": "2026-10-02T08:01:59.531Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "rtools45-toolchain-libs-full-6768.tar.zst",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/Rtools/rtools45/files/",
+          "checkedAt": "2026-10-02T08:01:59.531Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "rtools45-toolchain-libs-full-aarch64-6768.tar.zst",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/CRAN/bin/windows/Rtools/rtools45/files/",
+          "checkedAt": "2026-10-02T08:01:59.531Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "anaconda",
+      "totalMatchingNamesInReviewedListings": 544,
+      "positives": [
+        {
+          "filename": "Anaconda-1.4.0-Linux-x86.sh",
+          "sourceType": "file",
+          "size": 231260549,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/archive/",
+          "checkedAt": "2026-10-02T08:01:57.688Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/archive/Anaconda-1.4.0-Linux-x86.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.4.0",
+            "platform": "Linux",
+            "arch": "x86",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Anaconda-1.4.0-Linux-x86_64.sh",
+          "sourceType": "file",
+          "size": 300831068,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/archive/",
+          "checkedAt": "2026-10-02T08:01:57.688Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/archive/Anaconda-1.4.0-Linux-x86_64.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.4.0",
+            "platform": "Linux",
+            "arch": "x86_64",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Anaconda-1.4.0-MacOSX-x86_64.sh",
+          "sourceType": "file",
+          "size": 163952262,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/archive/",
+          "checkedAt": "2026-10-02T08:01:57.688Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/archive/Anaconda-1.4.0-MacOSX-x86_64.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.4.0",
+            "platform": "MacOSX",
+            "arch": "x86_64",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Anaconda-1.4.0-Windows-x86.exe",
+          "sourceType": "file",
+          "size": 220256092,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/archive/",
+          "checkedAt": "2026-10-02T08:01:57.688Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/archive/Anaconda-1.4.0-Windows-x86.exe",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.4.0",
+            "platform": "Windows",
+            "arch": "x86",
+            "format": "exe"
+          }
+        },
+        {
+          "filename": "Anaconda-1.4.0-Windows-x86_64.exe",
+          "sourceType": "file",
+          "size": 253175221,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/archive/",
+          "checkedAt": "2026-10-02T08:01:57.688Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/archive/Anaconda-1.4.0-Windows-x86_64.exe",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.4.0",
+            "platform": "Windows",
+            "arch": "x86_64",
+            "format": "exe"
+          }
+        },
+        {
+          "filename": "Anaconda-1.5.0-Linux-x86.sh",
+          "sourceType": "file",
+          "size": 250369347,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/archive/",
+          "checkedAt": "2026-10-02T08:01:57.688Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/archive/Anaconda-1.5.0-Linux-x86.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.5.0",
+            "platform": "Linux",
+            "arch": "x86",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Anaconda-1.5.0-Linux-x86_64.sh",
+          "sourceType": "file",
+          "size": 321578266,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/archive/",
+          "checkedAt": "2026-10-02T08:01:57.688Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/archive/Anaconda-1.5.0-Linux-x86_64.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.5.0",
+            "platform": "Linux",
+            "arch": "x86_64",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Anaconda-1.5.0-MacOSX-x86_64.sh",
+          "sourceType": "file",
+          "size": 174295630,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/archive/",
+          "checkedAt": "2026-10-02T08:01:57.688Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/archive/Anaconda-1.5.0-MacOSX-x86_64.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.5.0",
+            "platform": "MacOSX",
+            "arch": "x86_64",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Anaconda-1.5.0-Windows-x86.exe",
+          "sourceType": "file",
+          "size": 247436755,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/archive/",
+          "checkedAt": "2026-10-02T08:01:57.688Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/archive/Anaconda-1.5.0-Windows-x86.exe",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.5.0",
+            "platform": "Windows",
+            "arch": "x86",
+            "format": "exe"
+          }
+        },
+        {
+          "filename": "Anaconda-1.5.0-Windows-x86_64.exe",
+          "sourceType": "file",
+          "size": 294062717,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/archive/",
+          "checkedAt": "2026-10-02T08:01:57.688Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/archive/Anaconda-1.5.0-Windows-x86_64.exe",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.5.0",
+            "platform": "Windows",
+            "arch": "x86_64",
+            "format": "exe"
+          }
+        },
+        {
+          "filename": "Anaconda-1.5.1-MacOSX-x86_64.sh",
+          "sourceType": "file",
+          "size": 174295689,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/archive/",
+          "checkedAt": "2026-10-02T08:01:57.688Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/archive/Anaconda-1.5.1-MacOSX-x86_64.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.5.1",
+            "platform": "MacOSX",
+            "arch": "x86_64",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Anaconda-1.6.0-Linux-x86.sh",
+          "sourceType": "file",
+          "size": 253329362,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/archive/",
+          "checkedAt": "2026-10-02T08:01:57.688Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/archive/Anaconda-1.6.0-Linux-x86.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.6.0",
+            "platform": "Linux",
+            "arch": "x86",
+            "format": "sh"
+          }
+        }
+      ],
+      "negatives": []
+    },
+    {
+      "ruleId": "miniconda",
+      "totalMatchingNamesInReviewedListings": 1580,
+      "positives": [
+        {
+          "filename": "Miniconda-1.6.0-Linux-x86_64.sh",
+          "sourceType": "file",
+          "size": 19618279,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/miniconda/",
+          "checkedAt": "2026-10-02T07:59:13.973Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/miniconda/Miniconda-1.6.0-Linux-x86_64.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.6.0",
+            "platform": "Linux",
+            "arch": "x86_64",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Miniconda-1.6.2-Linux-x86_64.sh",
+          "sourceType": "file",
+          "size": 19843853,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/miniconda/",
+          "checkedAt": "2026-10-02T07:59:13.973Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/miniconda/Miniconda-1.6.2-Linux-x86_64.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.6.2",
+            "platform": "Linux",
+            "arch": "x86_64",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Miniconda-1.9.1-Linux-x86_64.sh",
+          "sourceType": "file",
+          "size": 19843853,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/miniconda/",
+          "checkedAt": "2026-10-02T07:59:13.973Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/miniconda/Miniconda-1.9.1-Linux-x86_64.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "1.9.1",
+            "platform": "Linux",
+            "arch": "x86_64",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Miniconda-2.0.0-Linux-x86_64.sh",
+          "sourceType": "file",
+          "size": 19854092,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/miniconda/",
+          "checkedAt": "2026-10-02T07:59:13.973Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/miniconda/Miniconda-2.0.0-Linux-x86_64.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "2.0.0",
+            "platform": "Linux",
+            "arch": "x86_64",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Miniconda-2.0.3-MacOSX-x86.sh",
+          "sourceType": "file",
+          "size": 13525267,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/miniconda/",
+          "checkedAt": "2026-10-02T07:59:13.973Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/miniconda/Miniconda-2.0.3-MacOSX-x86.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "2.0.3",
+            "platform": "MacOSX",
+            "arch": "x86",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Miniconda-2.2.2-Linux-x86.sh",
+          "sourceType": "file",
+          "size": 18892890,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/miniconda/",
+          "checkedAt": "2026-10-02T07:59:13.973Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/miniconda/Miniconda-2.2.2-Linux-x86.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "2.2.2",
+            "platform": "Linux",
+            "arch": "x86",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Miniconda-2.2.2-Linux-x86_64.sh",
+          "sourceType": "file",
+          "size": 19855284,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/miniconda/",
+          "checkedAt": "2026-10-02T07:59:13.973Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/miniconda/Miniconda-2.2.2-Linux-x86_64.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "2.2.2",
+            "platform": "Linux",
+            "arch": "x86_64",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Miniconda-2.2.2-MacOSX-x86_64.sh",
+          "sourceType": "file",
+          "size": 13659578,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/miniconda/",
+          "checkedAt": "2026-10-02T07:59:13.973Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/miniconda/Miniconda-2.2.2-MacOSX-x86_64.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "2.2.2",
+            "platform": "MacOSX",
+            "arch": "x86_64",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Miniconda-2.2.8-Windows-x86.exe",
+          "sourceType": "file",
+          "size": 28409576,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/miniconda/",
+          "checkedAt": "2026-10-02T07:59:13.973Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/miniconda/Miniconda-2.2.8-Windows-x86.exe",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "2.2.8",
+            "platform": "Windows",
+            "arch": "x86",
+            "format": "exe"
+          }
+        },
+        {
+          "filename": "Miniconda-2.2.8-Windows-x86_64.exe",
+          "sourceType": "file",
+          "size": 30478960,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/miniconda/",
+          "checkedAt": "2026-10-02T07:59:13.973Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/miniconda/Miniconda-2.2.8-Windows-x86_64.exe",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "2.2.8",
+            "platform": "Windows",
+            "arch": "x86_64",
+            "format": "exe"
+          }
+        },
+        {
+          "filename": "Miniconda-3.0.0-Linux-x86.sh",
+          "sourceType": "file",
+          "size": 18872415,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/miniconda/",
+          "checkedAt": "2026-10-02T07:59:13.973Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/miniconda/Miniconda-3.0.0-Linux-x86.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "3.0.0",
+            "platform": "Linux",
+            "arch": "x86",
+            "format": "sh"
+          }
+        },
+        {
+          "filename": "Miniconda-3.0.0-Linux-x86_64.sh",
+          "sourceType": "file",
+          "size": 19824569,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anaconda/miniconda/",
+          "checkedAt": "2026-10-02T07:59:13.973Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anaconda/miniconda/Miniconda-3.0.0-Linux-x86_64.sh",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "3.0.0",
+            "platform": "Linux",
+            "arch": "x86_64",
+            "format": "sh"
+          }
+        }
+      ],
+      "negatives": []
+    },
+    {
+      "ruleId": "ubuntu",
+      "totalMatchingNamesInReviewedListings": 6,
+      "positives": [
+        {
+          "filename": "ubuntu-24.04.3-desktop-amd64.iso",
+          "sourceType": "other",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-releases/24.04/",
+          "checkedAt": "2026-10-02T07:59:18.059Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/ubuntu-releases/24.04/ubuntu-24.04.3-desktop-amd64.iso",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "24.04.3",
+            "variant": "desktop",
+            "arch": "amd64",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "ubuntu-24.04.3-live-server-amd64.iso",
+          "sourceType": "file",
+          "size": 3303444480,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-releases/24.04/",
+          "checkedAt": "2026-10-02T07:59:18.059Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/ubuntu-releases/24.04/ubuntu-24.04.3-live-server-amd64.iso",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "24.04.3",
+            "variant": "live-server",
+            "arch": "amd64",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "ubuntu-24.04.4-desktop-amd64.iso",
+          "sourceType": "file",
+          "size": 6655619072,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-releases/24.04/",
+          "checkedAt": "2026-10-02T07:59:18.059Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/ubuntu-releases/24.04/ubuntu-24.04.4-desktop-amd64.iso",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "24.04.4",
+            "variant": "desktop",
+            "arch": "amd64",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "ubuntu-24.04.4-live-server-amd64.iso",
+          "sourceType": "file",
+          "size": 3405469696,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-releases/24.04/",
+          "checkedAt": "2026-10-02T07:59:18.059Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/ubuntu-releases/24.04/ubuntu-24.04.4-live-server-amd64.iso",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "24.04.4",
+            "variant": "live-server",
+            "arch": "amd64",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "ubuntu-24.04.5-live-server-amd64.iso",
+          "sourceType": "file",
+          "size": 4080486400,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-releases/24.04/",
+          "checkedAt": "2026-10-02T07:59:18.059Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/ubuntu-releases/24.04/ubuntu-24.04.5-live-server-amd64.iso",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "24.04.5",
+            "variant": "live-server",
+            "arch": "amd64",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "ubuntu-24.04.5.1-desktop-amd64.iso",
+          "sourceType": "file",
+          "size": 6250332160,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-releases/24.04/",
+          "checkedAt": "2026-10-02T07:59:18.059Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/ubuntu-releases/24.04/ubuntu-24.04.5.1-desktop-amd64.iso",
+          "expectedPattern": "release",
+          "expectedCaptures": {
+            "version": "24.04.5.1",
+            "variant": "desktop",
+            "arch": "amd64",
+            "format": "iso"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "SHA256SUMS",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-releases/24.04/",
+          "checkedAt": "2026-10-02T07:59:18.059Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "SHA256SUMS.gpg",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-releases/24.04/",
+          "checkedAt": "2026-10-02T07:59:18.059Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "ubuntu-24.04.3-desktop-amd64.manifest",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-releases/24.04/",
+          "checkedAt": "2026-10-02T07:59:18.059Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "ubuntu-24.04.3-live-server-amd64.manifest",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-releases/24.04/",
+          "checkedAt": "2026-10-02T07:59:18.059Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "ubuntu-24.04.3-wsl-amd64.manifest",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-releases/24.04/",
+          "checkedAt": "2026-10-02T07:59:18.059Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "ubuntu-24.04.4-desktop-amd64.manifest",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-releases/24.04/",
+          "checkedAt": "2026-10-02T07:59:18.059Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "debian",
+      "totalMatchingNamesInReviewedListings": 3,
+      "positives": [
+        {
+          "filename": "debian-13.7.0-amd64-netinst.iso",
+          "sourceType": "file",
+          "size": 792723456,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/debian-cd/current/amd64/iso-cd/",
+          "checkedAt": "2026-10-02T08:02:03.087Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/debian-cd/current/amd64/iso-cd/debian-13.7.0-amd64-netinst.iso",
+          "expectedPattern": "netinst",
+          "expectedCaptures": {
+            "version": "13.7.0",
+            "arch": "amd64",
+            "variant": "netinst",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "debian-edu-13.7.0-amd64-netinst.iso",
+          "sourceType": "file",
+          "size": 801112064,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/debian-cd/current/amd64/iso-cd/",
+          "checkedAt": "2026-10-02T08:02:03.087Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/debian-cd/current/amd64/iso-cd/debian-edu-13.7.0-amd64-netinst.iso",
+          "expectedPattern": "netinst",
+          "expectedCaptures": {
+            "edition": "edu",
+            "version": "13.7.0",
+            "arch": "amd64",
+            "variant": "netinst",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "debian-mac-13.7.0-amd64-netinst.iso",
+          "sourceType": "file",
+          "size": 793772032,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/debian-cd/current/amd64/iso-cd/",
+          "checkedAt": "2026-10-02T08:02:03.087Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/debian-cd/current/amd64/iso-cd/debian-mac-13.7.0-amd64-netinst.iso",
+          "expectedPattern": "netinst",
+          "expectedCaptures": {
+            "edition": "mac",
+            "version": "13.7.0",
+            "arch": "amd64",
+            "variant": "netinst",
+            "format": "iso"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "SHA256SUMS",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/debian-cd/current/amd64/iso-cd/",
+          "checkedAt": "2026-10-02T08:02:03.087Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "SHA256SUMS.sign",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/debian-cd/current/amd64/iso-cd/",
+          "checkedAt": "2026-10-02T08:02:03.087Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "SHA512SUMS",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/debian-cd/current/amd64/iso-cd/",
+          "checkedAt": "2026-10-02T08:02:03.087Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "SHA512SUMS.sign",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/debian-cd/current/amd64/iso-cd/",
+          "checkedAt": "2026-10-02T08:02:03.087Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "archlinux",
+      "totalMatchingNamesInReviewedListings": 1,
+      "positives": [
+        {
+          "filename": "archlinux-2026.10.01-x86_64.iso",
+          "sourceType": "file",
+          "size": 1640497152,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/archlinux/iso/2026.10.01/",
+          "checkedAt": "2026-10-02T08:00:41.493Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/archlinux/iso/2026.10.01/archlinux-2026.10.01-x86_64.iso",
+          "expectedPattern": "dated-iso",
+          "expectedCaptures": {
+            "version": "2026.10.01",
+            "arch": "x86_64",
+            "format": "iso"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "archlinux-2026.10.01-x86_64.iso.sig",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/archlinux/iso/2026.10.01/",
+          "checkedAt": "2026-10-02T08:00:41.493Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "archlinux-bootstrap-2026.10.01-x86_64.tar.zst.sig",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/archlinux/iso/2026.10.01/",
+          "checkedAt": "2026-10-02T08:00:41.493Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "archlinux-bootstrap-x86_64.tar.zst.sig",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/archlinux/iso/2026.10.01/",
+          "checkedAt": "2026-10-02T08:00:41.493Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "archlinux-x86_64.iso.sig",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/archlinux/iso/2026.10.01/",
+          "checkedAt": "2026-10-02T08:00:41.493Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "rocky",
+      "totalMatchingNamesInReviewedListings": 3,
+      "positives": [
+        {
+          "filename": "Rocky-9.8-x86_64-boot.iso",
+          "sourceType": "file",
+          "size": 1480048640,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/rocky/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:15.673Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/rocky/9/isos/x86_64/Rocky-9.8-x86_64-boot.iso",
+          "expectedPattern": "numbered-iso",
+          "expectedCaptures": {
+            "version": "9.8",
+            "arch": "x86_64",
+            "variant": "boot",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "Rocky-9.8-x86_64-dvd.iso",
+          "sourceType": "file",
+          "size": 15194259456,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/rocky/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:15.673Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/rocky/9/isos/x86_64/Rocky-9.8-x86_64-dvd.iso",
+          "expectedPattern": "numbered-iso",
+          "expectedCaptures": {
+            "version": "9.8",
+            "arch": "x86_64",
+            "variant": "dvd",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "Rocky-9.8-x86_64-minimal.iso",
+          "sourceType": "file",
+          "size": 2755067904,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/rocky/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:15.673Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/rocky/9/isos/x86_64/Rocky-9.8-x86_64-minimal.iso",
+          "expectedPattern": "numbered-iso",
+          "expectedCaptures": {
+            "version": "9.8",
+            "arch": "x86_64",
+            "variant": "minimal",
+            "format": "iso"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "CHECKSUM.asc",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/rocky/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:15.673Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "Rocky-9-latest-x86_64-boot.iso.CHECKSUM.asc",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/rocky/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:15.673Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "Rocky-9-latest-x86_64-boot.iso.manifest",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/rocky/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:15.673Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "Rocky-9-latest-x86_64-dvd.iso.CHECKSUM.asc",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/rocky/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:15.673Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "Rocky-9-latest-x86_64-dvd.iso.manifest",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/rocky/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:15.673Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "Rocky-9-latest-x86_64-minimal.iso.CHECKSUM.asc",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/rocky/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:15.673Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "almalinux",
+      "totalMatchingNamesInReviewedListings": 3,
+      "positives": [
+        {
+          "filename": "AlmaLinux-9.8-x86_64-boot.iso",
+          "sourceType": "file",
+          "size": 1519271936,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/almalinux/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:16.026Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/almalinux/9/isos/x86_64/AlmaLinux-9.8-x86_64-boot.iso",
+          "expectedPattern": "numbered-iso",
+          "expectedCaptures": {
+            "version": "9.8",
+            "arch": "x86_64",
+            "variant": "boot",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "AlmaLinux-9.8-x86_64-dvd.iso",
+          "sourceType": "file",
+          "size": 15151923200,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/almalinux/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:16.026Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/almalinux/9/isos/x86_64/AlmaLinux-9.8-x86_64-dvd.iso",
+          "expectedPattern": "numbered-iso",
+          "expectedCaptures": {
+            "version": "9.8",
+            "arch": "x86_64",
+            "variant": "dvd",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "AlmaLinux-9.8-x86_64-minimal.iso",
+          "sourceType": "file",
+          "size": 2838495232,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/almalinux/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:16.026Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/almalinux/9/isos/x86_64/AlmaLinux-9.8-x86_64-minimal.iso",
+          "expectedPattern": "numbered-iso",
+          "expectedCaptures": {
+            "version": "9.8",
+            "arch": "x86_64",
+            "variant": "minimal",
+            "format": "iso"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "AlmaLinux-9.8-x86_64-boot.iso.manifest",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/almalinux/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:16.026Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "AlmaLinux-9.8-x86_64-dvd.iso.manifest",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/almalinux/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:16.026Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "AlmaLinux-9.8-x86_64-minimal.iso.manifest",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/almalinux/9/isos/x86_64/",
+          "checkedAt": "2026-10-02T07:59:16.026Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "openeuler",
+      "totalMatchingNamesInReviewedListings": 3,
+      "positives": [
+        {
+          "filename": "openEuler-25.09-everything-x86_64-dvd.iso",
+          "sourceType": "file",
+          "size": 25837961216,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/openeuler/openEuler-25.09/ISO/x86_64/",
+          "checkedAt": "2026-10-02T07:59:16.998Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/openeuler/openEuler-25.09/ISO/x86_64/openEuler-25.09-everything-x86_64-dvd.iso",
+          "expectedPattern": "iso",
+          "expectedCaptures": {
+            "version": "25.09",
+            "variant": "everything",
+            "arch": "x86_64",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "openEuler-25.09-netinst-x86_64-dvd.iso",
+          "sourceType": "file",
+          "size": 1377828864,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/openeuler/openEuler-25.09/ISO/x86_64/",
+          "checkedAt": "2026-10-02T07:59:16.998Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/openeuler/openEuler-25.09/ISO/x86_64/openEuler-25.09-netinst-x86_64-dvd.iso",
+          "expectedPattern": "iso",
+          "expectedCaptures": {
+            "version": "25.09",
+            "variant": "netinst",
+            "arch": "x86_64",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "openEuler-25.09-x86_64-dvd.iso",
+          "sourceType": "file",
+          "size": 4834983936,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/openeuler/openEuler-25.09/ISO/x86_64/",
+          "checkedAt": "2026-10-02T07:59:16.998Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/openeuler/openEuler-25.09/ISO/x86_64/openEuler-25.09-x86_64-dvd.iso",
+          "expectedPattern": "iso",
+          "expectedCaptures": {
+            "version": "25.09",
+            "arch": "x86_64",
+            "format": "iso"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "openEuler-25.09-everything-debug-x86_64-dvd.iso.sha256sum",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/openeuler/openEuler-25.09/ISO/x86_64/",
+          "checkedAt": "2026-10-02T07:59:16.998Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "openEuler-25.09-everything-x86_64-dvd.iso.sha256sum",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/openeuler/openEuler-25.09/ISO/x86_64/",
+          "checkedAt": "2026-10-02T07:59:16.998Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "openEuler-25.09-netinst-x86_64-dvd.iso.sha256sum",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/openeuler/openEuler-25.09/ISO/x86_64/",
+          "checkedAt": "2026-10-02T07:59:16.998Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "openEuler-25.09-x86_64-dvd.iso.sha256sum",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/openeuler/openEuler-25.09/ISO/x86_64/",
+          "checkedAt": "2026-10-02T07:59:16.998Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "openEuler-25.09-x86_64.rpmlist",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/openeuler/openEuler-25.09/ISO/x86_64/",
+          "checkedAt": "2026-10-02T07:59:16.998Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "opensuse-leap",
+      "totalMatchingNamesInReviewedListings": 8,
+      "positives": [
+        {
+          "filename": "openSUSE-Leap-15.6-DVD-aarch64-Build710.3-Media.iso",
+          "sourceType": "file",
+          "size": 4671504384,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/distribution/leap/15.6/iso/",
+          "checkedAt": "2026-10-02T08:02:05.111Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-aarch64-Build710.3-Media.iso",
+          "expectedPattern": "build-iso",
+          "expectedCaptures": {
+            "version": "15.6",
+            "variant": "DVD",
+            "arch": "aarch64",
+            "build": "710.3",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "openSUSE-Leap-15.6-DVD-ppc64le-Build710.3-Media.iso",
+          "sourceType": "file",
+          "size": 4205053952,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/distribution/leap/15.6/iso/",
+          "checkedAt": "2026-10-02T08:02:05.111Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-ppc64le-Build710.3-Media.iso",
+          "expectedPattern": "build-iso",
+          "expectedCaptures": {
+            "version": "15.6",
+            "variant": "DVD",
+            "arch": "ppc64le",
+            "build": "710.3",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "openSUSE-Leap-15.6-DVD-s390x-Build710.3-Media.iso",
+          "sourceType": "file",
+          "size": 2577106944,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/distribution/leap/15.6/iso/",
+          "checkedAt": "2026-10-02T08:02:05.111Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-s390x-Build710.3-Media.iso",
+          "expectedPattern": "build-iso",
+          "expectedCaptures": {
+            "version": "15.6",
+            "variant": "DVD",
+            "arch": "s390x",
+            "build": "710.3",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "openSUSE-Leap-15.6-DVD-x86_64-Build710.3-Media.iso",
+          "sourceType": "file",
+          "size": 4631560192,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/distribution/leap/15.6/iso/",
+          "checkedAt": "2026-10-02T08:02:05.111Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-x86_64-Build710.3-Media.iso",
+          "expectedPattern": "build-iso",
+          "expectedCaptures": {
+            "version": "15.6",
+            "variant": "DVD",
+            "arch": "x86_64",
+            "build": "710.3",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "openSUSE-Leap-15.6-NET-aarch64-Build710.3-Media.iso",
+          "sourceType": "file",
+          "size": 304582656,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/distribution/leap/15.6/iso/",
+          "checkedAt": "2026-10-02T08:02:05.111Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-aarch64-Build710.3-Media.iso",
+          "expectedPattern": "build-iso",
+          "expectedCaptures": {
+            "version": "15.6",
+            "variant": "NET",
+            "arch": "aarch64",
+            "build": "710.3",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "openSUSE-Leap-15.6-NET-ppc64le-Build710.3-Media.iso",
+          "sourceType": "file",
+          "size": 255041536,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/distribution/leap/15.6/iso/",
+          "checkedAt": "2026-10-02T08:02:05.111Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-ppc64le-Build710.3-Media.iso",
+          "expectedPattern": "build-iso",
+          "expectedCaptures": {
+            "version": "15.6",
+            "variant": "NET",
+            "arch": "ppc64le",
+            "build": "710.3",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "openSUSE-Leap-15.6-NET-s390x-Build710.3-Media.iso",
+          "sourceType": "file",
+          "size": 160921600,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/distribution/leap/15.6/iso/",
+          "checkedAt": "2026-10-02T08:02:05.111Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-s390x-Build710.3-Media.iso",
+          "expectedPattern": "build-iso",
+          "expectedCaptures": {
+            "version": "15.6",
+            "variant": "NET",
+            "arch": "s390x",
+            "build": "710.3",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "openSUSE-Leap-15.6-NET-x86_64-Build710.3-Media.iso",
+          "sourceType": "file",
+          "size": 273678336,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/distribution/leap/15.6/iso/",
+          "checkedAt": "2026-10-02T08:02:05.111Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-x86_64-Build710.3-Media.iso",
+          "expectedPattern": "build-iso",
+          "expectedCaptures": {
+            "version": "15.6",
+            "variant": "NET",
+            "arch": "x86_64",
+            "build": "710.3",
+            "format": "iso"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "openSUSE-Leap-15.6-DVD-aarch64-Build710.3-Media.iso.sha256",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/distribution/leap/15.6/iso/",
+          "checkedAt": "2026-10-02T08:02:05.111Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "openSUSE-Leap-15.6-DVD-aarch64-Build710.3-Media.iso.sha256.asc",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/distribution/leap/15.6/iso/",
+          "checkedAt": "2026-10-02T08:02:05.111Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "openSUSE-Leap-15.6-DVD-aarch64-Current.iso.sha256",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/distribution/leap/15.6/iso/",
+          "checkedAt": "2026-10-02T08:02:05.111Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "openSUSE-Leap-15.6-DVD-aarch64-Media.iso.sha256",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/distribution/leap/15.6/iso/",
+          "checkedAt": "2026-10-02T08:02:05.111Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "openSUSE-Leap-15.6-DVD-aarch64-Media.iso.sha256.asc",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/distribution/leap/15.6/iso/",
+          "checkedAt": "2026-10-02T08:02:05.111Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "openSUSE-Leap-15.6-DVD-ppc64le-Build710.3-Media.iso.sha256",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/distribution/leap/15.6/iso/",
+          "checkedAt": "2026-10-02T08:02:05.111Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "archriscv",
+      "totalMatchingNamesInReviewedListings": 1,
+      "positives": [
+        {
+          "filename": "archlinux-2026.08.27-riscv64.iso",
+          "sourceType": "file",
+          "size": 1365493760,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/archriscv/images/",
+          "checkedAt": "2026-10-02T07:59:20.980Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/archriscv/images/archlinux-2026.08.27-riscv64.iso",
+          "expectedPattern": "dated-iso",
+          "expectedCaptures": {
+            "version": "2026.08.27",
+            "arch": "riscv64",
+            "format": "iso"
+          }
+        }
+      ],
+      "negatives": []
+    },
+    {
+      "ruleId": "kubernetes-tools",
+      "totalMatchingNamesInReviewedListings": 40,
+      "positives": [
+        {
+          "filename": "cri-tools_1.34.0-1.1_amd64.deb",
+          "sourceType": "file",
+          "size": 16706572,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/kubernetes/core:/stable:/v1.34/deb/amd64/",
+          "checkedAt": "2026-10-02T08:02:04.090Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/kubernetes/core:/stable:/v1.34/deb/amd64/cri-tools_1.34.0-1.1_amd64.deb",
+          "expectedPattern": "deb",
+          "expectedCaptures": {
+            "software": "cri-tools",
+            "version": "1.34.0",
+            "revision": "1.1",
+            "arch": "amd64",
+            "format": "deb"
+          }
+        },
+        {
+          "filename": "kubeadm_1.34.0-1.1_amd64.deb",
+          "sourceType": "file",
+          "size": 12536336,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/kubernetes/core:/stable:/v1.34/deb/amd64/",
+          "checkedAt": "2026-10-02T08:02:04.090Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/kubernetes/core:/stable:/v1.34/deb/amd64/kubeadm_1.34.0-1.1_amd64.deb",
+          "expectedPattern": "deb",
+          "expectedCaptures": {
+            "software": "kubeadm",
+            "version": "1.34.0",
+            "revision": "1.1",
+            "arch": "amd64",
+            "format": "deb"
+          }
+        },
+        {
+          "filename": "kubeadm_1.34.1-1.1_amd64.deb",
+          "sourceType": "file",
+          "size": 12538720,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/kubernetes/core:/stable:/v1.34/deb/amd64/",
+          "checkedAt": "2026-10-02T08:02:04.090Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/kubernetes/core:/stable:/v1.34/deb/amd64/kubeadm_1.34.1-1.1_amd64.deb",
+          "expectedPattern": "deb",
+          "expectedCaptures": {
+            "software": "kubeadm",
+            "version": "1.34.1",
+            "revision": "1.1",
+            "arch": "amd64",
+            "format": "deb"
+          }
+        },
+        {
+          "filename": "kubeadm_1.34.10-1.1_amd64.deb",
+          "sourceType": "file",
+          "size": 12644960,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/kubernetes/core:/stable:/v1.34/deb/amd64/",
+          "checkedAt": "2026-10-02T08:02:04.090Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/kubernetes/core:/stable:/v1.34/deb/amd64/kubeadm_1.34.10-1.1_amd64.deb",
+          "expectedPattern": "deb",
+          "expectedCaptures": {
+            "software": "kubeadm",
+            "version": "1.34.10",
+            "revision": "1.1",
+            "arch": "amd64",
+            "format": "deb"
+          }
+        },
+        {
+          "filename": "kubeadm_1.34.11-1.1_amd64.deb",
+          "sourceType": "file",
+          "size": 12707524,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/kubernetes/core:/stable:/v1.34/deb/amd64/",
+          "checkedAt": "2026-10-02T08:02:04.090Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/kubernetes/core:/stable:/v1.34/deb/amd64/kubeadm_1.34.11-1.1_amd64.deb",
+          "expectedPattern": "deb",
+          "expectedCaptures": {
+            "software": "kubeadm",
+            "version": "1.34.11",
+            "revision": "1.1",
+            "arch": "amd64",
+            "format": "deb"
+          }
+        },
+        {
+          "filename": "kubeadm_1.34.12-1.1_amd64.deb",
+          "sourceType": "file",
+          "size": 12709844,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/kubernetes/core:/stable:/v1.34/deb/amd64/",
+          "checkedAt": "2026-10-02T08:02:04.090Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/kubernetes/core:/stable:/v1.34/deb/amd64/kubeadm_1.34.12-1.1_amd64.deb",
+          "expectedPattern": "deb",
+          "expectedCaptures": {
+            "software": "kubeadm",
+            "version": "1.34.12",
+            "revision": "1.1",
+            "arch": "amd64",
+            "format": "deb"
+          }
+        },
+        {
+          "filename": "kubeadm_1.34.2-1.1_amd64.deb",
+          "sourceType": "file",
+          "size": 12536136,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/kubernetes/core:/stable:/v1.34/deb/amd64/",
+          "checkedAt": "2026-10-02T08:02:04.090Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/kubernetes/core:/stable:/v1.34/deb/amd64/kubeadm_1.34.2-1.1_amd64.deb",
+          "expectedPattern": "deb",
+          "expectedCaptures": {
+            "software": "kubeadm",
+            "version": "1.34.2",
+            "revision": "1.1",
+            "arch": "amd64",
+            "format": "deb"
+          }
+        },
+        {
+          "filename": "kubeadm_1.34.3-1.1_amd64.deb",
+          "sourceType": "file",
+          "size": 12545816,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/kubernetes/core:/stable:/v1.34/deb/amd64/",
+          "checkedAt": "2026-10-02T08:02:04.090Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/kubernetes/core:/stable:/v1.34/deb/amd64/kubeadm_1.34.3-1.1_amd64.deb",
+          "expectedPattern": "deb",
+          "expectedCaptures": {
+            "software": "kubeadm",
+            "version": "1.34.3",
+            "revision": "1.1",
+            "arch": "amd64",
+            "format": "deb"
+          }
+        },
+        {
+          "filename": "kubeadm_1.34.4-1.1_amd64.deb",
+          "sourceType": "file",
+          "size": 12547668,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/kubernetes/core:/stable:/v1.34/deb/amd64/",
+          "checkedAt": "2026-10-02T08:02:04.090Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/kubernetes/core:/stable:/v1.34/deb/amd64/kubeadm_1.34.4-1.1_amd64.deb",
+          "expectedPattern": "deb",
+          "expectedCaptures": {
+            "software": "kubeadm",
+            "version": "1.34.4",
+            "revision": "1.1",
+            "arch": "amd64",
+            "format": "deb"
+          }
+        },
+        {
+          "filename": "kubeadm_1.34.5-1.1_amd64.deb",
+          "sourceType": "file",
+          "size": 12547428,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/kubernetes/core:/stable:/v1.34/deb/amd64/",
+          "checkedAt": "2026-10-02T08:02:04.090Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/kubernetes/core:/stable:/v1.34/deb/amd64/kubeadm_1.34.5-1.1_amd64.deb",
+          "expectedPattern": "deb",
+          "expectedCaptures": {
+            "software": "kubeadm",
+            "version": "1.34.5",
+            "revision": "1.1",
+            "arch": "amd64",
+            "format": "deb"
+          }
+        },
+        {
+          "filename": "kubeadm_1.34.6-1.1_amd64.deb",
+          "sourceType": "file",
+          "size": 12545572,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/kubernetes/core:/stable:/v1.34/deb/amd64/",
+          "checkedAt": "2026-10-02T08:02:04.090Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/kubernetes/core:/stable:/v1.34/deb/amd64/kubeadm_1.34.6-1.1_amd64.deb",
+          "expectedPattern": "deb",
+          "expectedCaptures": {
+            "software": "kubeadm",
+            "version": "1.34.6",
+            "revision": "1.1",
+            "arch": "amd64",
+            "format": "deb"
+          }
+        },
+        {
+          "filename": "kubeadm_1.34.7-1.1_amd64.deb",
+          "sourceType": "file",
+          "size": 12616600,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/kubernetes/core:/stable:/v1.34/deb/amd64/",
+          "checkedAt": "2026-10-02T08:02:04.090Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/kubernetes/core:/stable:/v1.34/deb/amd64/kubeadm_1.34.7-1.1_amd64.deb",
+          "expectedPattern": "deb",
+          "expectedCaptures": {
+            "software": "kubeadm",
+            "version": "1.34.7",
+            "revision": "1.1",
+            "arch": "amd64",
+            "format": "deb"
+          }
+        }
+      ],
+      "negatives": []
+    },
+    {
+      "ruleId": "opensuse-tumbleweed",
+      "totalMatchingNamesInReviewedListings": 5,
+      "positives": [
+        {
+          "filename": "openSUSE-Tumbleweed-DVD-x86_64-Snapshot20260929-Media.iso",
+          "sourceType": "file",
+          "size": 4658823168,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/tumbleweed/iso/",
+          "checkedAt": "2026-10-02T08:02:06.120Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Snapshot20260929-Media.iso",
+          "expectedPattern": "snapshot",
+          "expectedCaptures": {
+            "variant": "DVD",
+            "arch": "x86_64",
+            "version": "20260929",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "openSUSE-Tumbleweed-GNOME-Live-x86_64-Snapshot20260929-Media.iso",
+          "sourceType": "file",
+          "size": 1279905792,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/tumbleweed/iso/",
+          "checkedAt": "2026-10-02T08:02:06.120Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-GNOME-Live-x86_64-Snapshot20260929-Media.iso",
+          "expectedPattern": "snapshot",
+          "expectedCaptures": {
+            "variant": "GNOME-Live",
+            "arch": "x86_64",
+            "version": "20260929",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "openSUSE-Tumbleweed-KDE-Live-x86_64-Snapshot20260929-Media.iso",
+          "sourceType": "file",
+          "size": 1285572608,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/tumbleweed/iso/",
+          "checkedAt": "2026-10-02T08:02:06.120Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-KDE-Live-x86_64-Snapshot20260929-Media.iso",
+          "expectedPattern": "snapshot",
+          "expectedCaptures": {
+            "variant": "KDE-Live",
+            "arch": "x86_64",
+            "version": "20260929",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "openSUSE-Tumbleweed-NET-x86_64-Snapshot20260929-Media.iso",
+          "sourceType": "file",
+          "size": 419430400,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/tumbleweed/iso/",
+          "checkedAt": "2026-10-02T08:02:06.120Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Snapshot20260929-Media.iso",
+          "expectedPattern": "snapshot",
+          "expectedCaptures": {
+            "variant": "NET",
+            "arch": "x86_64",
+            "version": "20260929",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "openSUSE-Tumbleweed-XFCE-Live-x86_64-Snapshot20260929-Media.iso",
+          "sourceType": "file",
+          "size": 1231521792,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/tumbleweed/iso/",
+          "checkedAt": "2026-10-02T08:02:06.120Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-XFCE-Live-x86_64-Snapshot20260929-Media.iso",
+          "expectedPattern": "snapshot",
+          "expectedCaptures": {
+            "variant": "XFCE-Live",
+            "arch": "x86_64",
+            "version": "20260929",
+            "format": "iso"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "README.FIRST",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/tumbleweed/iso/",
+          "checkedAt": "2026-10-02T08:02:06.120Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "openSUSE-MicroOS-DVD-x86_64-Current.iso.sha256",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/tumbleweed/iso/",
+          "checkedAt": "2026-10-02T08:02:06.120Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "openSUSE-MicroOS-DVD-x86_64-Current.iso.sha256.asc",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/tumbleweed/iso/",
+          "checkedAt": "2026-10-02T08:02:06.120Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "openSUSE-MicroOS-DVD-x86_64-Snapshot20260929-Media.iso.sha256",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/tumbleweed/iso/",
+          "checkedAt": "2026-10-02T08:02:06.120Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "openSUSE-MicroOS-DVD-x86_64-Snapshot20260929-Media.iso.sha256.asc",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/tumbleweed/iso/",
+          "checkedAt": "2026-10-02T08:02:06.120Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "openSUSE-Tumbleweed-DVD-x86_64-Current.iso.sha256",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/opensuse/tumbleweed/iso/",
+          "checkedAt": "2026-10-02T08:02:06.120Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "spark",
+      "totalMatchingNamesInReviewedListings": 3,
+      "positives": [
+        {
+          "filename": "spark-4.2.0-bin-hadoop3-connect.tgz",
+          "sourceType": "file",
+          "size": 555414637,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/spark/spark-4.2.0/",
+          "checkedAt": "2026-10-02T07:59:10.952Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/spark/spark-4.2.0/spark-4.2.0-bin-hadoop3-connect.tgz",
+          "expectedPattern": "binary",
+          "expectedCaptures": {
+            "version": "4.2.0",
+            "buildVariant": "hadoop3-connect",
+            "format": "tgz"
+          }
+        },
+        {
+          "filename": "spark-4.2.0-bin-hadoop3.tgz",
+          "sourceType": "file",
+          "size": 555409690,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/spark/spark-4.2.0/",
+          "checkedAt": "2026-10-02T07:59:10.952Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/spark/spark-4.2.0/spark-4.2.0-bin-hadoop3.tgz",
+          "expectedPattern": "binary",
+          "expectedCaptures": {
+            "version": "4.2.0",
+            "buildVariant": "hadoop3",
+            "format": "tgz"
+          }
+        },
+        {
+          "filename": "spark-4.2.0-bin-without-hadoop.tgz",
+          "sourceType": "file",
+          "size": 471301088,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/spark/spark-4.2.0/",
+          "checkedAt": "2026-10-02T07:59:10.952Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/spark/spark-4.2.0/spark-4.2.0-bin-without-hadoop.tgz",
+          "expectedPattern": "binary",
+          "expectedCaptures": {
+            "version": "4.2.0",
+            "buildVariant": "without-hadoop",
+            "format": "tgz"
+          }
+        }
+      ],
+      "negatives": []
+    },
+    {
+      "ruleId": "aosc",
+      "totalMatchingNamesInReviewedListings": 1,
+      "positives": [
+        {
+          "filename": "aosc-os_installer_20260621_amd64.iso",
+          "sourceType": "file",
+          "size": 9320445952,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anthon/aosc-os/os-amd64/installer/",
+          "checkedAt": "2026-10-02T08:12:10.022Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/anthon/aosc-os/os-amd64/installer/aosc-os_installer_20260621_amd64.iso",
+          "expectedPattern": "installer-iso",
+          "expectedCaptures": {
+            "releaseDate": "20260621",
+            "arch": "amd64",
+            "format": "iso"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "aosc-os_installer_20260621_amd64.iso.sha256sum",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/anthon/aosc-os/os-amd64/installer/",
+          "checkedAt": "2026-10-02T08:12:10.022Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "kubuntu",
+      "totalMatchingNamesInReviewedListings": 3,
+      "positives": [
+        {
+          "filename": "kubuntu-24.04.3-desktop-amd64.iso",
+          "sourceType": "file",
+          "size": 4560015360,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-cdimage/kubuntu/releases/24.04.5/release/",
+          "checkedAt": "2026-10-02T08:16:37.663Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/ubuntu-cdimage/kubuntu/releases/24.04.5/release/kubuntu-24.04.3-desktop-amd64.iso",
+          "expectedPattern": "release-iso",
+          "expectedCaptures": {
+            "version": "24.04.3",
+            "variant": "desktop",
+            "arch": "amd64",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "kubuntu-24.04.4-desktop-amd64.iso",
+          "sourceType": "file",
+          "size": 4796542976,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-cdimage/kubuntu/releases/24.04.5/release/",
+          "checkedAt": "2026-10-02T08:16:37.663Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/ubuntu-cdimage/kubuntu/releases/24.04.5/release/kubuntu-24.04.4-desktop-amd64.iso",
+          "expectedPattern": "release-iso",
+          "expectedCaptures": {
+            "version": "24.04.4",
+            "variant": "desktop",
+            "arch": "amd64",
+            "format": "iso"
+          }
+        },
+        {
+          "filename": "kubuntu-24.04.5-desktop-amd64.iso",
+          "sourceType": "file",
+          "size": 5457694720,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-cdimage/kubuntu/releases/24.04.5/release/",
+          "checkedAt": "2026-10-02T08:16:37.663Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/ubuntu-cdimage/kubuntu/releases/24.04.5/release/kubuntu-24.04.5-desktop-amd64.iso",
+          "expectedPattern": "release-iso",
+          "expectedCaptures": {
+            "version": "24.04.5",
+            "variant": "desktop",
+            "arch": "amd64",
+            "format": "iso"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "SHA256SUMS",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-cdimage/kubuntu/releases/24.04.5/release/",
+          "checkedAt": "2026-10-02T08:16:37.663Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "SHA256SUMS.gpg",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-cdimage/kubuntu/releases/24.04.5/release/",
+          "checkedAt": "2026-10-02T08:16:37.663Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "kubuntu-24.04.3-desktop-amd64.manifest",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-cdimage/kubuntu/releases/24.04.5/release/",
+          "checkedAt": "2026-10-02T08:16:37.663Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "kubuntu-24.04.4-desktop-amd64.manifest",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-cdimage/kubuntu/releases/24.04.5/release/",
+          "checkedAt": "2026-10-02T08:16:37.663Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "kubuntu-24.04.5-desktop-amd64.manifest",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/ubuntu-cdimage/kubuntu/releases/24.04.5/release/",
+          "checkedAt": "2026-10-02T08:16:37.663Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    },
+    {
+      "ruleId": "ant",
+      "totalMatchingNamesInReviewedListings": 7,
+      "positives": [
+        {
+          "filename": "apache-ant-1.10.18-bin.tar.bz2",
+          "sourceType": "file",
+          "size": 5470467,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/ant/binaries/",
+          "checkedAt": "2026-10-02T08:15:49.599Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/ant/binaries/apache-ant-1.10.18-bin.tar.bz2",
+          "expectedPattern": "binary",
+          "expectedCaptures": {
+            "version": "1.10.18",
+            "format": "tar.bz2"
+          }
+        },
+        {
+          "filename": "apache-ant-1.10.18-bin.tar.gz",
+          "sourceType": "file",
+          "size": 7133405,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/ant/binaries/",
+          "checkedAt": "2026-10-02T08:15:49.599Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/ant/binaries/apache-ant-1.10.18-bin.tar.gz",
+          "expectedPattern": "binary",
+          "expectedCaptures": {
+            "version": "1.10.18",
+            "format": "tar.gz"
+          }
+        },
+        {
+          "filename": "apache-ant-1.10.18-bin.tar.xz",
+          "sourceType": "file",
+          "size": 5100020,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/ant/binaries/",
+          "checkedAt": "2026-10-02T08:15:49.599Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/ant/binaries/apache-ant-1.10.18-bin.tar.xz",
+          "expectedPattern": "binary",
+          "expectedCaptures": {
+            "version": "1.10.18",
+            "format": "tar.xz"
+          }
+        },
+        {
+          "filename": "apache-ant-1.10.18-bin.zip",
+          "sourceType": "file",
+          "size": 10413759,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/ant/binaries/",
+          "checkedAt": "2026-10-02T08:15:49.599Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/ant/binaries/apache-ant-1.10.18-bin.zip",
+          "expectedPattern": "binary",
+          "expectedCaptures": {
+            "version": "1.10.18",
+            "format": "zip"
+          }
+        },
+        {
+          "filename": "apache-ant-1.9.16-bin.tar.bz2",
+          "sourceType": "file",
+          "size": 4495811,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/ant/binaries/",
+          "checkedAt": "2026-10-02T08:15:49.599Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/ant/binaries/apache-ant-1.9.16-bin.tar.bz2",
+          "expectedPattern": "binary",
+          "expectedCaptures": {
+            "version": "1.9.16",
+            "format": "tar.bz2"
+          }
+        },
+        {
+          "filename": "apache-ant-1.9.16-bin.tar.gz",
+          "sourceType": "file",
+          "size": 5839799,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/ant/binaries/",
+          "checkedAt": "2026-10-02T08:15:49.599Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/ant/binaries/apache-ant-1.9.16-bin.tar.gz",
+          "expectedPattern": "binary",
+          "expectedCaptures": {
+            "version": "1.9.16",
+            "format": "tar.gz"
+          }
+        },
+        {
+          "filename": "apache-ant-1.9.16-bin.zip",
+          "sourceType": "file",
+          "size": 8729987,
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/ant/binaries/",
+          "checkedAt": "2026-10-02T08:15:49.599Z",
+          "verification": "reviewed_listing",
+          "downloadUrl": "https://mirrors.pku.edu.cn/apache/ant/binaries/apache-ant-1.9.16-bin.zip",
+          "expectedPattern": "binary",
+          "expectedCaptures": {
+            "version": "1.9.16",
+            "format": "zip"
+          }
+        }
+      ],
+      "negatives": [
+        {
+          "filename": "apache-ant-1.10.18-bin.tar.bz2.cdx.json",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/ant/binaries/",
+          "checkedAt": "2026-10-02T08:15:49.599Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "apache-ant-1.10.18-bin.tar.bz2.cdx.xml",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/ant/binaries/",
+          "checkedAt": "2026-10-02T08:15:49.599Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "apache-ant-1.10.18-bin.tar.gz.cdx.json",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/ant/binaries/",
+          "checkedAt": "2026-10-02T08:15:49.599Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "apache-ant-1.10.18-bin.tar.gz.cdx.xml",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/ant/binaries/",
+          "checkedAt": "2026-10-02T08:15:49.599Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "apache-ant-1.10.18-bin.tar.xz.cdx.json",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/ant/binaries/",
+          "checkedAt": "2026-10-02T08:15:49.599Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        },
+        {
+          "filename": "apache-ant-1.10.18-bin.tar.xz.cdx.xml",
+          "evidenceUrl": "https://mirrors.pku.edu.cn/files/apache/ant/binaries/",
+          "checkedAt": "2026-10-02T08:15:49.599Z",
+          "verification": "reviewed_listing",
+          "expectedEnvelope": "not_matched",
+          "note": "Filename envelope exclusion only; this is not the production three-state classifier."
+        }
+      ]
+    }
+  ],
+  "regression": [
+    {
+      "ruleId": "nodejs",
+      "filename": "node-v22.14.0.pkg",
+      "expectedCaptures": {
+        "version": "22.14.0",
+        "format": "pkg"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "nodejs",
+      "filename": "node-v22.14.0-linux-x64.tar.gz",
+      "expectedCaptures": {
+        "platform": "linux",
+        "arch": "x64",
+        "version": "22.14.0"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "nodejs",
+      "filename": "node-v22.14.0.tar.gz",
+      "expectedCaptures": null,
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "nodejs",
+      "filename": "node-v22.14.0-headers.tar.gz",
+      "expectedCaptures": null,
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "tomcat",
+      "filename": "apache-tomcat-11.0.26.tar.gz",
+      "expectedCaptures": {
+        "version": "11.0.26"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "tomcat",
+      "filename": "apache-tomcat-11.0.26-deployer.tar.gz",
+      "expectedCaptures": null,
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "kafka",
+      "filename": "kafka_2.13-4.3.1.tgz",
+      "expectedCaptures": {
+        "version": "4.3.1",
+        "scalaBuild": "2.13"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "kafka",
+      "filename": "kafka-4.3.1-src.tgz",
+      "expectedCaptures": null,
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "miniconda",
+      "filename": "Miniconda3-py310_22.11.1-1-Linux-aarch64.sh",
+      "expectedCaptures": {
+        "pythonBuild": "310",
+        "version": "22.11.1-1",
+        "pythonMajor": "3"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "miniconda",
+      "filename": "Miniconda3-4.7.12-Linux-x86_64.sh",
+      "expectedCaptures": {
+        "version": "4.7.12"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "anaconda",
+      "filename": "Anaconda3-5.3.1-Linux-x86_64.sh",
+      "expectedCaptures": {
+        "version": "5.3.1"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "ubuntu",
+      "filename": "ubuntu-24.04.5.1-desktop-amd64.iso",
+      "expectedCaptures": {
+        "version": "24.04.5.1"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "rocky",
+      "filename": "Rocky-9.8-x86_64-dvd.iso",
+      "expectedCaptures": {
+        "version": "9.8",
+        "variant": "dvd"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "almalinux",
+      "filename": "AlmaLinux-9.8-x86_64-boot.iso",
+      "expectedCaptures": {
+        "version": "9.8",
+        "variant": "boot"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "openeuler",
+      "filename": "openEuler-25.09-x86_64-dvd.iso",
+      "expectedCaptures": {
+        "version": "25.09"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "openeuler",
+      "filename": "openEuler-25.09-everything-debug-x86_64-dvd.iso",
+      "expectedCaptures": null,
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "mactex",
+      "filename": "mactex-basictex-20260301.pkg",
+      "expectedCaptures": null,
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "basictex",
+      "filename": "mactex-basictex-20260301.pkg",
+      "expectedCaptures": {
+        "releaseDate": "20260301"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "r-macos",
+      "filename": "R-4.6.1-arm64.pkg",
+      "expectedCaptures": {
+        "version": "4.6.1",
+        "arch": "arm64"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "rtools",
+      "filename": "rtools45-aarch64-6768-6492.exe",
+      "expectedCaptures": {
+        "series": "45",
+        "arch": "aarch64",
+        "build": "6768-6492"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "archlinux",
+      "filename": "archlinux-2026.10.01-x86_64.iso",
+      "expectedCaptures": {
+        "version": "2026.10.01"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "aosc",
+      "filename": "aosc-os_installer_20260621_amd64.iso",
+      "expectedCaptures": {
+        "releaseDate": "20260621",
+        "arch": "amd64"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "kubuntu",
+      "filename": "kubuntu-24.04.3-desktop-amd64.iso",
+      "expectedCaptures": {
+        "version": "24.04.3"
+      },
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "ant",
+      "filename": "apache-ant-1.10.18-bin.tar.gz.cdx.json",
+      "expectedCaptures": null,
+      "evidenceStatus": "reviewed_listing"
+    },
+    {
+      "ruleId": "kubernetes-tools",
+      "filename": "kubectl_1.34.0-1.1_amd64.deb",
+      "expectedCaptures": {
+        "software": "kubectl",
+        "version": "1.34.0",
+        "revision": "1.1"
+      },
+      "evidenceStatus": "reviewed_listing"
+    }
+  ]
+}

@@ -113,16 +113,25 @@ try {
   assert.equal(oldFiles.items[0].filename, filename);
   assert.equal((await fetch(base + '/api/health')).status, 200);
   const resources = await (await fetch(base + '/api/resources')).json();
-  assert.equal(resources.catalog, 'installers-v2');
+  assert.equal(resources.catalog, 'download-rules-v3');
   assert.ok(resources.items.length > 0);
   assert.ok(resources.items.every((item) => item.siteId === 'pku'));
   assert.equal((await fetch(base + '/api/resources/pku%3Adebian/browse')).status, 410);
   assert.equal((await fetch(base + '/api/resources/ustc%3Adebian')).status, 404);
-  assert.equal((await fetch(base + '/api/files?resource=pku%3Adebian')).status, 404);
+  // 软件身份不再因尚无下载而消失；空结果必须来自数据库，不能联网补齐。
+  const debian = await fetch(base + '/api/resources/pku%3Adebian');
+  assert.equal(debian.status, 200);
+  assert.equal((await debian.json()).resource.artifactCount, 0);
+  const emptyFiles = await fetch(base + '/api/files?resource=pku%3Adebian');
+  assert.equal(emptyFiles.status, 200);
+  assert.deepEqual((await emptyFiles.json()).items, []);
+  const ecosystems = await (await fetch(base + '/api/ecosystems')).json();
+  assert.ok(ecosystems.items.some((item) => item.id === 'debian'));
+  assert.ok(ecosystems.items.length > 5);
   const sites = await (await fetch(base + '/api/sites')).json();
   assert.ok(sites.items.some((site) => site.id === 'pku' && site.enabled));
   console.log(
-    '独立打包API/采集线程加载成功；Redis失联时数据库读取200，旧目录410，其它站资源404；空新库禁止退役旧库，默认退役工具不写入/删除。',
+    `API/采集线程打包规则加载成功；数据库登记${ecosystems.items.length}个生态、${resources.items.length}个软件条目；Redis失联仍可查询已有文件，无下载身份保留且不联网；旧目录410，其它站404；退役dry-run不删除数据。`,
   );
 } finally {
   const exited =

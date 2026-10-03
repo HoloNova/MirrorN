@@ -1,4 +1,16 @@
 import type { DatabaseSync } from 'node:sqlite';
+import { readFileSync } from 'node:fs';
+import { EcosystemTaxonomySchema, SiteResourceListSchema } from '@mirrorn/shared';
+const taxonomy = EcosystemTaxonomySchema.parse(
+  JSON.parse(
+    readFileSync(new URL('../../../../data/ecosystem-taxonomy.json', import.meta.url), 'utf8'),
+  ),
+);
+const resources = SiteResourceListSchema.parse(
+  JSON.parse(
+    readFileSync(new URL('../../../../data/site-resources/pku.json', import.meta.url), 'utf8'),
+  ),
+);
 import { openInstallerDatabase } from './database.js';
 import { syncCatalog } from './catalog.js';
 import { beginRun, publishRun, stageDownloads, type Download } from './installers.js';
@@ -24,8 +36,8 @@ export function indexFixture(path = ':memory:') {
         sources: [],
       },
     ],
-    taxonomy: [],
-    siteResources: [],
+    taxonomy,
+    siteResources: [resources],
     tutorials: [],
   });
   return db;

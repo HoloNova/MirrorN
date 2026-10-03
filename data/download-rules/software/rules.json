@@ -1,0 +1,612 @@
+[
+  {
+    "id": "nodejs",
+    "status": "active",
+    "templateId": "version-directory",
+    "softwareIds": ["nodejs"],
+    "matches": [
+      {
+        "id": "windows-msi",
+        "pattern": "^node-v(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)-(?<arch>x64|x86|arm64)\\.(?<format>msi)$",
+        "platforms": ["windows"],
+        "purpose": "installer",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {}
+      },
+      {
+        "id": "macos-pkg",
+        "pattern": "^node-v(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)\\.(?<format>pkg)$",
+        "platforms": ["macos"],
+        "purpose": "installer",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {}
+      },
+      {
+        "id": "unix-runtime",
+        "pattern": "^node-v(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)-(?<platform>linux|darwin)-(?<arch>x64|x86|arm64|armv7l|armv6l|ppc64le|s390x)\\.(?<format>tar\\.xz|tar\\.gz)$",
+        "platforms": [],
+        "platformCapture": "platform",
+        "purpose": "runtime",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {}
+      },
+      {
+        "id": "windows-runtime",
+        "pattern": "^node-v(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)-win-(?<arch>x64|x86|arm64)\\.(?<format>zip|7z)$",
+        "platforms": ["windows"],
+        "purpose": "runtime",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {}
+      }
+    ],
+    "reject": [
+      "^node-v\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta)(?:[.-]?\\d+)?)?\\.(?:tar\\.gz|tar\\.xz)$"
+    ],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "tomcat",
+    "status": "active",
+    "templateId": "version-directory",
+    "softwareIds": ["apache-tomcat"],
+    "matches": [
+      {
+        "id": "windows-installer",
+        "pattern": "^apache-tomcat-(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)\\.(?<format>exe)$",
+        "platforms": ["windows"],
+        "purpose": "installer",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {}
+      },
+      {
+        "id": "windows-runtime",
+        "pattern": "^apache-tomcat-(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)-windows-(?<arch>x64|x86|arm64)\\.(?<format>zip)$",
+        "platforms": ["windows"],
+        "purpose": "runtime",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {
+          "runtime": "Java",
+          "supportedPlatformsUnverified": true,
+          "minimumRuntimeUnverified": true
+        }
+      },
+      {
+        "id": "java-runtime",
+        "pattern": "^apache-tomcat-(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)\\.(?<format>tar\\.gz|zip)$",
+        "platforms": [],
+        "purpose": "runtime",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {
+          "runtime": "Java",
+          "supportedPlatformsUnverified": true,
+          "minimumRuntimeUnverified": true
+        }
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "kafka",
+    "status": "active",
+    "templateId": "version-directory",
+    "softwareIds": ["apache-kafka"],
+    "matches": [
+      {
+        "id": "scala-binary",
+        "pattern": "^kafka_(?<scalaBuild>\\d+(?:\\.\\d+)+)-(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)\\.(?<format>tgz)$",
+        "platforms": [],
+        "purpose": "runtime",
+        "parser": "kafka",
+        "versionKind": "version",
+        "requirements": {
+          "runtime": "Java",
+          "supportedPlatformsUnverified": true,
+          "minimumRuntimeUnverified": true
+        }
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "maven",
+    "status": "active",
+    "templateId": "version-directory",
+    "softwareIds": ["apache-maven"],
+    "matches": [
+      {
+        "id": "binary",
+        "pattern": "^apache-maven-(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)-bin\\.(?<format>tar\\.gz|zip)$",
+        "platforms": [],
+        "purpose": "runtime",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {
+          "runtime": "Java",
+          "supportedPlatformsUnverified": true,
+          "minimumRuntimeUnverified": true
+        }
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "texlive",
+    "status": "active",
+    "templateId": "flat",
+    "softwareIds": ["texlive"],
+    "matches": [
+      {
+        "id": "windows-network",
+        "pattern": "^install-tl-windows\\.(?<format>exe)$",
+        "platforms": ["windows"],
+        "purpose": "network_installer",
+        "parser": "texlive",
+        "versionKind": "version",
+        "requirements": {
+          "network": true
+        }
+      },
+      {
+        "id": "unix-network",
+        "pattern": "^install-tl-unx\\.(?<format>tar\\.gz)$",
+        "platforms": ["linux", "macos"],
+        "purpose": "network_installer",
+        "parser": "texlive",
+        "versionKind": "version",
+        "requirements": {
+          "network": true
+        }
+      }
+    ],
+    "reject": ["^update-tlmgr-latest\\.(?:exe|sh)$"],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "mactex",
+    "status": "active",
+    "templateId": "flat",
+    "softwareIds": ["mactex"],
+    "matches": [
+      {
+        "id": "dated-installer",
+        "pattern": "^mactex-(?<releaseDate>\\d{8})\\.(?<format>pkg)$",
+        "platforms": ["macos"],
+        "purpose": "installer",
+        "parser": "standard",
+        "versionKind": "date",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "basictex",
+    "status": "active",
+    "templateId": "flat",
+    "softwareIds": ["basictex"],
+    "matches": [
+      {
+        "id": "dated-installer",
+        "pattern": "^mactex-basictex-(?<releaseDate>\\d{8})\\.(?<format>pkg)$",
+        "platforms": ["macos"],
+        "purpose": "installer",
+        "parser": "standard",
+        "versionKind": "date",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "r-windows",
+    "status": "active",
+    "templateId": "version-directory",
+    "softwareIds": ["r-cran"],
+    "matches": [
+      {
+        "id": "windows-r",
+        "pattern": "^R-(?<version>\\d+(?:\\.\\d+)+)-win\\.(?<format>exe)$",
+        "platforms": ["windows"],
+        "purpose": "installer",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "r-macos",
+    "status": "active",
+    "templateId": "version-directory",
+    "softwareIds": ["r-cran"],
+    "matches": [
+      {
+        "id": "mac-r",
+        "pattern": "^R-(?<version>\\d+(?:\\.\\d+)+)(?:-(?<arch>arm64|x86_64))?\\.(?<format>pkg)$",
+        "platforms": ["macos"],
+        "purpose": "installer",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "rtools",
+    "status": "active",
+    "templateId": "version-directory",
+    "softwareIds": ["rtools"],
+    "matches": [
+      {
+        "id": "toolchain",
+        "pattern": "^rtools(?<series>\\d+)(?:-(?<arch>aarch64))?-(?<build>\\d+-\\d+)\\.(?<format>exe)$",
+        "platforms": ["windows"],
+        "purpose": "installer",
+        "parser": "rtools",
+        "versionKind": "version",
+        "requirements": {}
+      }
+    ],
+    "reject": ["^toolchain-libs-[\\w.-]+\\.tar\\.zst$"],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "anaconda",
+    "status": "active",
+    "templateId": "flat",
+    "softwareIds": ["anaconda-distribution"],
+    "matches": [
+      {
+        "id": "release",
+        "pattern": "^Anaconda(?<pythonMajor>[23])?-(?:py(?<pythonBuild>\\d+)_)?(?<version>\\d+(?:\\.\\d+)+(?:-\\d+)?)-(?<platform>Windows|MacOSX|Linux)-(?<arch>x86_64|x86|aarch64|arm64|ppc64le|s390x)\\.(?<format>exe|pkg|sh)$",
+        "platforms": [],
+        "platformCapture": "platform",
+        "purpose": "installer",
+        "parser": "conda",
+        "versionKind": "version",
+        "requirements": {}
+      },
+      {
+        "id": "unresolved-alias",
+        "pattern": "^Anaconda(?<pythonMajor>[23])?-(?:py(?<pythonBuild>\\d+)_)?(?<version>latest)-(?<platform>Windows|MacOSX|Linux)-(?<arch>x86_64|x86|aarch64|arm64|ppc64le|s390x)\\.(?<format>exe|pkg|sh)$",
+        "platforms": [],
+        "platformCapture": "platform",
+        "purpose": "installer",
+        "parser": "conda",
+        "versionKind": "alias",
+        "requirements": {
+          "aliasUnresolved": true
+        }
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "miniconda",
+    "status": "active",
+    "templateId": "flat",
+    "softwareIds": ["anaconda-installer"],
+    "matches": [
+      {
+        "id": "release",
+        "pattern": "^Miniconda(?<pythonMajor>[23])?-(?:py(?<pythonBuild>\\d+)_)?(?<version>\\d+(?:\\.\\d+)+(?:-\\d+)?)-(?<platform>Windows|MacOSX|Linux)-(?<arch>x86_64|x86|aarch64|arm64|ppc64le|s390x)\\.(?<format>exe|pkg|sh)$",
+        "platforms": [],
+        "platformCapture": "platform",
+        "purpose": "installer",
+        "parser": "conda",
+        "versionKind": "version",
+        "requirements": {}
+      },
+      {
+        "id": "unresolved-alias",
+        "pattern": "^Miniconda(?<pythonMajor>[23])?-(?:py(?<pythonBuild>\\d+)_)?(?<version>latest)-(?<platform>Windows|MacOSX|Linux)-(?<arch>x86_64|x86|aarch64|arm64|ppc64le|s390x)\\.(?<format>exe|pkg|sh)$",
+        "platforms": [],
+        "platformCapture": "platform",
+        "purpose": "installer",
+        "parser": "conda",
+        "versionKind": "alias",
+        "requirements": {
+          "aliasUnresolved": true
+        }
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "ubuntu",
+    "status": "active",
+    "templateId": "system-image",
+    "softwareIds": ["ubuntu"],
+    "matches": [
+      {
+        "id": "release",
+        "pattern": "^ubuntu-(?<version>\\d+\\.\\d+(?:\\.\\d+)*)-(?<variant>desktop|live-server|server)-(?<arch>amd64|arm64|i386|armhf|ppc64el|s390x|riscv64)\\.(?<format>iso)$",
+        "platforms": ["linux"],
+        "purpose": "system_image",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "debian",
+    "status": "active",
+    "templateId": "system-image",
+    "softwareIds": ["debian"],
+    "matches": [
+      {
+        "id": "netinst",
+        "pattern": "^debian(?:-(?<edition>edu|mac))?-(?<version>\\d+(?:\\.\\d+)+)-(?<arch>amd64|arm64|i386|armhf|armel|ppc64el|s390x|riscv64)-(?<variant>netinst)\\.(?<format>iso)$",
+        "platforms": ["linux"],
+        "purpose": "system_image",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "archlinux",
+    "status": "active",
+    "templateId": "system-image",
+    "softwareIds": ["archlinux"],
+    "matches": [
+      {
+        "id": "dated-iso",
+        "pattern": "^archlinux-(?<version>\\d{4}\\.\\d{2}\\.\\d{2})-(?<arch>x86_64)\\.(?<format>iso)$",
+        "platforms": ["linux"],
+        "purpose": "system_image",
+        "parser": "standard",
+        "versionKind": "date",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "rocky",
+    "status": "active",
+    "templateId": "system-image",
+    "softwareIds": ["rocky"],
+    "matches": [
+      {
+        "id": "numbered-iso",
+        "pattern": "^Rocky-(?<version>\\d+(?:\\.\\d+)+)-(?<arch>x86_64|aarch64|ppc64le|s390x)-(?<variant>boot|dvd|minimal)\\.(?<format>iso)$",
+        "platforms": ["linux"],
+        "purpose": "system_image",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "almalinux",
+    "status": "active",
+    "templateId": "system-image",
+    "softwareIds": ["almalinux"],
+    "matches": [
+      {
+        "id": "numbered-iso",
+        "pattern": "^AlmaLinux-(?<version>\\d+(?:\\.\\d+)+)-(?<arch>x86_64|aarch64|ppc64le|s390x)-(?<variant>boot|dvd|minimal)\\.(?<format>iso)$",
+        "platforms": ["linux"],
+        "purpose": "system_image",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "openeuler",
+    "status": "active",
+    "templateId": "system-image",
+    "softwareIds": ["openeuler"],
+    "matches": [
+      {
+        "id": "iso",
+        "pattern": "^openEuler-(?<version>\\d{2}\\.\\d{2}(?:-LTS)?(?:-SP\\d+)?)(?:-(?<variant>netinst|everything))?-(?<arch>x86_64|aarch64|riscv64|loongarch64)-dvd\\.(?<format>iso)$",
+        "platforms": ["linux"],
+        "purpose": "system_image",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "opensuse-leap",
+    "status": "active",
+    "templateId": "system-image",
+    "softwareIds": ["opensuse-leap"],
+    "matches": [
+      {
+        "id": "build-iso",
+        "pattern": "^openSUSE-Leap-(?<version>\\d+\\.\\d+)-(?<variant>DVD|NET)-(?<arch>x86_64|aarch64|ppc64le|s390x)-Build(?<build>\\d+(?:\\.\\d+)*)-Media\\.(?<format>iso)$",
+        "platforms": ["linux"],
+        "purpose": "system_image",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "archriscv",
+    "status": "active",
+    "templateId": "system-image",
+    "softwareIds": ["archriscv"],
+    "matches": [
+      {
+        "id": "dated-iso",
+        "pattern": "^archlinux-(?<version>\\d{4}\\.\\d{2}\\.\\d{2})-(?<arch>riscv64)\\.(?<format>iso)$",
+        "platforms": ["linux"],
+        "purpose": "system_image",
+        "parser": "standard",
+        "versionKind": "date",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "kubernetes-tools",
+    "status": "active",
+    "templateId": "scoped-package",
+    "softwareIds": ["kubectl", "kubeadm", "kubelet", "cri-tools"],
+    "matches": [
+      {
+        "id": "deb",
+        "pattern": "^(?<software>kubectl|kubeadm|kubelet|cri-tools)_(?<version>\\d+\\.\\d+\\.\\d+)-(?<revision>[A-Za-z0-9.+~]+)_(?<arch>amd64|arm64|ppc64el|s390x)\\.(?<format>deb)$",
+        "platforms": ["linux"],
+        "purpose": "installer",
+        "parser": "kubernetes",
+        "versionKind": "version",
+        "requirements": {
+          "packageEnvironment": "Debian-compatible DEB; distribution compatibility requires verification"
+        }
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "opensuse-tumbleweed",
+    "status": "active",
+    "templateId": "system-image",
+    "softwareIds": ["opensuse-tumbleweed"],
+    "matches": [
+      {
+        "id": "snapshot",
+        "pattern": "^openSUSE-Tumbleweed-(?<variant>DVD|NET|GNOME-Live|KDE-Live|XFCE-Live)-(?<arch>x86_64|aarch64|ppc64le|s390x)-Snapshot(?<version>\\d{8})-Media\\.(?<format>iso)$",
+        "platforms": ["linux"],
+        "purpose": "system_image",
+        "parser": "standard",
+        "versionKind": "date",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "spark",
+    "status": "draft",
+    "templateId": "version-directory",
+    "softwareIds": ["apache-spark"],
+    "matches": [
+      {
+        "id": "binary",
+        "pattern": "^spark-(?<version>\\d+\\.\\d+\\.\\d+)-bin-(?<buildVariant>hadoop\\d+(?:-connect)?|without-hadoop)\\.(?<format>tgz)$",
+        "platforms": [],
+        "purpose": "runtime",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {
+          "runtime": "Java",
+          "supportedPlatformsUnverified": true,
+          "minimumRuntimeUnverified": true
+        }
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": [
+      "docs/research/pku-rule-review/metadata-evidence.json",
+      "Connect/without-Hadoop prerequisites pending"
+    ]
+  },
+  {
+    "id": "aosc",
+    "status": "active",
+    "templateId": "system-image",
+    "softwareIds": ["aosc"],
+    "matches": [
+      {
+        "id": "installer-iso",
+        "pattern": "^aosc-os_installer_(?<releaseDate>\\d{8})_(?<arch>[a-z0-9]+)\\.(?<format>iso)$",
+        "platforms": ["linux"],
+        "purpose": "system_image",
+        "parser": "standard",
+        "versionKind": "date",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "kubuntu",
+    "status": "active",
+    "templateId": "system-image",
+    "softwareIds": ["kubuntu"],
+    "matches": [
+      {
+        "id": "release-iso",
+        "pattern": "^kubuntu-(?<version>\\d+\\.\\d+(?:\\.\\d+)*)-(?<variant>desktop)-(?<arch>amd64|arm64)\\.(?<format>iso)$",
+        "platforms": ["linux"],
+        "purpose": "system_image",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {}
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  },
+  {
+    "id": "ant",
+    "status": "active",
+    "templateId": "flat",
+    "softwareIds": ["apache-ant"],
+    "matches": [
+      {
+        "id": "binary",
+        "pattern": "^apache-ant-(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)-bin\\.(?<format>tar\\.gz|tar\\.xz|tar\\.bz2|zip)$",
+        "platforms": [],
+        "purpose": "runtime",
+        "parser": "standard",
+        "versionKind": "version",
+        "requirements": {
+          "runtime": "Java",
+          "supportedPlatformsUnverified": true,
+          "minimumRuntimeUnverified": true
+        }
+      }
+    ],
+    "reject": [],
+    "evidenceRefs": ["docs/research/pku-rule-review/metadata-evidence.json"]
+  }
+]

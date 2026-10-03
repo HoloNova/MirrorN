@@ -22,7 +22,7 @@ const visible = computed(() =>
 onMounted(async () => {
   try {
     [resources.value, options.value] = await Promise.all([
-      loadResources({ downloadableOnly: true }, controller.signal),
+      loadResources({}, controller.signal),
       loadEcosystems(controller.signal),
     ]);
   } catch (error) {
@@ -70,6 +70,9 @@ function filesLabel(resource: ResourceSummary): string {
 
         <p v-if="loading" class="hint">正在读取资源目录…</p>
         <p v-else-if="failure" role="alert" class="hint">{{ failure }}</p>
+        <p v-else-if="activeEcosystem && visible.length === 0" class="hint">
+          该生态已收录，安装资源尚未接入。
+        </p>
         <div v-else class="rows dir home-ecos">
           <div class="row head"><span>资源</span><span class="row-count">文件</span></div>
           <RouterLink
@@ -98,7 +101,7 @@ function filesLabel(resource: ResourceSummary): string {
               <dd class="num">北大试点</dd>
             </div>
             <div>
-              <dt>可下载/可浏览的资源</dt>
+              <dt>已收录软件</dt>
               <dd class="num">{{ resources.length }}</dd>
             </div>
             <div>

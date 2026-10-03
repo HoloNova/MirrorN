@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "templates": "templates.json",
+  "rules": "software/rules.json",
+  "bindings": "sites/pku.json"
+}

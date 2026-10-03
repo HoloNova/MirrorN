@@ -14,11 +14,16 @@ const state = resolve(stateArg),
 const api = new URL(process.env.MIRRORN_API_CHECK_URL || 'http://127.0.0.1:8788');
 if (!['localhost', '127.0.0.1', '[::1]'].includes(api.hostname))
   throw new Error('只允许核对本机生产API');
-const response = await fetch(new URL('/api/resources?limit=1', api), {
+const response = await fetch(new URL('/api/resources?limit=1&downloadable=1', api), {
   signal: AbortSignal.timeout(10000),
 });
 const live = await response.json();
-if (!response.ok || live.catalog !== 'installers-v2' || !live.items?.length)
+if (
+  !response.ok ||
+  !['installers-v2', 'download-rules-v3'].includes(live.catalog) ||
+  !live.items?.length ||
+  !live.items.some((item) => item.artifactCount > 0)
+)
   throw new Error('新安装目录尚未切换并提供下载，拒绝退役旧库/队列');
 const fresh = new DatabaseSync(join(state, 'mirrorn-installers.sqlite'), { readOnly: true });
 try {

@@ -24,6 +24,7 @@ const detail = ref<ResourceDetail>();
 const loading = ref(true);
 const failure = ref('');
 const platform = ref('');
+const availablePlatforms = ref<string[]>([]);
 const arch = ref('');
 const version = ref('');
 const release = ref('');
@@ -43,7 +44,7 @@ let fileController: AbortController | undefined;
 const resource = computed(() => detail.value?.resource);
 const primary = computed(() => files.value[0]);
 const platforms = computed(() =>
-  options.value.platforms.filter((value) => value !== 'any' && value !== 'unknown'),
+  availablePlatforms.value.filter((value) => value !== 'any' && value !== 'unknown'),
 );
 const arches = computed(() => options.value.arches.filter((value) => value !== 'unknown'));
 const versions = computed(() => options.value.versions);
@@ -109,6 +110,7 @@ async function refresh(id: string): Promise<void> {
   loading.value = true;
   failure.value = '';
   platform.value = '';
+  availablePlatforms.value = [];
   arch.value = '';
   version.value = '';
   release.value = '';
@@ -116,6 +118,7 @@ async function refresh(id: string): Promise<void> {
   try {
     detail.value = await loadResource(id, request.signal);
     const available = await loadFileOptions(id, {}, request.signal);
+    availablePlatforms.value = available.platforms;
     platform.value = detected.os && available.platforms.includes(detected.os) ? detected.os : '';
     arch.value = detected.arch && available.arches.includes(detected.arch) ? detected.arch : '';
     await update();
@@ -197,6 +200,11 @@ onUnmounted(() => {
                     ><span class="hint"
                       >{{ file.arch === 'unknown' ? '' : file.arch }} ·
                       {{ humanSize(file.size) || '大小未知' }}</span
+                    ><span v-if="file.role === 'network_installer'" class="hint">联网安装器</span
+                    ><span v-if="file.compatibility?.runtime === 'Java'" class="hint"
+                      >需要 Java{{
+                        file.compatibility?.minimumRuntimeUnverified ? '；最低版本待核对' : ''
+                      }}</span
                     ></span
                   >
                   <a

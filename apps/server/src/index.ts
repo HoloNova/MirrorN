@@ -9,6 +9,7 @@ import { syncCatalog } from './db/catalog.js';
 import { openInstallerDatabase, openReadDatabase } from './db/database.js';
 import { loadCatalogData } from './db/loadData.js';
 import { startIndexWorker } from './indexing/lifecycle.js';
+import { loadDownloadRules, type RuleSet } from './indexing/rules/load.js';
 import { createStatusStore } from './state/statusStore.js';
 import { loadStatusSources, type StatusSourceDefinition } from './upstream/statusSources.js';
 
@@ -33,24 +34,38 @@ const databasePath = resolve(repoRoot, config.snapshotDir, 'mirrorn-installers.s
 
 type Database = ReturnType<typeof openInstallerDatabase>;
 let db: Database | undefined;
+let rulesReady = false;
 try {
   db = openInstallerDatabase(databasePath);
-  const catalog = await loadCatalogData(dataDir);
-  const synced = syncCatalog(db, catalog);
-  console.log(
-    `资源库：${synced.sites} 个站点、${synced.resources} 个软件入口、${synced.ecosystems} 个生态（${databasePath}）；只启用北大`,
-  );
+  try {
+    const catalog = await loadCatalogData(dataDir);
+    let rules: RuleSet | null = null;
+    try {
+      rules = loadDownloadRules(dataDir);
+    } catch (error) {
+      console.error(`规则不可用，暂停采集，保留数据库查询：${String(error)}`);
+    }
+    const synced = syncCatalog(db, { ...catalog, rules });
+    rulesReady = rules !== null;
+    console.log(
+      `资源库：${synced.sites} 个站点、${synced.resources} 个软件入口、${synced.ecosystems} 个生态（${databasePath}）；只启用北大`,
+    );
+  } catch (error) {
+    console.error(`身份配置更新失败，暂停采集，已有查询继续可用：${String(error)}`);
+  }
   db.close();
   db = openReadDatabase(databasePath);
 } catch (error) {
+  db?.close();
   db = undefined;
   console.error(`资源库不可用，资源接口将返回503：${String(error)}`);
 }
 
 const indexWorker =
-  db !== undefined && config.crawlEnabled
+  db !== undefined && config.crawlEnabled && rulesReady
     ? startIndexWorker({
         databasePath,
+        dataDir,
         redisUrl: config.redisUrl,
         timeoutMs: config.crawlTimeoutMs,
         log: (message) => console.log(`索引：${message}`),

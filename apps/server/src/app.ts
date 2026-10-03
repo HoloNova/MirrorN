@@ -103,7 +103,7 @@ export function createApp(options: AppOptions = {}): Hono {
       ...(Number.isFinite(limit) ? { limit } : {}),
     });
     context.header('Cache-Control', 'no-store');
-    return context.json({ items, catalog: 'installers-v2' });
+    return context.json({ items, catalog: 'download-rules-v3' });
   });
 
   // 旧的用户触发源站抓取已退出：兼容地址也不能联网兜底。
@@ -196,7 +196,11 @@ export function createApp(options: AppOptions = {}): Hono {
     context.header('Cache-Control', 'no-store');
     if (!options.db) return context.json({ error: '资源库不可用' }, 503);
     return context.json({
-      items: searchResources(options.db, { siteId: context.req.param('id'), limit: 200 }),
+      items: searchResources(options.db, {
+        siteId: context.req.param('id'),
+        limit: 200,
+        downloadableOnly: context.req.query('downloadable') === '1',
+      }),
     });
   });
 

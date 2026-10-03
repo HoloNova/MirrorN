@@ -1,6 +1,10 @@
 import { createHash } from 'node:crypto';
 import type { DatabaseSync } from 'node:sqlite';
 import { compareRepoVersions } from '../indexing/versions.js';
+import type { Download } from './installers.js';
+type DownloadMetadata = NonNullable<Download['metadata']> & {
+  requirements?: Record<string, string | boolean>;
+};
 
 export interface FileQuery {
   resource: string;
@@ -36,6 +40,7 @@ interface Row {
   crawled_at: number;
   version: string;
   slug: string;
+  metadata: string;
 }
 interface Cursor {
   revision: number;
@@ -61,21 +66,28 @@ function conditions(input: FileQuery) {
       input.version.startsWith('v') ? input.version.slice(1) : `v${input.version}`,
     );
   }
-  for (const [column, value] of [
-    ['d.platform', input.platform],
-    ['d.arch', input.arch],
-  ]) {
-    if (value) {
-      clauses.push(`${column} IN (?,'any','unknown')`);
-      params.push(value);
-    }
+  if (input.platform) {
+    clauses.push(
+      `(EXISTS(SELECT 1 FROM json_each(d.metadata,'$.platforms') p WHERE p.value=?) OR (json_type(d.metadata,'$.platforms') IS NULL AND d.platform IN (?,'any')) OR (?='unknown' AND d.platform='unknown'))`,
+    );
+    params.push(input.platform, input.platform, input.platform);
+  }
+  if (input.arch) {
+    clauses.push("d.arch IN (?,'any','unknown')");
+    params.push(input.arch);
   }
   if (input.format) {
     clauses.push('d.format=?');
     params.push(input.format);
   }
-  if (input.role && input.role !== 'installer') clauses.push('0');
-  if (input.release) clauses.push('0'); // 不再把发行版包仓库混入软件安装目录。
+  if (input.role) {
+    clauses.push("COALESCE(json_extract(d.metadata,'$.purpose'),'installer')=?");
+    params.push(input.role);
+  }
+  if (input.release) {
+    clauses.push("json_extract(d.metadata,'$.purpose')='system_image' AND v.version=?");
+    params.push(input.release);
+  }
   if (input.package) {
     clauses.push('(w.slug=? OR w.name=?)');
     params.push(input.package, input.package);
@@ -145,28 +157,36 @@ export function queryFiles(db: DatabaseSync, input: FileQuery, now = Date.now())
     }
     const rows = db
       .prepare(
-        `SELECT d.id,${PREFERENCE} rank,d.filename,d.url,d.platform,d.arch,d.format,d.size,d.checksum,d.crawled_at,v.version,w.slug
+        `SELECT d.id,${PREFERENCE} rank,d.filename,d.url,d.platform,d.arch,d.format,d.size,d.checksum,d.crawled_at,v.version,w.slug,d.metadata
       ${FROM} WHERE ${filter.where} AND (${PREFERENCE}>? OR (${PREFERENCE}=? AND d.id>?)) ORDER BY rank,d.id LIMIT ?`,
       )
       .all(...filter.params, cursor.rank, cursor.rank, cursor.after, limit + 1) as unknown as Row[];
     const selected = rows.slice(0, limit);
     return {
-      items: selected.map((row) => ({
-        id: row.id,
-        packageName: row.slug,
-        version: row.version,
-        filename: row.filename,
-        url: row.url,
-        platform: row.platform,
-        arch: row.arch,
-        format: row.format,
-        role: 'installer',
-        release: '',
-        component: '',
-        ...(row.size === null ? {} : { size: row.size }),
-        ...(row.checksum ? { checksum: JSON.parse(row.checksum) as unknown } : {}),
-        compatibility: {},
-      })),
+      items: selected.map((row) => {
+        const metadata = JSON.parse(row.metadata) as DownloadMetadata;
+        return {
+          id: row.id,
+          packageName: row.slug,
+          version: row.version,
+          filename: row.filename,
+          url: row.url,
+          platform:
+            input.platform && metadata.platforms?.includes(input.platform)
+              ? input.platform
+              : row.platform,
+          platforms: metadata.platforms,
+          arch: row.arch,
+          format: row.format,
+          role: metadata.purpose ?? 'installer',
+          release: metadata.purpose === 'system_image' ? row.version : '',
+          component: '',
+          ...(row.size === null ? {} : { size: row.size }),
+          ...(row.checksum ? { checksum: JSON.parse(row.checksum) as unknown } : {}),
+          compatibility: metadata.requirements ?? {},
+          metadata,
+        };
+      }),
       nextCursor:
         rows.length > limit
           ? Buffer.from(
@@ -187,23 +207,50 @@ export function queryFiles(db: DatabaseSync, input: FileQuery, now = Date.now())
 export function queryFileOptions(db: DatabaseSync, input: FileQuery) {
   const filter = conditions({ ...input, version: undefined });
   const rows = db
-    .prepare(`SELECT DISTINCT d.platform,d.arch,v.version ${FROM} WHERE ${filter.where}`)
-    .all(...filter.params) as { platform: string; arch: string; version: string }[];
+    .prepare(`SELECT DISTINCT d.platform,d.arch,v.version,d.metadata ${FROM} WHERE ${filter.where}`)
+    .all(...filter.params) as {
+    platform: string;
+    arch: string;
+    version: string;
+    metadata: string;
+  }[];
   const repo = db
     .prepare('SELECT repo FROM catalog_software WHERE resource_key=?')
     .get(filter.key) as { repo: string } | undefined;
   const platforms = [
     ...new Set(
-      rows.flatMap((r) => (r.platform === 'any' ? ['windows', 'macos', 'linux'] : [r.platform])),
+      rows.flatMap((r) => {
+        const metadata = JSON.parse(r.metadata) as DownloadMetadata;
+        return metadata.platforms?.length
+          ? metadata.platforms
+          : r.platform === 'any'
+            ? ['windows', 'macos', 'linux']
+            : [r.platform];
+      }),
     ),
   ].sort();
   return {
     platforms,
     arches: [...new Set(rows.map((r) => r.arch))].sort(),
-    versions: [...new Set(rows.map((r) => r.version))].sort((a, b) =>
-      compareRepoVersions(repo?.repo ?? '', b, a),
+    versions: [...new Set(rows.map((r) => r.version))].sort(
+      (a, b) =>
+        Number(/^(latest|current|release)$/i.test(a)) -
+          Number(/^(latest|current|release)$/i.test(b)) ||
+        Number(/(?:[-.])(?:rc|alpha|beta|pre)/i.test(a)) -
+          Number(/(?:[-.])(?:rc|alpha|beta|pre)/i.test(b)) ||
+        compareRepoVersions(repo?.repo ?? '', b, a),
     ),
-    releases: [],
-    roles: rows.length ? ['installer'] : [],
+    releases: [
+      ...new Set(
+        rows
+          .filter((r) => (JSON.parse(r.metadata) as DownloadMetadata).purpose === 'system_image')
+          .map((r) => r.version),
+      ),
+    ],
+    roles: [
+      ...new Set(
+        rows.map((r) => (JSON.parse(r.metadata) as DownloadMetadata).purpose ?? 'installer'),
+      ),
+    ],
   };
 }

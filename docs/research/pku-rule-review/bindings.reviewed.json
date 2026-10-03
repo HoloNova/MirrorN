@@ -1,0 +1,214 @@
+{
+  "schemaVersion": "review-draft-1",
+  "status": "draft",
+  "bindings": [
+    {
+      "ruleId": "nodejs",
+      "siteId": "pku",
+      "repoId": "nodejs-release",
+      "rootPath": "nodejs-release/",
+      "discovery": [
+        "Enumerate actual v<version> directories; preview channels separately; not source/docs children."
+      ]
+    },
+    {
+      "ruleId": "tomcat",
+      "siteId": "pku",
+      "repoId": "apache",
+      "rootPath": "apache/tomcat/",
+      "discovery": ["tomcat-<major> / v<version> / bin; inspect other names as pending, not gone."]
+    },
+    {
+      "ruleId": "kafka",
+      "siteId": "pku",
+      "repoId": "apache",
+      "rootPath": "apache/kafka/",
+      "discovery": ["Enumerate version directories; files in confirmed project release scope."]
+    },
+    {
+      "ruleId": "maven",
+      "siteId": "pku",
+      "repoId": "apache",
+      "rootPath": "apache/maven/",
+      "discovery": ["maven-<major> / actual release / binaries; no hardcoded version URL."]
+    },
+    {
+      "ruleId": "texlive",
+      "siteId": "pku",
+      "repoId": "ctan",
+      "rootPath": "ctan/systems/texlive/tlnet/",
+      "discovery": [
+        "Read one complete listing and same-listing TEXLIVE_<year> marker; do not enter archive/tlpkg."
+      ]
+    },
+    {
+      "ruleId": "mactex",
+      "siteId": "pku",
+      "repoId": "ctan",
+      "rootPath": "ctan/systems/mac/mactex/",
+      "discovery": ["Flat listing; shared request may feed two independent identities."]
+    },
+    {
+      "ruleId": "basictex",
+      "siteId": "pku",
+      "repoId": "ctan",
+      "rootPath": "ctan/systems/mac/mactex/",
+      "discovery": ["Flat listing; shared request may feed two independent identities."]
+    },
+    {
+      "ruleId": "r-windows",
+      "siteId": "pku",
+      "repoId": "CRAN",
+      "rootPath": "CRAN/bin/windows/base/",
+      "discovery": [
+        "Flat base files plus reviewed old/<version> layouts; oldrelease aliases tracked separately."
+      ]
+    },
+    {
+      "ruleId": "r-macos",
+      "siteId": "pku",
+      "repoId": "CRAN",
+      "rootPath": "CRAN/bin/macosx/",
+      "discovery": [
+        "base plus reviewed big-sur-{arm64,x86_64}/base and sonoma-arm64/base; new OS labels become pending. Never recurse contrib."
+      ]
+    },
+    {
+      "ruleId": "rtools",
+      "siteId": "pku",
+      "repoId": "CRAN",
+      "rootPath": "CRAN/bin/windows/Rtools/",
+      "discovery": [
+        "rtools<series>/files; legacy files at root/4.0 are candidates, not automatically rejected."
+      ]
+    },
+    {
+      "ruleId": "anaconda",
+      "siteId": "pku",
+      "repoId": "anaconda",
+      "rootPath": "anaconda/archive/",
+      "discovery": [
+        "One complete JSON listing; no invented pagination API. Every history entry classified, not just latest."
+      ]
+    },
+    {
+      "ruleId": "miniconda",
+      "siteId": "pku",
+      "repoId": "anaconda",
+      "rootPath": "anaconda/miniconda/",
+      "discovery": [
+        "One complete JSON listing; no invented pagination API. Every history entry classified, not just latest."
+      ]
+    },
+    {
+      "ruleId": "ubuntu",
+      "siteId": "pku",
+      "repoId": "ubuntu-releases",
+      "rootPath": "ubuntu-releases/",
+      "discovery": [
+        "All discovered numeric release directories; no artificial year cap 2014-2029; codenames/aliases require mapping, not guessing."
+      ]
+    },
+    {
+      "ruleId": "debian",
+      "siteId": "pku",
+      "repoId": "debian-cd",
+      "rootPath": "debian-cd/",
+      "discovery": [
+        "Current plus real version roots / discovered architecture / iso-cd; alias roots not duplicated blindly."
+      ]
+    },
+    {
+      "ruleId": "archlinux",
+      "siteId": "pku",
+      "repoId": "archlinux",
+      "rootPath": "archlinux/iso/",
+      "discovery": ["Date directories in iso/; latest is alias candidate."]
+    },
+    {
+      "ruleId": "rocky",
+      "siteId": "pku",
+      "repoId": "rocky",
+      "rootPath": "rocky/",
+      "discovery": [
+        "Discover release / isos / architectures; avoid hardcoded 8|9|10 and x86-only roots."
+      ]
+    },
+    {
+      "ruleId": "almalinux",
+      "siteId": "pku",
+      "repoId": "almalinux",
+      "rootPath": "almalinux/",
+      "discovery": [
+        "Discover release / isos / architectures; avoid hardcoded 8|9|10 and x86-only roots."
+      ]
+    },
+    {
+      "ruleId": "openeuler",
+      "siteId": "pku",
+      "repoId": "openeuler",
+      "rootPath": "openeuler/",
+      "discovery": ["openEuler release / ISO / discovered architecture."]
+    },
+    {
+      "ruleId": "opensuse-leap",
+      "siteId": "pku",
+      "repoId": "opensuse",
+      "rootPath": "opensuse/distribution/leap/",
+      "discovery": ["Version / iso; enumerate numbered build files instead of only Current."]
+    },
+    {
+      "ruleId": "archriscv",
+      "siteId": "pku",
+      "repoId": "archriscv",
+      "rootPath": "archriscv/images/",
+      "discovery": ["Flat images listing."]
+    },
+    {
+      "ruleId": "kubernetes-tools",
+      "siteId": "pku",
+      "repoId": "kubernetes",
+      "rootPath": "kubernetes/core:/stable:/",
+      "discovery": [
+        "v<major.minor> / deb / discovered architecture; no entire APT repository or dependency graph."
+      ]
+    },
+    {
+      "ruleId": "opensuse-tumbleweed",
+      "siteId": "pku",
+      "repoId": "opensuse",
+      "rootPath": "opensuse/tumbleweed/iso/",
+      "discovery": ["Flat iso listing; current aliases separate."]
+    },
+    {
+      "ruleId": "spark",
+      "siteId": "pku",
+      "repoId": "apache",
+      "rootPath": "apache/spark/",
+      "discovery": ["Discover spark-<version>; no pinned 3.5.3 root."]
+    },
+    {
+      "ruleId": "aosc",
+      "siteId": "pku",
+      "repoId": "anthon",
+      "rootPath": "anthon/aosc-os/",
+      "discovery": ["os-<arch>/installer; directory root or desktop is not final file leaf."]
+    },
+    {
+      "ruleId": "kubuntu",
+      "siteId": "pku",
+      "repoId": "ubuntu-cdimage",
+      "rootPath": "ubuntu-cdimage/kubuntu/releases/",
+      "discovery": [
+        "Discover numeric release dirs / release; snapshot-* children are not ordinary final release files."
+      ]
+    },
+    {
+      "ruleId": "ant",
+      "siteId": "pku",
+      "repoId": "apache",
+      "rootPath": "apache/ant/binaries/",
+      "discovery": ["Flat binaries; do not require a version directory when none exists."]
+    }
+  ]
+}

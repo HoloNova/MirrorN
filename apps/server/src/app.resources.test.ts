@@ -16,7 +16,9 @@ describe('统一只读安装目录API', () => {
       const home = (await (await app.request('/api/resources?q=node%2024.1.0')).json()) as {
         items: { id: string; downloadMode: string }[];
       };
-      const site = (await (await app.request('/api/sites/pku/resources')).json()) as typeof home;
+      const site = (await (
+        await app.request('/api/sites/pku/resources?downloadable=1')
+      ).json()) as typeof home;
       expect(home.items.map((r) => r.id)).toEqual(site.items.map((r) => r.id));
       expect(home.items[0]?.downloadMode).toBe('files');
       expect(
@@ -36,7 +38,13 @@ describe('统一只读安装目录API', () => {
       expect(
         (await app.request('/api/resources/pku%3Anodejs-release/package?name=six')).status,
       ).toBe(410);
-      expect((await app.request('/api/resources/pku%3Adebian')).status).toBe(404);
+      expect((await app.request('/api/resources/pku%3Adebian')).status).toBe(200);
+      const ecosystems = (await (await app.request('/api/ecosystems')).json()).items as {
+        id: string;
+        resourceCount: number;
+      }[];
+      expect(ecosystems.length).toBeGreaterThan(5);
+      expect(ecosystems.some((e) => e.id === 'epel')).toBe(true);
       expect((await app.request('/api/resources/ustc%3Anodejs-release')).status).toBe(404);
       expect((await (await app.request('/api/resources?site=ustc')).json()).items).toEqual([]);
       expect(network).not.toHaveBeenCalled();
@@ -49,7 +57,7 @@ describe('统一只读安装目录API', () => {
     const db = indexFixture();
     try {
       const app = createApp({ db });
-      expect((await (await app.request('/api/resources')).json()).items).toEqual([]);
+      expect((await (await app.request('/api/resources?downloadable=1')).json()).items).toEqual([]);
       expect((await app.request('/api/files?resource=pku%3Anodejs-release&limit=0')).status).toBe(
         400,
       );

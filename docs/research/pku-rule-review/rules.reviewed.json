@@ -1,0 +1,696 @@
+{
+  "schemaVersion": "review-draft-1",
+  "scope": "Research candidates only. Not executable production configuration. Patterns test filename envelopes within reviewed contexts, not full installability.",
+  "baseCommit": "1e922fb",
+  "templates": [
+    {
+      "id": "flat"
+    },
+    {
+      "id": "version-directory"
+    },
+    {
+      "id": "system-image"
+    },
+    {
+      "id": "scoped-package"
+    }
+  ],
+  "globalRequirements": [
+    "Allow both file and other metadata types; reject directories as files.",
+    "No match is pending, not a proof of source removal; explicit reject reasons must be distinguished.",
+    "No runtime hot update/admin API; JSON plus TypeScript parsers shipped together.",
+    "No package-body requests; no first-match wins on conflicting identities/versions.",
+    "Case-sensitive original URL, safe path inside audited binding; metadata endpoint never download URL.",
+    "arch=x64 is project canonical; unknown architecture remains unknown.",
+    "No size-only alias deduplication; alias does not invent real version.",
+    "The same software identity may own multiple platform rules. Metadata-only evidence does not prove package executable or officially fresh."
+  ],
+  "identityPolicy": [
+    "Preserve nodejs, anaconda-installer, anaconda-distribution, r-cran software IDs and existing public resource routes.",
+    "Use existing ecosystem IDs (apache-archive, texlive-ctan, etc.); labels can be clarified without flattening all Linux distros to linux.",
+    "Python grouping currently uses anaconda-installer taxonomy ID; any later rename to python needs explicit compatibility mapping.",
+    "Ecosystem/site registration independent of download counts; pending/excluded downloads never imply missing ecosystem."
+  ],
+  "rules": [
+    {
+      "id": "nodejs",
+      "softwareId": "nodejs",
+      "ecosystemId": "nodejs",
+      "templateId": "version-directory",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "windows-msi",
+          "pattern": "^node-v(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)-(?<arch>x64|x86|arm64)\\.(?<format>msi)$"
+        },
+        {
+          "id": "macos-pkg",
+          "pattern": "^node-v(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)\\.(?<format>pkg)$"
+        },
+        {
+          "id": "unix-runtime",
+          "pattern": "^node-v(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)-(?<platform>linux|darwin)-(?<arch>x64|x86|arm64|armv7l|armv6l|ppc64le|s390x)\\.(?<format>tar\\.xz|tar\\.gz)$"
+        },
+        {
+          "id": "windows-runtime",
+          "pattern": "^node-v(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)-win-(?<arch>x64|x86|arm64)\\.(?<format>zip|7z)$"
+        }
+      ],
+      "purpose": "installer_or_runtime",
+      "corrections": [
+        "PKG has no platform suffix.",
+        "Remove blanket .tar.gz rejection.",
+        "MSI platform from format+software identity, not missing win token."
+      ],
+      "fieldPolicy": [
+        "x64/x86_64/amd64 -> x64; missing PKG architecture -> unknown until verified upstream metadata.",
+        "darwin -> macos; retain raw filename and version.",
+        "AIX is an out-of-current-platform candidate, not nonexistent."
+      ],
+      "pending": [
+        "Legacy untagged .msi versions require a separate historical sample; do not silently remove existing files."
+      ]
+    },
+    {
+      "id": "tomcat",
+      "softwareId": "apache-tomcat",
+      "ecosystemId": "apache-archive",
+      "templateId": "version-directory",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "windows-installer",
+          "pattern": "^apache-tomcat-(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)\\.(?<format>exe)$"
+        },
+        {
+          "id": "windows-runtime",
+          "pattern": "^apache-tomcat-(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)-windows-(?<arch>x64|x86|arm64)\\.(?<format>zip)$"
+        },
+        {
+          "id": "java-runtime",
+          "pattern": "^apache-tomcat-(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)\\.(?<format>tar\\.gz|zip)$"
+        }
+      ],
+      "purpose": "installer_or_runtime",
+      "corrections": [
+        "Context must be bin directory. Do not require bin in filename.",
+        "Do not assume untagged EXE is both 32 and 64 bit."
+      ],
+      "fieldPolicy": [
+        "Windows installer/runtime maps to windows; Java archive supported platform list requires documentation.",
+        "Java requirements depend on exact release line, not universal tomcat-10 -> Java11."
+      ],
+      "pending": [
+        "Java prerequisite mapping must be documented per release line, including 10.0 vs 10.1."
+      ]
+    },
+    {
+      "id": "kafka",
+      "softwareId": "apache-kafka",
+      "ecosystemId": "apache-archive",
+      "templateId": "version-directory",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "scala-binary",
+          "pattern": "^kafka_(?<scalaBuild>\\d+(?:\\.\\d+)+)-(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)\\.(?<format>tgz)$"
+        }
+      ],
+      "purpose": "runtime",
+      "corrections": [
+        "scalaBuild is a packaged build variant, not a user installation requirement."
+      ],
+      "fieldPolicy": [
+        "Do not carry forward Java11+ or all-three-platform defaults from original agent."
+      ],
+      "pending": [
+        "Version-specific Java/platform prerequisite documentation; do not infer Windows support from JVM portability."
+      ]
+    },
+    {
+      "id": "maven",
+      "softwareId": "apache-maven",
+      "ecosystemId": "apache-archive",
+      "templateId": "version-directory",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "binary",
+          "pattern": "^apache-maven-(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)-bin\\.(?<format>tar\\.gz|zip)$"
+        }
+      ],
+      "purpose": "runtime",
+      "corrections": [
+        "Original 3.9.9 sample is synthetic, not live. Current 3.10.0 was rediscovered."
+      ],
+      "fieldPolicy": ["Preserve previews as separate channel when present."],
+      "pending": ["Do not apply Maven3.9 Java8 prerequisite to every future or Maven4 release."]
+    },
+    {
+      "id": "texlive",
+      "softwareId": "texlive",
+      "ecosystemId": "texlive-ctan",
+      "templateId": "flat",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "windows-network",
+          "pattern": "^install-tl-windows\\.(?<format>exe)$"
+        },
+        {
+          "id": "unix-network",
+          "pattern": "^install-tl-unx\\.(?<format>tar\\.gz)$"
+        }
+      ],
+      "purpose": "network_installer",
+      "corrections": [
+        "Remove hardcoded 2026 fallback.",
+        "Do not accept install-tl-iso-windows as normal first-time network installer."
+      ],
+      "fieldPolicy": [
+        "Windows vs linux+macos explicitly, never global any.",
+        "Missing/conflicting annual marker -> pending; preserve previous record."
+      ],
+      "pending": [
+        "install-tl.zip purpose/platform and ISO helper semantics remain separate review items."
+      ]
+    },
+    {
+      "id": "mactex",
+      "softwareId": "mactex",
+      "ecosystemId": "texlive-ctan",
+      "templateId": "flat",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "dated-installer",
+          "pattern": "^mactex-(?<releaseDate>\\d{8})\\.(?<format>pkg)$"
+        }
+      ],
+      "purpose": "installer",
+      "corrections": [
+        "MacTeX and BasicTeX must be separate software identities.",
+        "Do not infer universal architecture from .pkg."
+      ],
+      "fieldPolicy": [
+        "platforms=[macos], arch=unknown unless confirmed; validate date, preserve date-version semantics.",
+        "MacTeX.pkg/BasicTeX.pkg are alias candidates; size equality never proves equality."
+      ],
+      "pending": []
+    },
+    {
+      "id": "basictex",
+      "softwareId": "basictex",
+      "ecosystemId": "texlive-ctan",
+      "templateId": "flat",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "dated-installer",
+          "pattern": "^mactex-basictex-(?<releaseDate>\\d{8})\\.(?<format>pkg)$"
+        }
+      ],
+      "purpose": "installer",
+      "corrections": [
+        "MacTeX and BasicTeX must be separate software identities.",
+        "Do not infer universal architecture from .pkg."
+      ],
+      "fieldPolicy": [
+        "platforms=[macos], arch=unknown unless confirmed; validate date, preserve date-version semantics.",
+        "MacTeX.pkg/BasicTeX.pkg are alias candidates; size equality never proves equality."
+      ],
+      "pending": []
+    },
+    {
+      "id": "r-windows",
+      "softwareId": "r-cran",
+      "ecosystemId": "r-cran",
+      "templateId": "version-directory",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "windows-r",
+          "pattern": "^R-(?<version>\\d+(?:\\.\\d+)+)-win\\.(?<format>exe)$"
+        }
+      ],
+      "purpose": "installer",
+      "corrections": ["Do not remove history by blanket rejecting old directories."],
+      "fieldPolicy": [
+        "windows; architecture unknown until version-specific documentation (historical R differs).",
+        "release/patched/devel filenames are not interchangeable with exact release versions."
+      ],
+      "pending": [
+        "Historical layout and R architecture support map needs more samples; latest-only is not a completeness claim."
+      ]
+    },
+    {
+      "id": "r-macos",
+      "softwareId": "r-cran",
+      "ecosystemId": "r-cran",
+      "templateId": "version-directory",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "mac-r",
+          "pattern": "^R-(?<version>\\d+(?:\\.\\d+)+)(?:-(?<arch>arm64|x86_64))?\\.(?<format>pkg)$"
+        }
+      ],
+      "purpose": "installer",
+      "corrections": ["Original fixed ARM64 root missed Intel and Sonoma releases."],
+      "fieldPolicy": [
+        "macos; explicit architecture normalized, otherwise unknown.",
+        "Do not collapse R-release.pkg/R-latest.pkg to latest by size."
+      ],
+      "pending": [
+        "Other historical OSX layouts require reviewed entry discovery, not blanket regex guess."
+      ]
+    },
+    {
+      "id": "rtools",
+      "softwareId": "rtools",
+      "ecosystemId": "r-cran",
+      "templateId": "version-directory",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "toolchain",
+          "pattern": "^rtools(?<series>\\d+)(?:-(?<arch>aarch64))?-(?<build>\\d+-\\d+)\\.(?<format>exe)$"
+        }
+      ],
+      "purpose": "installer",
+      "corrections": [
+        "Keep series and build identity; do not collapse every 45 build into version 4.5.",
+        "Compatible R version is compatibility metadata, not necessarily install prerequisite."
+      ],
+      "fieldPolicy": [
+        "windows; tagged aarch64 -> arm64; untagged architecture requires software-specific evidence."
+      ],
+      "pending": ["Legacy Rtools installers naming/architecture."]
+    },
+    {
+      "id": "anaconda",
+      "softwareId": "anaconda-distribution",
+      "ecosystemId": "anaconda-installer",
+      "templateId": "flat",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "release",
+          "pattern": "^Anaconda(?<pythonMajor>[23])?-(?:py(?<pythonBuild>\\d+)_)?(?<version>\\d+(?:\\.\\d+)+(?:-\\d+)?)-(?<platform>Windows|MacOSX|Linux)-(?<arch>x86_64|x86|aarch64|arm64|ppc64le|s390x)\\.(?<format>exe|pkg|sh)$"
+        }
+      ],
+      "purpose": "installer",
+      "corrections": [
+        "Support pyXYZ_ prefix and releases without -build.",
+        "Python2 historical records can remain queryable; not default new-user recommendation."
+      ],
+      "fieldPolicy": [
+        "Retain pythonMajor/pythonBuild separately from distribution version; no stripping identity information.",
+        "Enforce Windows->exe, Linux->sh, MacOSX->pkg/sh after match.",
+        "latest aliases kept pending until verified mapping, not fabricated numeric version."
+      ],
+      "pending": []
+    },
+    {
+      "id": "miniconda",
+      "softwareId": "anaconda-installer",
+      "ecosystemId": "anaconda-installer",
+      "templateId": "flat",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "release",
+          "pattern": "^Miniconda(?<pythonMajor>[23])?-(?:py(?<pythonBuild>\\d+)_)?(?<version>\\d+(?:\\.\\d+)+(?:-\\d+)?)-(?<platform>Windows|MacOSX|Linux)-(?<arch>x86_64|x86|aarch64|arm64|ppc64le|s390x)\\.(?<format>exe|pkg|sh)$"
+        }
+      ],
+      "purpose": "installer",
+      "corrections": [
+        "Support pyXYZ_ prefix and releases without -build.",
+        "Python2 historical records can remain queryable; not default new-user recommendation."
+      ],
+      "fieldPolicy": [
+        "Retain pythonMajor/pythonBuild separately from distribution version; no stripping identity information.",
+        "Enforce Windows->exe, Linux->sh, MacOSX->pkg/sh after match.",
+        "latest aliases kept pending until verified mapping, not fabricated numeric version."
+      ],
+      "pending": []
+    },
+    {
+      "id": "ubuntu",
+      "softwareId": "ubuntu",
+      "ecosystemId": "ubuntu",
+      "templateId": "system-image",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "release",
+          "pattern": "^ubuntu-(?<version>\\d+\\.\\d+(?:\\.\\d+)*)-(?<variant>desktop|live-server|server)-(?<arch>amd64|arm64|i386|armhf|ppc64el|s390x|riscv64)\\.(?<format>iso)$"
+        }
+      ],
+      "purpose": "system_image",
+      "corrections": [
+        "Four-component 24.04.5.1 exists.",
+        "type other files must remain eligible; not only type file.",
+        "Ubuntu flavours/CDImage need separate discovery profiles."
+      ],
+      "fieldPolicy": ["linux target system, not host OS; variant retained."],
+      "pending": ["CDImage flavours/ports and unsupported labels tracked separately."]
+    },
+    {
+      "id": "debian",
+      "softwareId": "debian",
+      "ecosystemId": "debian",
+      "templateId": "system-image",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "netinst",
+          "pattern": "^debian(?:-(?<edition>edu|mac))?-(?<version>\\d+(?:\\.\\d+)+)-(?<arch>amd64|arm64|i386|armhf|armel|ppc64el|s390x|riscv64)-(?<variant>netinst)\\.(?<format>iso)$"
+        }
+      ],
+      "purpose": "system_image",
+      "corrections": [
+        "Three different Debian editions must not collapse into one by same version.",
+        "Netinst profile is a first verified layout, not whole Debian media coverage."
+      ],
+      "fieldPolicy": [
+        "linux; edition and media distinct; arch from file, not assumed two architectures."
+      ],
+      "pending": [
+        "DVD/live/historical aliases require additional verified profiles; preserve known data meanwhile."
+      ]
+    },
+    {
+      "id": "archlinux",
+      "softwareId": "archlinux",
+      "ecosystemId": "archlinux",
+      "templateId": "system-image",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "dated-iso",
+          "pattern": "^archlinux-(?<version>\\d{4}\\.\\d{2}\\.\\d{2})-(?<arch>x86_64)\\.(?<format>iso)$"
+        }
+      ],
+      "purpose": "system_image",
+      "corrections": ["images/latest contains QCOW2, not the ISO in the original claimed sample."],
+      "fieldPolicy": ["linux; date-snapshot version; bootstrap tar is not ordinary install ISO."],
+      "pending": []
+    },
+    {
+      "id": "rocky",
+      "softwareId": "rocky",
+      "ecosystemId": "rocky",
+      "templateId": "system-image",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "numbered-iso",
+          "pattern": "^Rocky-(?<version>\\d+(?:\\.\\d+)+)-(?<arch>x86_64|aarch64|ppc64le|s390x)-(?<variant>boot|dvd|minimal)\\.(?<format>iso)$"
+        }
+      ],
+      "purpose": "system_image",
+      "corrections": [
+        "9.8 is filename release; not 9-9.8.",
+        "9-latest alias must not outrank/replace numeric version."
+      ],
+      "fieldPolicy": [
+        "linux, architecture/variant preserved; latest alias pending without verified target."
+      ],
+      "pending": [
+        "Vault roots and other architectures require per-binding samples; no assertion all have been probed."
+      ]
+    },
+    {
+      "id": "almalinux",
+      "softwareId": "almalinux",
+      "ecosystemId": "almalinux",
+      "templateId": "system-image",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "numbered-iso",
+          "pattern": "^AlmaLinux-(?<version>\\d+(?:\\.\\d+)+)-(?<arch>x86_64|aarch64|ppc64le|s390x)-(?<variant>boot|dvd|minimal)\\.(?<format>iso)$"
+        }
+      ],
+      "purpose": "system_image",
+      "corrections": [
+        "9.8 is filename release; not 9-9.8.",
+        "9-latest alias must not outrank/replace numeric version."
+      ],
+      "fieldPolicy": [
+        "linux, architecture/variant preserved; latest alias pending without verified target."
+      ],
+      "pending": [
+        "Vault roots and other architectures require per-binding samples; no assertion all have been probed."
+      ]
+    },
+    {
+      "id": "openeuler",
+      "softwareId": "openeuler",
+      "ecosystemId": "openeuler",
+      "templateId": "system-image",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "iso",
+          "pattern": "^openEuler-(?<version>\\d{2}\\.\\d{2}(?:-LTS)?(?:-SP\\d+)?)(?:-(?<variant>netinst|everything))?-(?<arch>x86_64|aarch64|riscv64|loongarch64)-dvd\\.(?<format>iso)$"
+        }
+      ],
+      "purpose": "system_image",
+      "corrections": [
+        "Standard filename has no extra dvd before architecture.",
+        "debug ISO remains excluded."
+      ],
+      "fieldPolicy": ["linux; absent variant -> standard; retain LTS/SP in version."],
+      "pending": []
+    },
+    {
+      "id": "opensuse-leap",
+      "softwareId": "opensuse-leap",
+      "ecosystemId": "opensuse",
+      "templateId": "system-image",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "build-iso",
+          "pattern": "^openSUSE-Leap-(?<version>\\d+\\.\\d+)-(?<variant>DVD|NET)-(?<arch>x86_64|aarch64|ppc64le|s390x)-Build(?<build>\\d+(?:\\.\\d+)*)-Media\\.(?<format>iso)$"
+        }
+      ],
+      "purpose": "system_image",
+      "corrections": [
+        "Keep build number as asset variant; version 15.6 alone does not identify all builds."
+      ],
+      "fieldPolicy": [
+        "linux; Current/untagged Media retained as alias candidates without equating by size."
+      ],
+      "pending": [
+        "Other Leap generations/new naming need version-aware profile; this sample covers 15.6 naming."
+      ]
+    },
+    {
+      "id": "archriscv",
+      "softwareId": "archriscv",
+      "ecosystemId": "archriscv",
+      "templateId": "system-image",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "dated-iso",
+          "pattern": "^archlinux-(?<version>\\d{4}\\.\\d{2}\\.\\d{2})-(?<arch>riscv64)\\.(?<format>iso)$"
+        }
+      ],
+      "purpose": "system_image",
+      "corrections": [
+        "Rootfs tar is not install ISO; recorded as a different candidate use.",
+        "Original claimed hyphen-date tar file is not present in reviewed directory."
+      ],
+      "fieldPolicy": ["linux; RISC-V hardware support belongs in compatibility metadata."],
+      "pending": ["Rootfs installation workflow is not approved by ISO filename matching."]
+    },
+    {
+      "id": "kubernetes-tools",
+      "softwareIdCapture": "software",
+      "allowedSoftwareIds": ["kubectl", "kubeadm", "kubelet", "cri-tools"],
+      "ecosystemId": "kubernetes",
+      "templateId": "scoped-package",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "deb",
+          "pattern": "^(?<software>kubectl|kubeadm|kubelet|cri-tools)_(?<version>\\d+\\.\\d+\\.\\d+)-(?<revision>[A-Za-z0-9.+~]+)_(?<arch>amd64|arm64|ppc64el|s390x)\\.(?<format>deb)$"
+        }
+      ],
+      "purpose": "installer",
+      "corrections": [
+        "Capture package revision; do not strip -1.1.",
+        "Create separate software identity for each exact tool."
+      ],
+      "fieldPolicy": [
+        "linux and compatible package environment required; not a single universal Linux executable.",
+        "Version key retains revision as package build, query may group by software upstream version."
+      ],
+      "pending": [
+        "RPM side and remaining architectures need samples; do not report ecosystem complete based on amd64."
+      ]
+    },
+    {
+      "id": "opensuse-tumbleweed",
+      "softwareId": "opensuse-tumbleweed",
+      "ecosystemId": "opensuse",
+      "templateId": "system-image",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "snapshot",
+          "pattern": "^openSUSE-Tumbleweed-(?<variant>DVD|NET|GNOME-Live|KDE-Live|XFCE-Live)-(?<arch>x86_64|aarch64|ppc64le|s390x)-Snapshot(?<version>\\d{8})-Media\\.(?<format>iso)$"
+        }
+      ],
+      "purpose": "system_image",
+      "corrections": ["Leap-only rule misses Tumbleweed; do not use same version semantics."],
+      "fieldPolicy": ["linux; snapshot date version, desktop variant retained."],
+      "pending": [
+        "MicroOS/rescue media are separate profiles, not silently discarded ecosystem identities."
+      ]
+    },
+    {
+      "id": "spark",
+      "softwareId": "apache-spark",
+      "ecosystemId": "apache-archive",
+      "templateId": "version-directory",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "binary",
+          "pattern": "^spark-(?<version>\\d+\\.\\d+\\.\\d+)-bin-(?<buildVariant>hadoop\\d+(?:-connect)?|without-hadoop)\\.(?<format>tgz)$"
+        }
+      ],
+      "purpose": "runtime",
+      "corrections": [
+        "without-hadoop is not source: it is a distinct binary variant with extra prerequisites.",
+        "SparkR/PySpark package distributions are not the standalone Spark runtime download."
+      ],
+      "fieldPolicy": [
+        "Java/Hadoop prerequisites must be documented by release line; cannot inherit 3.5.x claims for 4.x."
+      ],
+      "pending": [
+        "Connect/without-hadoop suitability and supported systems must be explicit before activation."
+      ]
+    },
+    {
+      "id": "aosc",
+      "softwareId": "aosc",
+      "ecosystemId": "aosc",
+      "templateId": "system-image",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "installer-iso",
+          "pattern": "^aosc-os_installer_(?<releaseDate>\\d{8})_(?<arch>[a-z0-9]+)\\.(?<format>iso)$"
+        }
+      ],
+      "purpose": "system_image",
+      "corrections": [
+        "Actual os-amd64/installer ISO independently verified; no broad acceptance of desktop rootfs archives."
+      ],
+      "fieldPolicy": [
+        "linux target; date-snapshot; preserve raw architecture, unknown mappings pending."
+      ],
+      "pending": [
+        "Other architecture installer leaves, livekit role and minimum installation workflow need samples."
+      ]
+    },
+    {
+      "id": "kubuntu",
+      "softwareId": "kubuntu",
+      "ecosystemId": "ubuntu",
+      "templateId": "system-image",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "release-iso",
+          "pattern": "^kubuntu-(?<version>\\d+\\.\\d+(?:\\.\\d+)*)-(?<variant>desktop)-(?<arch>amd64|arm64)\\.(?<format>iso)$"
+        }
+      ],
+      "purpose": "system_image",
+      "corrections": [
+        "Verified 24.04.5 release folder actually contains 24.04.3, 24.04.4 and 24.04.5: filename version must win over folder alias.",
+        "Highest directory 26.10 contains snapshot dirs, not proof latest stable."
+      ],
+      "fieldPolicy": ["linux; preserve Kubuntu identity under Ubuntu ecosystem."],
+      "pending": [
+        "Other flavours need their own software identity/binding and samples; do not infer they are absent."
+      ]
+    },
+    {
+      "id": "ant",
+      "softwareId": "apache-ant",
+      "ecosystemId": "apache-archive",
+      "templateId": "flat",
+      "status": "draft",
+      "decision": "implement_candidate",
+      "filenameCandidates": [
+        {
+          "id": "binary",
+          "pattern": "^apache-ant-(?<version>\\d+\\.\\d+\\.\\d+(?:-(?:rc|alpha|beta|pre)[\\w.-]*)?)-bin\\.(?<format>tar\\.gz|tar\\.xz|tar\\.bz2|zip)$"
+        }
+      ],
+      "purpose": "runtime",
+      "corrections": ["Exclude .cdx.json/.cdx.xml companions, not just checksum files."],
+      "fieldPolicy": [
+        "Java prerequisite tied to release line; supported platform list must be documented."
+      ],
+      "pending": ["Native script/platform prerequisite evidence before activation."]
+    },
+    {
+      "id": "openwrt",
+      "ecosystemId": "openwrt",
+      "status": "draft",
+      "decision": "hold_scope_or_install_workflow",
+      "filenameCandidates": [],
+      "reason": "Firmware requires model/target/subtarget and flash mode, outside current generic three-platform acceptance. Retain ecosystem identity, not an assertion no files."
+    },
+    {
+      "id": "immortalwrt",
+      "ecosystemId": "immortalwrt",
+      "status": "draft",
+      "decision": "hold_scope_or_install_workflow",
+      "filenameCandidates": [],
+      "reason": "Same as OpenWrt; no automatic firmware activation."
+    },
+    {
+      "id": "opnsense",
+      "ecosystemId": "opnsense",
+      "status": "draft",
+      "decision": "hold_scope_or_install_workflow",
+      "filenameCandidates": [],
+      "reason": "DVD ISO exists (new evidence), but target is FreeBSD and must not be mislabeled linux. Platform/product mapping remains explicit scope decision."
+    }
+  ]
+}

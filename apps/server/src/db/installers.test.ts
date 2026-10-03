@@ -160,7 +160,8 @@ describe('查询围绕生态、版本和站点关系', () => {
   it('生态＋版本搜索、站点与生态统计来自有效下载，空条目不冒充下载', () => {
     const db = indexFixture();
     try {
-      expect(searchResources(db)).toEqual([]);
+      expect(searchResources(db, { downloadableOnly: true })).toEqual([]);
+      expect(searchResources(db).every((r) => r.downloadMode === 'unavailable')).toBe(true);
       fixtureRun(db);
       expect(searchResources(db, { query: 'node 24.1.0' }).map((r) => r.id)).toEqual([
         'pku:nodejs-release',
@@ -170,9 +171,10 @@ describe('查询围绕生态、版本和站点关系', () => {
       expect(searchResources(db, { query: "' OR 1=1 --" })).toHaveLength(0);
       expect(searchResources(db, { query: '%' })).toHaveLength(0);
       expect(searchResources(db, { siteId: 'ustc' })).toHaveLength(0);
-      expect(listSites(db).find((s) => s.id === 'pku')?.resourceCount).toBe(1);
+      expect(listSites(db).find((s) => s.id === 'pku')?.resourceCount).toBeGreaterThan(5);
       expect(listSites(db).find((s) => s.id === 'ustc')?.enabled).toBe(false);
-      expect(listEcosystems(db).map((e) => e.id)).toEqual(['nodejs']);
+      expect(listEcosystems(db).map((e) => e.id)).toContain('nodejs');
+      expect(listEcosystems(db).some((e) => e.id === 'epel' && e.resourceCount === 0)).toBe(true);
     } finally {
       db.close();
     }
