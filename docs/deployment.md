@@ -209,3 +209,11 @@ SQLite备份如需节省空间，完成完整性检查后可压缩为同名`.sql
 新队列名 `mirrorn-pku-installers-v2` 与旧 `mirrorn-pku-index` 隔离。新API `/api/resources` 带 `catalog: installers-v2`；搜索只显示实际已有安装下载的软件。验证公网搜索、版本/平台筛选和文件直链，再按人工清单验收。旧Node/Miniconda路由身份保留，旧发行版仓库下载页退出。
 
 新API核对通过后用 `scripts/retire-package-index.mjs /srv/mirrorn/api /var/lib/mirrorn --apply` 退役旧包库/WAL/SHM、旧队列、旧目录缓存及按固定命名识别的抓取备份。默认只读输出计划；--apply在确认新API及新库可用后直接清除，不创建抓取数据备份。保留当前安装目录与既有测速信息，不删除数据库容器/卷。
+
+## 当前规则系统发布（2026-10-03）
+
+功能 `93021af` 与启动修正 `1b9d341` 已部署，静态快照 `20261003-123620`。实际公开入口核对见 `docs/download-rule-system-design.md` 第 12 节。生产数据沿用 `mirrorn-installers.sqlite`，不复制／备份抓取数据，软件规则与 `data/software.json` 由运行目录准备脚本一并复制到 `/srv/mirrorn/api/data/`。规则无独立更新接口，不可单独覆盖 JSON 充当热更新。
+
+当前 BullMQ 命名空间为 `mirrorn-pku-download-rules-v3`；任务包含配置和执行代码摘要。部署后的旧摘要任务已失效，只能按版本匹配清理待办，不得批量移除当前版本任务或下载数据。启动强制刷新保留；首次定时刷新设置未来 startDate，避免 BullMQ 默认立即触发与启动刷新重复。Redis／源站失联或规则加载失败不让读取接口联网兜底。
+
+部署使用 `scripts/deploy-api.sh`、`scripts/deploy-static.sh`，构建命令放入一次性 systemd 单元限制 CPU、总内存和运行时间；不把 Node 堆限制当作进程组限制，也不改变生产服务限额。UI 仍按 `docs/acceptance-checklist.md` 由用户手动验收。

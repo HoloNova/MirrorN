@@ -56,7 +56,7 @@ console.log(
       backup: false,
       removeFiles,
       removeQueue: 'mirrorn-pku-index',
-      preserveQueue: 'mirrorn-pku-installers-v2',
+      preserveQueue: 'mirrorn-pku-download-rules-v3',
       preserveDatabase: join(state, 'mirrorn-installers.sqlite'),
     },
     null,

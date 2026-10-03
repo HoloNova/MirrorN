@@ -1,8 +1,8 @@
 # MirrorN
 
-MirrorN 帮助初学者查找软件在 Windows、macOS、Linux 上的安装器／预编译包：搜索软件或生态，选择版本、系统和架构，从镜像站文件直链下载。教程当前占位。本站不下载安装包、不代理包体，不执行修改用户本机配置的命令。
+MirrorN 帮助初学者查找软件在 Windows、macOS、Linux 上的安装器／预编译包和系统安装镜像：搜索软件或生态，选择版本、系统和架构，从镜像站文件直链下载。教程当前占位。本站不下载安装包、不代理包体，不执行修改用户本机配置的命令。
 
-**当前开发版**收敛为具体软件安装目录，仅启用北大，退出全量发行版／语言依赖仓库采集。软件身份、用途识别规则需要审核；版本、文件名和链接由后台动态发现，不维护静态文件清单。详见 [`docs/software-installer-catalog.md`](docs/software-installer-catalog.md)。**发布状态与实际核对记录见 `PLAN.md`。**
+**当前开发版**仅启用北大，使用“通用目录模板＋软件特性＋站点绑定”采集安装器、运行包和系统 ISO，不整库采集发行版／语言依赖。规则随源码发布，不开放修改接口或热更新；版本、文件名和链接由后台动态发现。生态收录与是否已有下载分开，未知文件保留待核对样本。实现及发布证据见 [`docs/download-rule-system-design.md`](docs/download-rule-system-design.md)。**完整覆盖仍在推进，进度见 `PLAN.md`。**
 
 ## 开发
 
@@ -19,19 +19,20 @@ pnpm dev
 
 **后台启动强制刷新／每六小时采集 → 用途识别 → 暂存完整校验 → SQLite事务更新 → 查询API → 下载直链。** 请求源站仅限后台任务、测速及用户点击实际下载；搜索、分页、筛选均不联网补数据。
 
-| 位置                                                    | 职责                                                   |
-| ------------------------------------------------------- | ------------------------------------------------------ |
-| `data/mirrors.json`                                     | 审核站点身份与既有测速信息，不是文件清单               |
-| `apps/server/src/indexing/software.ts`、`installers.ts` | 软件身份、目录入口、文件用途规则与后台动态发现         |
-| `apps/server/src/indexing/source.ts`、`queue.ts`        | 受限元数据HTTP、BullMQ/Redis调度及重试                 |
-| `apps/server/src/db/installers.ts`                      | 四类业务实体、短暂暂存、安全更新；相同URL原位更新      |
-| `apps/server/src/db/catalog.ts`、`fileQueries.ts`       | 软件/版本/站点关系和只读文件查询，不扫描全体依赖包名字 |
-| `apps/web/src/lib/resourceApi.ts`                       | 页面统一读API；跨更新分页自动重新读取首屏              |
-| `data/tutorials.json`、`apps/web/src/tutorials/`        | 教程关联及旧正文素材；当前只占位                       |
+| 位置                                               | 职责                                                   |
+| -------------------------------------------------- | ------------------------------------------------------ |
+| `data/mirrors.json`                                | 审核站点身份与既有测速信息，不是文件清单               |
+| `data/software.json`、`data/download-rules/`       | 软件身份、模板、特性规则与审核过的站点入口             |
+| `apps/server/src/indexing/rules/`、`installers.ts` | 规则加载／判断／清洗、有限未知样本及后台发现           |
+| `apps/server/src/indexing/source.ts`、`queue.ts`   | 受限元数据HTTP、BullMQ/Redis调度及重试                 |
+| `apps/server/src/db/installers.ts`                 | 四类业务实体、短暂暂存、安全更新；相同URL原位更新      |
+| `apps/server/src/db/catalog.ts`、`fileQueries.ts`  | 软件/版本/站点关系和只读文件查询，不扫描全体依赖包名字 |
+| `apps/web/src/lib/resourceApi.ts`                  | 页面统一读API；跨更新分页自动重新读取首屏              |
+| `data/tutorials.json`、`apps/web/src/tutorials/`   | 教程关联及旧正文素材；当前只占位                       |
 
 新库为 `MIRRORN_SNAPSHOT_DIR/mirrorn-installers.sqlite`；旧 `mirrorn.sqlite`不自动导入、删除或复用。旧包采集器、PyPI批量包页队列及复制整批文件的快照实现已退役。旧 `data/site-inventories/` / `site-resources/` 是官方仓库归档，不能等同于当前有下载的软件条目。旧换源模板在共享包保留，但不是现行产品入口。
 
-接口：`/api/ecosystems`、`/api/resources?q=&ecosystem=&version=&site=`、`/api/sites/:id/resources`、`/api/resources/:id`、`/api/files?resource=&version=&platform=&arch=`。只有有效安装下载的条目出现在搜索和站点页。旧 `browse/package` 返回410；未接入条目不联网兜底。
+接口：`/api/ecosystems`、`/api/resources?q=&ecosystem=&version=&site=`、`/api/sites/:id/resources`、`/api/resources/:id`、`/api/files?resource=&version=&platform=&arch=`。收录身份与有效下载分开查询；`downloadable=1` 只返回有下载的条目，未有下载不使生态消失。旧 `browse/package` 返回410；未接入条目不联网兜底。
 
 ## 发布与验收
 
