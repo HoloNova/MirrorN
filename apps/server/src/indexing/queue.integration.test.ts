@@ -48,7 +48,14 @@ describe.runIf(Boolean(redisUrl))('真实Redis：安装软件队列', () => {
     await events.waitUntilReady();
     let queue = createIndexQueue(db, redisUrl!, () => {}, { fetchImpl, jobIntervalMs: 10 });
     try {
+      // 暂停消费后核对入队结果，避免两次立即刷新被消费掉而掩盖重复启动。
+      await queue.worker.pause();
       const first = await queue.start();
+      const immediate = await queue.queue.getJobs(['prioritized']);
+      expect(immediate.filter((job) => job.data.kind === 'refresh')).toHaveLength(1);
+      const scheduled = await queue.queue.getJobSchedulers();
+      expect(scheduled[0]?.next).toBeGreaterThan(Date.now() + 5 * 60 * 60 * 1000);
+      queue.worker.resume();
       await first!.waitUntilFinished(events, 10000);
       expect(first!.id).toMatch(/^startup-/);
       expect(await queue.queue.getJobSchedulers()).toHaveLength(1);

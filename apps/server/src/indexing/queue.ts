@@ -149,9 +149,11 @@ export function createIndexQueue(
     async start() {
       await queue.waitUntilReady();
       if (stopping) return;
+      const interval = options.intervalMs ?? REFRESH_INTERVAL_MS;
+      // BullMQ首次创建every定时器默认立即执行；启动刷新另有任务，不能再触发第二轮。
       await queue.upsertJobScheduler(
         'pku-six-hour-rules',
-        { every: options.intervalMs ?? REFRESH_INTERVAL_MS },
+        { every: interval, startDate: Date.now() + interval },
         {
           name: 'refresh',
           data: { kind: 'refresh', ruleRevision: rules.revision },
