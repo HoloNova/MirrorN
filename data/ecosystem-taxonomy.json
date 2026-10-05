@@ -3,13 +3,13 @@
     "id": "almalinux",
     "label": "AlmaLinux",
     "category": "distro",
-    "aliases": ["almalinux", "yum", "el"]
+    "aliases": ["almalinux"]
   },
   {
     "id": "anaconda-installer",
-    "label": "Miniconda（Python）",
+    "label": "Python / Conda",
     "category": "language",
-    "aliases": ["python", "conda", "miniconda", "anaconda"]
+    "aliases": ["python", "conda"]
   },
   {
     "id": "aosc",
@@ -27,25 +27,25 @@
     "id": "archlinux",
     "label": "Arch Linux",
     "category": "distro",
-    "aliases": ["arch", "pacman"]
+    "aliases": ["arch", "archlinux"]
   },
   {
     "id": "archlinuxcn",
     "label": "Arch Linux CN",
     "category": "distro",
-    "aliases": ["arch", "archlinuxcn", "pacman"]
+    "aliases": ["archlinuxcn"]
   },
   {
     "id": "archriscv",
     "label": "Arch Linux（RISC-V）",
     "category": "distro",
-    "aliases": ["riscv", "arch"]
+    "aliases": ["archriscv"]
   },
   {
     "id": "centos",
     "label": "CentOS",
     "category": "distro",
-    "aliases": ["centos", "yum"]
+    "aliases": ["centos"]
   },
   {
     "id": "dataset",
@@ -57,19 +57,19 @@
     "id": "debian",
     "label": "Debian",
     "category": "distro",
-    "aliases": ["debian", "apt", "deb"]
+    "aliases": ["debian"]
   },
   {
     "id": "epel",
     "label": "EPEL",
     "category": "distro",
-    "aliases": ["epel", "yum", "el"]
+    "aliases": ["epel"]
   },
   {
     "id": "immortalwrt",
     "label": "ImmortalWrt",
     "category": "distro",
-    "aliases": ["immortalwrt", "opkg"]
+    "aliases": ["immortalwrt"]
   },
   {
     "id": "julia",
@@ -87,55 +87,55 @@
     "id": "loongarch",
     "label": "Arch Linux（LoongArch）",
     "category": "distro",
-    "aliases": ["loongarch", "arch"]
+    "aliases": ["archloong"]
   },
   {
     "id": "manjaro",
     "label": "Manjaro",
     "category": "distro",
-    "aliases": ["manjaro", "arch"]
+    "aliases": ["manjaro"]
   },
   {
     "id": "nodejs",
     "label": "Node.js",
     "category": "language",
-    "aliases": ["node", "nodejs", "npm", "javascript"]
+    "aliases": ["node", "nodejs", "node.js"]
   },
   {
     "id": "openeuler",
     "label": "openEuler",
     "category": "distro",
-    "aliases": ["openeuler", "yum"]
+    "aliases": ["openeuler"]
   },
   {
     "id": "opensuse",
     "label": "openSUSE",
     "category": "distro",
-    "aliases": ["opensuse", "suse", "zypper"]
+    "aliases": ["opensuse"]
   },
   {
     "id": "openwrt",
     "label": "OpenWrt",
     "category": "distro",
-    "aliases": ["openwrt", "opkg"]
+    "aliases": ["openwrt"]
   },
   {
     "id": "opnsense",
     "label": "OPNsense",
     "category": "distro",
-    "aliases": ["opnsense", "freebsd"]
+    "aliases": ["opnsense"]
   },
   {
     "id": "pip-pypi",
     "label": "PyPI（pip 索引）",
     "category": "package-index",
-    "aliases": ["python", "pip", "pypi"]
+    "aliases": ["pypi"]
   },
   {
     "id": "r-bioconductor",
     "label": "Bioconductor（R）",
     "category": "language",
-    "aliases": ["r", "bioconductor"]
+    "aliases": ["bioconductor"]
   },
   {
     "id": "r-cran",
@@ -147,24 +147,24 @@
     "id": "rocky",
     "label": "Rocky Linux",
     "category": "distro",
-    "aliases": ["rocky", "yum", "el"]
+    "aliases": ["rocky"]
   },
   {
     "id": "termux",
     "label": "Termux（Android）",
     "category": "distro",
-    "aliases": ["termux", "android"]
+    "aliases": ["termux"]
   },
   {
     "id": "texlive-ctan",
     "label": "TeX Live / CTAN",
     "category": "toolchain",
-    "aliases": ["tex", "latex", "ctan", "tlmgr"]
+    "aliases": ["texlive", "ctan"]
   },
   {
     "id": "ubuntu",
     "label": "Ubuntu",
     "category": "distro",
-    "aliases": ["ubuntu", "apt", "deb"]
+    "aliases": ["ubuntu"]
   }
 ]

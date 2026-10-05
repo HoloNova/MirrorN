@@ -53,10 +53,10 @@ interface Cursor {
 const PREFERENCE =
   "CASE WHEN d.filename LIKE 'Miniconda2-%' THEN 4 ELSE CASE d.format WHEN 'msi' THEN 0 WHEN 'pkg' THEN 0 WHEN 'exe' THEN 1 WHEN 'dmg' THEN 1 WHEN 'sh' THEN 2 WHEN 'AppImage' THEN 2 WHEN 'zip' THEN 4 ELSE 3 END END";
 const FROM = `FROM catalog_software w JOIN catalog_versions v ON v.software_id=w.id
-  JOIN catalog_downloads d ON d.version_id=v.id JOIN catalog_sites s ON s.id=d.site_id`;
+  JOIN catalog_downloads d INDEXED BY download_version_site ON d.version_id=v.id JOIN catalog_sites s ON s.id=d.site_id`;
 function conditions(input: FileQuery) {
   const [site, ...parts] = input.resource.split(':');
-  if (site !== 'pku') throw new FileQueryError('资源站点未启用');
+  if (!site || !parts.length) throw new FileQueryError('资源身份无效');
   const clauses = ['s.slug=?', 'w.resource_key=?'];
   const params: (string | number)[] = [site, parts.join(':')];
   if (input.version) {
@@ -204,53 +204,163 @@ export function queryFiles(db: DatabaseSync, input: FileQuery, now = Date.now())
   }
 }
 
-export function queryFileOptions(db: DatabaseSync, input: FileQuery) {
+export function hasResource(db: DatabaseSync, resource: string): boolean {
+  const [site, ...key] = resource.split(':');
+  return !!db
+    .prepare(
+      `SELECT 1 FROM catalog_software w JOIN catalog_software_sites ws ON ws.software_id=w.id
+    JOIN catalog_sites s ON s.id=ws.site_id WHERE s.slug=? AND w.resource_key=?`,
+    )
+    .get(site, key.join(':'));
+}
+function versionsOf(db: DatabaseSync, input: FileQuery): string[] {
   const filter = conditions({ ...input, version: undefined });
   const rows = db
-    .prepare(`SELECT DISTINCT d.platform,d.arch,v.version,d.metadata ${FROM} WHERE ${filter.where}`)
-    .all(...filter.params) as {
-    platform: string;
-    arch: string;
-    version: string;
-    metadata: string;
-  }[];
+    .prepare(`SELECT DISTINCT v.version ${FROM} WHERE ${filter.where}`)
+    .all(...filter.params) as { version: string }[];
   const repo = db
     .prepare('SELECT repo FROM catalog_software WHERE resource_key=?')
     .get(filter.key) as { repo: string } | undefined;
-  const platforms = [
-    ...new Set(
-      rows.flatMap((r) => {
-        const metadata = JSON.parse(r.metadata) as DownloadMetadata;
-        return metadata.platforms?.length
-          ? metadata.platforms
-          : r.platform === 'any'
-            ? ['windows', 'macos', 'linux']
-            : [r.platform];
-      }),
-    ),
-  ].sort();
-  return {
-    platforms,
-    arches: [...new Set(rows.map((r) => r.arch))].sort(),
-    versions: [...new Set(rows.map((r) => r.version))].sort(
+  return rows
+    .map((r) => r.version)
+    .sort(
       (a, b) =>
         Number(/^(latest|current|release)$/i.test(a)) -
           Number(/^(latest|current|release)$/i.test(b)) ||
         Number(/(?:[-.])(?:rc|alpha|beta|pre)/i.test(a)) -
           Number(/(?:[-.])(?:rc|alpha|beta|pre)/i.test(b)) ||
         compareRepoVersions(repo?.repo ?? '', b, a),
-    ),
-    releases: [
-      ...new Set(
-        rows
-          .filter((r) => (JSON.parse(r.metadata) as DownloadMetadata).purpose === 'system_image')
-          .map((r) => r.version),
-      ),
-    ],
-    roles: [
-      ...new Set(
-        rows.map((r) => (JSON.parse(r.metadata) as DownloadMetadata).purpose ?? 'installer'),
-      ),
-    ],
+    );
+}
+function facets(db: DatabaseSync, input: FileQuery) {
+  const filter = conditions({ ...input, version: undefined, cursor: undefined });
+  const platforms = (
+    db
+      .prepare(
+        `SELECT DISTINCT p.value platform ${FROM} JOIN json_each(
+    CASE WHEN json_array_length(d.metadata,'$.platforms')>0 THEN json_extract(d.metadata,'$.platforms')
+    WHEN d.platform='any' THEN '["windows","macos","linux"]' ELSE json_array(d.platform) END) p
+    WHERE ${filter.where}`,
+      )
+      .all(...filter.params) as { platform: string }[]
+  )
+    .map((r) => r.platform)
+    .sort();
+  const arches = (
+    db.prepare(`SELECT DISTINCT d.arch ${FROM} WHERE ${filter.where}`).all(...filter.params) as {
+      arch: string;
+    }[]
+  )
+    .map((r) => r.arch)
+    .sort();
+  const roles = (
+    db
+      .prepare(
+        `SELECT DISTINCT COALESCE(json_extract(d.metadata,'$.purpose'),'installer') role ${FROM} WHERE ${filter.where}`,
+      )
+      .all(...filter.params) as { role: string }[]
+  ).map((r) => r.role);
+  return { platforms, arches, roles };
+}
+export function queryFileOptions(db: DatabaseSync, input: FileQuery) {
+  const filter = conditions({ ...input, version: undefined });
+  const releases = (
+    db
+      .prepare(
+        `SELECT DISTINCT v.version ${FROM} WHERE ${filter.where}
+    AND json_extract(d.metadata,'$.purpose')='system_image'`,
+      )
+      .all(...filter.params) as { version: string }[]
+  ).map((r) => r.version);
+  return { ...facets(db, input), versions: versionsOf(db, input), releases };
+}
+/** 下载页选站后调用：一次返回默认筛选与十个文件，不发送全部历史版本。 */
+export function queryDownloadStart(db: DatabaseSync, input: FileQuery, now = Date.now()) {
+  const available = facets(db, { resource: input.resource });
+  const platform =
+    input.platform && available.platforms.includes(input.platform) ? input.platform : '';
+  const scoped = facets(db, { resource: input.resource, platform, q: input.q });
+  const arch = input.arch && scoped.arches.includes(input.arch) ? input.arch : '';
+  const versions = versionsOf(db, { ...input, platform, arch });
+  const version =
+    input.version === '*'
+      ? ''
+      : input.version && versions.includes(input.version)
+        ? input.version
+        : (versions[0] ?? '');
+  const page = queryFiles(db, { ...input, platform, arch, version, limit: 10 }, now);
+  return {
+    ...page,
+    filters: { platform, arch, version },
+    options: {
+      platforms: available.platforms,
+      arches: scoped.arches,
+      roles: scoped.roles,
+      versionCount: versions.length,
+    },
+  };
+}
+export function queryFileVersions(
+  db: DatabaseSync,
+  input: FileQuery,
+  search = '',
+  now = Date.now(),
+) {
+  const versions = versionsOf(db, input).filter((v) =>
+    v.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()),
+  );
+  const filter = conditions(input);
+  const revision = (
+    db
+      .prepare(
+        `SELECT COALESCE(SUM(c.revision),0)+COUNT(*) revision FROM catalog_scopes c
+    JOIN catalog_software w ON w.id=c.software_id JOIN catalog_sites s ON s.id=c.site_id WHERE s.slug=? AND w.resource_key=?`,
+      )
+      .get(filter.site, filter.key) as { revision: number }
+  ).revision;
+  const fingerprint = createHash('sha256')
+    .update(
+      JSON.stringify([
+        input.resource,
+        input.platform ?? '',
+        input.arch ?? '',
+        input.q ?? '',
+        search,
+      ]),
+    )
+    .digest('hex');
+  let offset = 0;
+  let at = now;
+  if (input.cursor) {
+    let cursor: { offset: number; at: number; revision: number; fingerprint: string };
+    try {
+      if (input.cursor.length > 2048) throw new Error();
+      cursor = JSON.parse(Buffer.from(input.cursor, 'base64url').toString('utf8')) as typeof cursor;
+      if (
+        !Number.isSafeInteger(cursor.offset) ||
+        cursor.offset < 0 ||
+        !Number.isSafeInteger(cursor.at) ||
+        cursor.at > now ||
+        now - cursor.at > 3600000 ||
+        cursor.fingerprint !== fingerprint ||
+        !Number.isSafeInteger(cursor.revision)
+      )
+        throw new Error();
+    } catch {
+      throw new FileQueryError('版本分页游标无效或过期，请重新查询');
+    }
+    if (cursor.revision !== revision) throw new FileQueryError('版本清单已更新，请重新查询', 409);
+    offset = cursor.offset;
+    at = cursor.at;
+  }
+  return {
+    items: versions.slice(offset, offset + 10),
+    total: versions.length,
+    nextCursor:
+      versions.length > offset + 10
+        ? Buffer.from(JSON.stringify({ offset: offset + 10, at, revision, fingerprint })).toString(
+            'base64url',
+          )
+        : null,
   };
 }

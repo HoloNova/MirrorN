@@ -3,7 +3,7 @@
     "slug": "nodejs",
     "resourceKey": "nodejs-release",
     "name": "Node.js",
-    "aliases": ["node", "javascript", "js"],
+    "aliases": ["node", "nodejs", "node.js"],
     "ecosystemId": "nodejs",
     "repo": "nodejs-release",
     "tutorialId": "nodejs"
@@ -76,7 +76,7 @@
     "slug": "anaconda-distribution",
     "resourceKey": "anaconda-distribution",
     "name": "Anaconda（Python）",
-    "aliases": ["anaconda", "python", "conda"],
+    "aliases": ["anaconda"],
     "ecosystemId": "anaconda-installer",
     "repo": "anaconda"
   },
@@ -84,7 +84,7 @@
     "slug": "anaconda-installer",
     "resourceKey": "anaconda",
     "name": "Miniconda（Python）",
-    "aliases": ["miniconda", "python", "conda"],
+    "aliases": ["miniconda"],
     "ecosystemId": "anaconda-installer",
     "repo": "anaconda",
     "tutorialId": "miniconda"

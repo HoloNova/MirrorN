@@ -14,7 +14,21 @@ import {
   searchResources,
 } from './db/catalog.js';
 import type { DatabaseSync } from 'node:sqlite';
-import { FileQueryError, queryFiles, queryFileOptions } from './db/fileQueries.js';
+import {
+  FileQueryError,
+  hasResource,
+  queryFiles,
+  queryFileOptions,
+  queryDownloadStart,
+  queryFileVersions,
+} from './db/fileQueries.js';
+import {
+  searchCatalog,
+  siteCatalog,
+  softwareCatalog,
+  resourceSoftware,
+  ecosystemCatalog,
+} from './db/discovery.js';
 import { registerStaticRoutes } from './static.js';
 import {
   computeFingerprint,
@@ -84,7 +98,6 @@ export function createApp(options: AppOptions = {}): Hono {
     const version = context.req.query('version')?.trim();
     const kind = context.req.query('kind')?.trim();
     const tutorialsOnly = context.req.query('tutorials') === '1';
-    const downloadableOnly = context.req.query('downloadable') === '1';
     const limit = Number(context.req.query('limit') ?? '50');
     if (!Number.isSafeInteger(limit) || limit < 1 || limit > 200)
       return context.json({ error: 'limit必须为1到200的整数' }, 400);
@@ -99,11 +112,147 @@ export function createApp(options: AppOptions = {}): Hono {
       ...(site === undefined || site === '' ? {} : { siteId: site }),
       ...(kind === undefined || kind === '' ? {} : { kind }),
       ...(tutorialsOnly ? { onlyTutorials: true } : {}),
-      ...(downloadableOnly ? { downloadableOnly: true } : {}),
+      downloadableOnly: true,
       ...(Number.isFinite(limit) ? { limit } : {}),
     });
     context.header('Cache-Control', 'no-store');
     return context.json({ items, catalog: 'download-rules-v3' });
+  });
+
+  // 新界面只用轻量目录与十条分页；旧接口保留供兼容，不再承担首屏数据加载。
+  app.get('/api/catalog', (context) => {
+    context.header('Cache-Control', 'no-store');
+    if (!options.db) return context.json({ error: '资源库不可用' }, 503);
+    try {
+      return context.json(
+        searchCatalog(
+          options.db,
+          { query: context.req.query('q'), cursor: context.req.query('cursor') },
+          now(),
+        ),
+      );
+    } catch (error) {
+      if (error instanceof FileQueryError)
+        return context.json({ error: error.message }, error.status);
+      throw error;
+    }
+  });
+  app.get('/api/catalog/ecosystems/:id', (context) => {
+    context.header('Cache-Control', 'no-store');
+    if (!options.db) return context.json({ error: '资源库不可用' }, 503);
+    const id = context.req.param('id');
+    const ecosystem = ecosystemCatalog(options.db, id);
+    if (!ecosystem) return context.json({ error: '这个生态暂无可下载软件' }, 404);
+    try {
+      return context.json({
+        ecosystem,
+        ...searchCatalog(
+          options.db,
+          {
+            ecosystem: id,
+            query: context.req.query('q'),
+            cursor: context.req.query('cursor'),
+          },
+          now(),
+        ),
+      });
+    } catch (error) {
+      if (error instanceof FileQueryError)
+        return context.json({ error: error.message }, error.status);
+      throw error;
+    }
+  });
+  app.get('/api/catalog/sites/:id', (context) => {
+    context.header('Cache-Control', 'no-store');
+    if (!options.db) return context.json({ error: '资源库不可用' }, 503);
+    try {
+      return context.json(
+        siteCatalog(
+          options.db,
+          {
+            site: context.req.param('id'),
+            query: context.req.query('q'),
+            cursor: context.req.query('cursor'),
+          },
+          now(),
+        ),
+      );
+    } catch (error) {
+      if (error instanceof FileQueryError)
+        return context.json({ error: error.message }, error.status);
+      throw error;
+    }
+  });
+  for (const mode of ['software', 'resources'] as const) {
+    app.get(`/api/catalog/${mode}/:id`, (context) => {
+      context.header('Cache-Control', 'no-store');
+      if (!options.db) return context.json({ error: '资源库不可用' }, 503);
+      const id =
+        mode === 'software'
+          ? context.req.param('id')
+          : resourceSoftware(options.db, context.req.param('id'));
+      const software = id ? softwareCatalog(options.db, id) : undefined;
+      return software
+        ? context.json(software)
+        : context.json({ error: '这款软件暂无可下载文件' }, 404);
+    });
+  }
+  app.get('/api/resources/:id/start', (context) => {
+    context.header('Cache-Control', 'no-store');
+    if (!options.db) return context.json({ error: '资源库不可用' }, 503);
+    const resource = context.req.param('id');
+    if (!hasResource(options.db, resource))
+      return context.json({ error: '没有这条已启用资源' }, 404);
+    try {
+      return context.json(
+        queryDownloadStart(
+          options.db,
+          {
+            resource,
+            ...Object.fromEntries(
+              ['q', 'platform', 'arch', 'version'].flatMap((key) => {
+                const value = context.req.query(key);
+                return value === undefined ? [] : [[key, value]];
+              }),
+            ),
+          },
+          now(),
+        ),
+      );
+    } catch (error) {
+      if (error instanceof FileQueryError)
+        return context.json({ error: error.message }, error.status);
+      throw error;
+    }
+  });
+  app.get('/api/resources/:id/versions', (context) => {
+    context.header('Cache-Control', 'no-store');
+    if (!options.db) return context.json({ error: '资源库不可用' }, 503);
+    const resource = context.req.param('id');
+    if (!hasResource(options.db, resource))
+      return context.json({ error: '没有这条已启用资源' }, 404);
+    try {
+      return context.json(
+        queryFileVersions(
+          options.db,
+          {
+            resource,
+            ...Object.fromEntries(
+              ['q', 'platform', 'arch', 'cursor'].flatMap((key) => {
+                const value = context.req.query(key);
+                return value === undefined ? [] : [[key, value]];
+              }),
+            ),
+          },
+          context.req.query('search')?.slice(0, 200) ?? '',
+          now(),
+        ),
+      );
+    } catch (error) {
+      if (error instanceof FileQueryError)
+        return context.json({ error: error.message }, error.status);
+      throw error;
+    }
   });
 
   // 旧的用户触发源站抓取已退出：兼容地址也不能联网兜底。
@@ -117,7 +266,7 @@ export function createApp(options: AppOptions = {}): Hono {
     context.header('Cache-Control', 'no-store');
     if (!options.db) return context.json({ error: '资源库不可用' }, 503);
     const resource = context.req.param('id');
-    if (!getResource(options.db, resource))
+    if (!hasResource(options.db, resource))
       return context.json({ error: '没有这条已启用资源' }, 404);
     return context.json(
       queryFileOptions(options.db, {
@@ -136,7 +285,7 @@ export function createApp(options: AppOptions = {}): Hono {
     context.header('Cache-Control', 'no-store');
     if (!options.db) return context.json({ error: '资源库不可用' }, 503);
     const resource = context.req.query('resource') ?? '';
-    if (!getResource(options.db, resource))
+    if (!hasResource(options.db, resource))
       return context.json({ error: '没有这条已启用资源' }, 404);
     const limit = Number(context.req.query('limit') ?? '50');
     if (!Number.isInteger(limit) || limit < 1 || limit > 200)
@@ -199,7 +348,7 @@ export function createApp(options: AppOptions = {}): Hono {
       items: searchResources(options.db, {
         siteId: context.req.param('id'),
         limit: 200,
-        downloadableOnly: context.req.query('downloadable') === '1',
+        downloadableOnly: true,
       }),
     });
   });

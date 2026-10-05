@@ -4,6 +4,8 @@ MirrorN 帮助初学者查找软件在 Windows、macOS、Linux 上的安装器�
 
 **当前开发版**仅启用北大，使用“通用目录模板＋软件特性＋站点绑定”采集安装器、运行包和系统 ISO，不整库采集发行版／语言依赖。规则随源码发布，不开放修改接口或热更新；版本、文件名和链接由后台动态发现。生态收录与是否已有下载分开，未知文件保留待核对样本。实现及发布证据见 [`docs/download-rule-system-design.md`](docs/download-rule-system-design.md)。**完整覆盖仍在推进，进度见 `PLAN.md`。**
 
+首页仅按需搜索生态／软件，同一软件合并不同站点。站点列表点击后每页10条、滚动续页；软件页自动选站，进入后直接展示并请求首批下载文件，历史版本单独按需查询。“节省代理流量”只保留已核实的中国大陆入口，不代表网页能关闭系统代理。设计与接口见 [`docs/lazy-catalog-design.md`](docs/lazy-catalog-design.md)。
+
 ## 开发
 
 要求 Node.js 24+、pnpm 12、Redis 6.2+。SQLite来自Node内置 `node:sqlite`，不需要数据库容器。Redis只保存BullMQ后台待办；Redis失联不阻止读取已有安装下载。
@@ -32,7 +34,7 @@ pnpm dev
 
 新库为 `MIRRORN_SNAPSHOT_DIR/mirrorn-installers.sqlite`；旧 `mirrorn.sqlite`不自动导入、删除或复用。旧包采集器、PyPI批量包页队列及复制整批文件的快照实现已退役。旧 `data/site-inventories/` / `site-resources/` 是官方仓库归档，不能等同于当前有下载的软件条目。旧换源模板在共享包保留，但不是现行产品入口。
 
-接口：`/api/ecosystems`、`/api/resources?q=&ecosystem=&version=&site=`、`/api/sites/:id/resources`、`/api/resources/:id`、`/api/files?resource=&version=&platform=&arch=`。收录身份与有效下载分开查询；`downloadable=1` 只返回有下载的条目，未有下载不使生态消失。旧 `browse/package` 返回410；未接入条目不联网兜底。
+新界面接口：`/api/catalog`、`/api/catalog/ecosystems/:id`、`/api/catalog/sites/:id`、`/api/catalog/software/:id`、`/api/resources/:id/start`、`/api/resources/:id/versions`及十条文件分页。兼容接口保留：`/api/ecosystems`、`/api/resources?q=&ecosystem=&version=&site=`、`/api/sites/:id/resources`、`/api/resources/:id`、`/api/files?resource=&version=&platform=&arch=`。身份保留在后台；公开生态、首页／搜索／站点资源统一只返回有有效下载的条目，成功入库后自动出现。数字按可下载软件统计，不提前展示零资源分类。旧 `browse/package` 返回410；未接入条目不联网兜底。
 
 ## 发布与验收
 

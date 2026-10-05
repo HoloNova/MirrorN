@@ -43,13 +43,60 @@ describe('统一只读安装目录API', () => {
         id: string;
         resourceCount: number;
       }[];
-      expect(ecosystems.length).toBeGreaterThan(5);
-      expect(ecosystems.some((e) => e.id === 'epel')).toBe(true);
+      expect(ecosystems.map((e) => [e.id, e.resourceCount])).toEqual([['nodejs', 1]]);
+      expect(ecosystems.some((e) => e.id === 'epel')).toBe(false);
       expect((await app.request('/api/resources/ustc%3Anodejs-release')).status).toBe(404);
       expect((await (await app.request('/api/resources?site=ustc')).json()).items).toEqual([]);
       expect(network).not.toHaveBeenCalled();
     } finally {
       vi.unstubAllGlobals();
+      db.close();
+    }
+  });
+  it('公开目录隐藏空身份，入库后自动出现，生态与站点只计有下载的软件', async () => {
+    const db = indexFixture();
+    try {
+      const app = createApp({ db });
+      const identityCount = db.prepare('SELECT COUNT(*) count FROM catalog_software').get() as {
+        count: number;
+      };
+      const sourceCount = db.prepare('SELECT COUNT(*) count FROM catalog_sources').get() as {
+        count: number;
+      };
+      for (const path of [
+        '/api/ecosystems',
+        '/api/resources',
+        '/api/resources?downloadable=0',
+        '/api/sites/pku/resources',
+        '/api/sites/pku/resources?downloadable=0',
+      ])
+        expect((await (await app.request(path)).json()).items).toEqual([]);
+      expect((await (await app.request('/api/sites/pku')).json()).resourceCount).toBe(0);
+
+      fixtureRun(db, [fixtureDownload('a.msi'), fixtureDownload('b.msi')], 1);
+      const ecosystems = (await (await app.request('/api/ecosystems')).json()).items;
+      expect(ecosystems).toHaveLength(1);
+      expect(ecosystems[0]).toMatchObject({
+        id: 'nodejs',
+        resourceCount: 1,
+        downloadableResourceCount: 1,
+        repositoryCount: 1,
+      });
+      for (const path of ['/api/resources', '/api/sites/pku/resources']) {
+        const items = (await (await app.request(path)).json()).items;
+        expect(items).toHaveLength(1);
+        expect(items[0]).toMatchObject({ id: 'pku:nodejs-release', artifactCount: 2 });
+      }
+      expect((await (await app.request('/api/sites/pku')).json()).resourceCount).toBe(1);
+      expect((await (await app.request('/api/resources?ecosystem=dataset')).json()).items).toEqual(
+        [],
+      );
+      // 只改变公开目录的准入，不删除后台身份、生态关系或待采入口。
+      expect(db.prepare('SELECT COUNT(*) count FROM catalog_software').get()).toEqual(
+        identityCount,
+      );
+      expect(db.prepare('SELECT COUNT(*) count FROM catalog_sources').get()).toEqual(sourceCount);
+    } finally {
       db.close();
     }
   });

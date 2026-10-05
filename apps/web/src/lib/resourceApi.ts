@@ -98,6 +98,7 @@ export async function loadFiles(
 ): Promise<FilePage> {
   const params = parameters(filters);
   params.set('resource', id);
+  params.set('limit', '10');
   const raw = (await request(`/api/files?${params}`, signal)) as {
     items?: unknown;
     nextCursor?: unknown;
@@ -123,6 +124,210 @@ export async function loadFileOptions(
     )
       throw new Error('数据库筛选格式不符');
   return raw as unknown as FileOptions;
+}
+
+export interface CatalogItem {
+  id: string;
+  type: 'software' | 'ecosystem';
+  name: string;
+  ecosystemId: string;
+  ecosystemLabel: string;
+  kind: string;
+  softwareCount: number;
+  siteCount: number;
+}
+export interface Page<T> {
+  items: T[];
+  nextCursor: string | null;
+  total: number;
+}
+export interface SiteEntry {
+  id: string;
+  softwareId: string;
+  name: string;
+  ecosystemLabel: string;
+  kind: string;
+  artifactCount: number;
+}
+export interface DownloadCandidate {
+  id: string;
+  siteId: string;
+  siteName: string;
+  downloadEntry: string;
+  region: 'CN' | 'unknown';
+  artifactCount: number;
+  probe?: import('@mirrorn/shared').Mirror['probe'];
+}
+export interface SoftwareDetail {
+  id: string;
+  name: string;
+  ecosystemId: string;
+  ecosystemLabel: string;
+  kind: string;
+  candidates: DownloadCandidate[];
+}
+export interface DownloadStart extends FilePage {
+  filters: { platform: string; arch: string; version: string };
+  options: { platforms: string[]; arches: string[]; roles: string[]; versionCount: number };
+}
+function record(raw: unknown): Record<string, unknown> {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('目录响应格式不符');
+  return raw as Record<string, unknown>;
+}
+function strings(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string');
+}
+function parsePage<T>(raw: unknown, valid: (value: unknown) => value is T): Page<T> {
+  const value = record(raw);
+  if (
+    !Array.isArray(value.items) ||
+    !value.items.every(valid) ||
+    (value.nextCursor !== null && typeof value.nextCursor !== 'string') ||
+    typeof value.total !== 'number'
+  )
+    throw new Error('目录分页格式不符');
+  return value as unknown as Page<T>;
+}
+function isCatalogItem(raw: unknown): raw is CatalogItem {
+  const value = record(raw);
+  return (
+    ['id', 'name', 'ecosystemId', 'ecosystemLabel', 'kind'].every(
+      (key) => typeof value[key] === 'string',
+    ) &&
+    ['software', 'ecosystem'].includes(String(value.type)) &&
+    typeof value.softwareCount === 'number' &&
+    typeof value.siteCount === 'number'
+  );
+}
+export async function searchCatalog(
+  query: string,
+  cursor?: string,
+  signal?: AbortSignal,
+): Promise<Page<CatalogItem>> {
+  const params = new URLSearchParams({ q: query });
+  if (cursor) params.set('cursor', cursor);
+  return parsePage(await request(`/api/catalog?${params}`, signal), isCatalogItem);
+}
+export async function loadEcosystemPage(
+  id: string,
+  query: string,
+  cursor?: string,
+  signal?: AbortSignal,
+) {
+  const params = new URLSearchParams({ q: query });
+  if (cursor) params.set('cursor', cursor);
+  const raw = record(
+    await request(`/api/catalog/ecosystems/${encodeURIComponent(id)}?${params}`, signal),
+  );
+  const ecosystem = record(raw.ecosystem);
+  if (typeof ecosystem.name !== 'string' || typeof ecosystem.softwareCount !== 'number')
+    throw new Error('生态身份格式不符');
+  return {
+    ...parsePage(raw, isCatalogItem),
+    ecosystem: { name: ecosystem.name, softwareCount: ecosystem.softwareCount },
+  };
+}
+export async function loadSitePage(
+  id: string,
+  query: string,
+  cursor?: string,
+  signal?: AbortSignal,
+): Promise<Page<SiteEntry>> {
+  const params = new URLSearchParams({ q: query });
+  if (cursor) params.set('cursor', cursor);
+  return parsePage(
+    await request(`/api/catalog/sites/${encodeURIComponent(id)}?${params}`, signal),
+    (raw): raw is SiteEntry => {
+      const value = record(raw);
+      return (
+        ['id', 'softwareId', 'name', 'ecosystemLabel', 'kind'].every(
+          (key) => typeof value[key] === 'string',
+        ) && typeof value.artifactCount === 'number'
+      );
+    },
+  );
+}
+export async function loadNetworkFingerprint(signal?: AbortSignal): Promise<string | undefined> {
+  const value = record(await request('/api/net-fingerprint', signal));
+  return value.available === true && typeof value.fingerprint === 'string'
+    ? value.fingerprint
+    : undefined;
+}
+export async function loadSoftware(
+  id: string,
+  legacy = false,
+  signal?: AbortSignal,
+): Promise<SoftwareDetail> {
+  const value = record(
+    await request(
+      `/api/catalog/${legacy ? 'resources' : 'software'}/${encodeURIComponent(id)}`,
+      signal,
+    ),
+  );
+  if (
+    !['id', 'name', 'ecosystemId', 'ecosystemLabel', 'kind'].every(
+      (key) => typeof value[key] === 'string',
+    ) ||
+    !Array.isArray(value.candidates)
+  )
+    throw new Error('软件身份格式不符');
+  for (const raw of value.candidates) {
+    const candidate = record(raw);
+    if (
+      !['id', 'siteId', 'siteName', 'downloadEntry'].every(
+        (key) => typeof candidate[key] === 'string',
+      ) ||
+      !['CN', 'unknown'].includes(String(candidate.region)) ||
+      typeof candidate.artifactCount !== 'number' ||
+      new URL(String(candidate.downloadEntry)).protocol !== 'https:'
+    )
+      throw new Error('下载站点格式不符');
+  }
+  return value as unknown as SoftwareDetail;
+}
+export async function loadDownloadStart(
+  candidate: DownloadCandidate,
+  filters: FileFilters,
+  signal?: AbortSignal,
+): Promise<DownloadStart> {
+  const value = record(
+    await request(
+      `/api/resources/${encodeURIComponent(candidate.id)}/start?${parameters(filters)}`,
+      signal,
+    ),
+  );
+  const items = parseArtifactList(value.items, new URL(candidate.downloadEntry).origin);
+  const selected = record(value.filters);
+  const options = record(value.options);
+  if (
+    !items ||
+    (value.nextCursor !== null && typeof value.nextCursor !== 'string') ||
+    !['platform', 'arch', 'version'].every((key) => typeof selected[key] === 'string') ||
+    !['platforms', 'arches', 'roles'].every((key) => strings(options[key])) ||
+    typeof options.versionCount !== 'number'
+  )
+    throw new Error('下载分页格式不符');
+  return {
+    items,
+    nextCursor: value.nextCursor as string | null,
+    filters: selected as DownloadStart['filters'],
+    options: options as DownloadStart['options'],
+  };
+}
+export async function loadVersions(
+  candidate: DownloadCandidate,
+  filters: FileFilters,
+  search: string,
+  cursor?: string,
+  signal?: AbortSignal,
+): Promise<Page<string>> {
+  const params = parameters(filters);
+  params.set('search', search);
+  if (cursor) params.set('cursor', cursor);
+  return parsePage(
+    await request(`/api/resources/${encodeURIComponent(candidate.id)}/versions?${params}`, signal),
+    (value): value is string => typeof value === 'string',
+  );
 }
 
 export interface SiteSummary {

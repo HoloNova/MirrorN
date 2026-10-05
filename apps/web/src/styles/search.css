@@ -98,7 +98,8 @@
 }
 
 .search-hit {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 48px;
   width: 100%;
   align-items: baseline;
   gap: var(--space-3);
@@ -117,8 +118,7 @@
 
 /* 标题固定成一列，结果行不会因名称长短错位。 */
 .hit-title {
-  flex: none;
-  width: 190px;
+  min-width: 0;
   overflow: hidden;
   color: var(--ink);
   font-size: var(--size-body);
@@ -135,8 +135,7 @@
 }
 
 .hit-kind {
-  margin-left: auto;
-  flex: none;
+  text-align: right;
   color: var(--ink-3);
   font-size: var(--size-micro);
 }
@@ -162,9 +161,12 @@
 }
 
 @media (max-width: 767px) {
+  .search-hit {
+    grid-template-columns: minmax(0, 1fr) 48px;
+  }
+
   .hit-title {
-    width: auto;
-    max-width: 60%;
+    min-width: 0;
   }
 
   .hit-subtitle {

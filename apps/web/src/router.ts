@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 
 import ResourcePage from './pages/ResourcePage.vue';
 import HelpPage from './pages/HelpPage.vue';
+import EcosystemPage from './pages/EcosystemPage.vue';
 import HomePage from './pages/HomePage.vue';
 import NotFoundPage from './pages/NotFoundPage.vue';
 import SitesDetailPage from './pages/SitesDetailPage.vue';
@@ -20,14 +21,20 @@ import SitesPage from './pages/SitesPage.vue';
     { path: '/', name: 'home', component: HomePage },
     { path: '/sites', name: 'sites', component: SitesPage },
     { path: '/sites/:id', name: 'site', component: SitesDetailPage, props: true },
-    { path: '/resources/:id', name: 'resource', component: ResourcePage, props: true },
+    { path: '/software/:id', name: 'software', component: ResourcePage, props: true },
+    {
+      path: '/resources/:id',
+      name: 'resource',
+      component: ResourcePage,
+      props: (route) => ({ id: String(route.params.id), legacy: true }),
+    },
+    { path: '/ecosystems/:id', name: 'ecosystem', component: EcosystemPage, props: true },
     { path: '/help/:id?', name: 'help', component: HelpPage },
     // 旧地址：资源页上线前的教程页与生态文档页，保留跳转不让外链失效。
     {
       path: '/tutorials/miniconda',
       redirect: { name: 'resource', params: { id: 'pku:anaconda' } },
     },
-    { path: '/ecosystems/:id', redirect: { name: 'home' } },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundPage },
   ],
   scrollBehavior: () => ({ top: 0 }),

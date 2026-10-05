@@ -111,12 +111,12 @@ const SELECT = `SELECT s.id site_id,s.slug site_slug,s.name site_name,w.id softw
   FROM catalog_sites s JOIN catalog_software_sites ws ON ws.site_id=s.id JOIN catalog_software w ON w.id=ws.software_id
   JOIN catalog_ecosystems e ON e.id=w.ecosystem_id
   LEFT JOIN catalog_versions v ON v.software_id=w.id
-  LEFT JOIN catalog_downloads d ON d.version_id=v.id AND d.site_id=s.id`;
+  LEFT JOIN catalog_downloads d INDEXED BY download_version_site ON d.version_id=v.id AND d.site_id=s.id`;
 
 function toResource(db: DatabaseSync, raw: Raw): ResourceRow {
   const versions = db
     .prepare(
-      `SELECT DISTINCT v.version FROM catalog_versions v JOIN catalog_downloads d ON d.version_id=v.id
+      `SELECT DISTINCT v.version FROM catalog_versions v JOIN catalog_downloads d INDEXED BY download_version_site ON d.version_id=v.id
     WHERE v.software_id=? AND d.site_id=?`,
     )
     .all(raw.software_id, raw.site_id) as { version: string }[];
@@ -126,19 +126,16 @@ function toResource(db: DatabaseSync, raw: Raw): ResourceRow {
         Number(/^(latest|current|release)$/i.test(b.version)) ||
       compareRepoVersions(raw.repo, b.version, a.version),
   );
-  const downloads = db
-    .prepare(
-      'SELECT d.platform,d.metadata FROM catalog_downloads d JOIN catalog_versions v ON v.id=d.version_id WHERE v.software_id=? AND d.site_id=?',
-    )
-    .all(raw.software_id, raw.site_id) as { platform: string; metadata: string }[];
-  const platforms = [
-    ...new Set(
-      downloads.flatMap((d) => {
-        const metadata = JSON.parse(d.metadata) as { platforms?: string[] };
-        return metadata.platforms?.length ? metadata.platforms : [d.platform];
-      }),
-    ),
-  ];
+  const platforms = (
+    db
+      .prepare(
+        `SELECT DISTINCT p.value platform FROM catalog_downloads d INDEXED BY download_version_site
+    JOIN catalog_versions v ON v.id=d.version_id JOIN json_each(
+      CASE WHEN json_array_length(d.metadata,'$.platforms')>0 THEN json_extract(d.metadata,'$.platforms')
+      ELSE json_array(d.platform) END) p WHERE v.software_id=? AND d.site_id=?`,
+      )
+      .all(raw.software_id, raw.site_id) as { platform: string }[]
+  ).map((r) => r.platform);
   return {
     id: `${raw.site_slug}:${raw.resource_key}`,
     siteId: raw.site_slug,
@@ -170,6 +167,7 @@ export interface SearchOptions {
   siteId?: string;
   kind?: string;
   onlyTutorials?: boolean;
+  /** 公开目录默认只查有效下载；false仅供内部身份核对。 */
   downloadableOnly?: boolean;
   limit?: number;
 }
@@ -211,10 +209,10 @@ export function searchResources(db: DatabaseSync, options: SearchOptions = {}): 
     params.push(needle, needle, needle, needle, term, needle, needle);
   }
   const limit = Math.min(200, Math.max(1, options.limit ?? 50));
-  // 已收录与可下载是独立状态，调用方可明确要求downloadableOnly。
+  // 身份继续保留在库中，但默认不把没有下载的身份当作公开资源。
   const rows = db
     .prepare(
-      `${SELECT} WHERE ${where.join(' AND ')} GROUP BY s.id,w.id ${options.downloadableOnly ? 'HAVING COUNT(d.id)>0' : ''}
+      `${SELECT} WHERE ${where.join(' AND ')} GROUP BY s.id,w.id ${options.downloadableOnly !== false ? 'HAVING COUNT(d.id)>0' : ''}
     ORDER BY w.category,w.name LIMIT ?`,
     )
     .all(...params, limit) as unknown as Raw[];
@@ -239,47 +237,47 @@ export interface EcosystemSummary {
 export function listEcosystems(db: DatabaseSync): EcosystemSummary[] {
   return db
     .prepare(
-      `SELECT e.slug id,e.label,e.category,COUNT(DISTINCT ws.software_id) resourceCount,COUNT(DISTINCT s.id) siteCount,
-      COUNT(DISTINCT CASE WHEN w.tutorial_id IS NOT NULL AND ws.software_id IS NOT NULL THEN w.id END) tutorialCount,
-      COUNT(DISTINCT CASE WHEN d.id IS NOT NULL AND ws.software_id IS NOT NULL THEN w.id END) downloadableResourceCount,COUNT(DISTINCT r.repo) repositoryCount
-      FROM catalog_ecosystems e JOIN catalog_sources r ON r.ecosystem_id=e.id JOIN catalog_sites s ON s.id=r.site_id
-      LEFT JOIN catalog_software w ON w.ecosystem_id=e.id LEFT JOIN catalog_software_sites ws ON ws.software_id=w.id AND ws.site_id=s.id
-      LEFT JOIN catalog_versions v ON v.software_id=w.id LEFT JOIN catalog_downloads d ON d.version_id=v.id AND d.site_id=s.id
+      `SELECT e.slug id,e.label,e.category,COUNT(DISTINCT w.id) resourceCount,COUNT(DISTINCT s.id) siteCount,
+      COUNT(DISTINCT CASE WHEN w.tutorial_id IS NOT NULL THEN w.id END) tutorialCount,
+      COUNT(DISTINCT w.id) downloadableResourceCount,COUNT(DISTINCT w.repo) repositoryCount
+      FROM catalog_ecosystems e JOIN catalog_software w ON w.ecosystem_id=e.id
+      JOIN catalog_software_sites ws ON ws.software_id=w.id JOIN catalog_sites s ON s.id=ws.site_id
+      JOIN catalog_versions v ON v.software_id=w.id JOIN catalog_downloads d INDEXED BY download_version_site ON d.version_id=v.id AND d.site_id=s.id
       WHERE s.slug='pku' GROUP BY e.id ORDER BY e.category,e.label`,
     )
     .all() as unknown as EcosystemSummary[];
 }
 export function lastCrawlAt(db: DatabaseSync, resourceId: string): number | undefined {
-  const resource = getResource(db, resourceId);
-  if (!resource) return undefined;
+  const [site, ...key] = resourceId.split(':');
   const row = db
     .prepare(
       `SELECT MAX(d.crawled_at) at FROM catalog_downloads d JOIN catalog_versions v ON v.id=d.version_id
     JOIN catalog_software w ON w.id=v.software_id JOIN catalog_sites s ON s.id=d.site_id WHERE s.slug=? AND w.resource_key=?`,
     )
-    .get(resource.siteId, resource.id.split(':').slice(1).join(':')) as { at: number | null };
+    .get(site, key.join(':')) as { at: number | null };
   return row.at ?? undefined;
 }
 export function latestCrawl(
   db: DatabaseSync,
   resourceId: string,
 ): { result: 'complete' | 'failed'; checkedAt: number; requests: number } | undefined {
-  const resource = getResource(db, resourceId);
-  if (!resource) return undefined;
+  const [site, ...key] = resourceId.split(':');
   const row = db
     .prepare(
       `SELECT r.state result,r.finished_at checkedAt,r.requests FROM catalog_runs r
     JOIN catalog_scopes c ON c.id=r.scope_id JOIN catalog_software w ON w.id=c.software_id JOIN catalog_sites s ON s.id=c.site_id
     WHERE s.slug=? AND w.resource_key=? AND r.state<>'staging' ORDER BY r.id DESC LIMIT 1`,
     )
-    .get(resource.siteId, resource.id.split(':').slice(1).join(':')) as
+    .get(site, key.join(':')) as
     { result: 'complete' | 'failed'; checkedAt: number; requests: number } | undefined;
   return row;
 }
 export function listSites(db: DatabaseSync) {
   const rows = db
     .prepare(
-      `SELECT s.slug,s.name,s.payload,(SELECT COUNT(*) FROM catalog_software_sites ws WHERE ws.site_id=s.id AND s.slug='pku') count
+      `SELECT s.slug,s.name,s.payload,(SELECT COUNT(*) FROM catalog_software_sites ws WHERE ws.site_id=s.id AND s.slug='pku'
+       AND EXISTS(SELECT 1 FROM catalog_versions v JOIN catalog_downloads d INDEXED BY download_version_site ON d.version_id=v.id
+       WHERE v.software_id=ws.software_id AND d.site_id=ws.site_id)) count
     FROM catalog_sites s ORDER BY s.name`,
     )
     .all() as { slug: string; name: string; payload: string; count: number }[];
