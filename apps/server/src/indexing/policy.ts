@@ -5,6 +5,9 @@ export const RESOURCE_SITES = {
 } as const;
 export const PKU_ORIGIN = RESOURCE_SITES.pku.origin;
 export const REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
+export const INDEX_CONCURRENCY = 8;
+export const SOURCE_CONCURRENCY = 4;
+export const SOURCE_CACHE_ENTRIES = 64;
 export function resourceSite(site: string) {
   if (!Object.hasOwn(RESOURCE_SITES, site)) throw new Error('禁止采集未启用站点');
   return RESOURCE_SITES[site as keyof typeof RESOURCE_SITES];

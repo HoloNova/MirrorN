@@ -1,6 +1,13 @@
 import type { DatabaseSync } from 'node:sqlite';
 import type { Mirror } from '@mirrorn/shared';
 import { sourceUrl, resourceSite } from '../indexing/policy.js';
+import {
+  installDownloadSources,
+  retainSourceUrls,
+  publishSourceMembers,
+  reconcileDownloadSources,
+  downloadUpsertFields,
+} from './downloadSources.js';
 
 /** 四类业务实体。批次只用于短暂暂存，不复制有效下载记录。 */
 export function installCatalog(db: DatabaseSync) {
@@ -75,6 +82,8 @@ export function installCatalog(db: DatabaseSync) {
   add('catalog_staged', 'metadata', "TEXT NOT NULL DEFAULT '{}'");
   add('catalog_runs', 'rule_revision', "TEXT NOT NULL DEFAULT ''");
   add('catalog_runs', 'stats', "TEXT NOT NULL DEFAULT '{}'");
+  add('catalog_scopes', 'source_kind', "TEXT NOT NULL DEFAULT 'directory'");
+  installDownloadSources(db);
   db.exec(`INSERT INTO catalog_software_sites(site_id,software_id)
     SELECT DISTINCT d.site_id,v.software_id FROM catalog_downloads d JOIN catalog_versions v ON v.id=d.version_id WHERE 1 ON CONFLICT DO NOTHING;`);
 }
@@ -164,6 +173,7 @@ export function beginRun(
   epoch: number,
   now = Date.now(),
   ruleRevision = '',
+  sourceKind: 'directory' | 'official' = 'directory',
 ): number {
   let origin: string;
   try {
@@ -186,17 +196,19 @@ export function beginRun(
   )
     throw new CatalogPublishError('站点软件绑定未启用');
   db.prepare(
-    `INSERT INTO catalog_scopes(site_id,software_id,directory) VALUES(?,?,?) ON CONFLICT DO NOTHING`,
-  ).run(siteRow.id, softwareRow.id, root.href);
+    `INSERT INTO catalog_scopes(site_id,software_id,directory,source_kind) VALUES(?,?,?,?) ON CONFLICT DO NOTHING`,
+  ).run(siteRow.id, softwareRow.id, root.href, sourceKind);
   const scope = db
     .prepare(
-      'SELECT id,enabled,discovered_epoch FROM catalog_scopes WHERE site_id=? AND software_id=? AND directory=?',
+      'SELECT id,enabled,discovered_epoch,source_kind FROM catalog_scopes WHERE site_id=? AND software_id=? AND directory=?',
     )
     .get(siteRow.id, softwareRow.id, root.href) as {
     id: number;
     enabled: number;
     discovered_epoch: number;
+    source_kind: string;
   };
+  if (scope.source_kind !== sourceKind) throw new CatalogPublishError('采集来源类型冲突');
   if (!scope.enabled || epoch < scope.discovered_epoch)
     throw new CatalogPublishError('目录已撤销或任务已过时');
   return Number(
@@ -280,7 +292,7 @@ export function publishRun(
   try {
     const row = db
       .prepare(
-        `SELECT r.state,r.epoch,r.scope_id,s.site_id,s.software_id,s.directory,s.enabled,s.discovered_epoch,s.epoch AS active_epoch
+        `SELECT r.state,r.epoch,r.scope_id,s.site_id,s.software_id,s.directory,s.source_kind,s.enabled,s.discovered_epoch,s.epoch AS active_epoch
       FROM catalog_runs r JOIN catalog_scopes s ON s.id=r.scope_id WHERE r.id=?`,
       )
       .get(run) as
@@ -291,6 +303,7 @@ export function publishRun(
           site_id: number;
           software_id: number;
           directory: string;
+          source_kind: 'directory' | 'official';
           enabled: number;
           discovered_epoch: number;
           active_epoch: number;
@@ -303,16 +316,14 @@ export function publishRun(
       n: number;
     };
     const old = db
-      .prepare('SELECT COUNT(*) n FROM catalog_downloads WHERE scope_id=?')
+      .prepare('SELECT COUNT(*) n FROM catalog_download_sources WHERE scope_id=?')
       .get(row.scope_id) as { n: number };
-    const retain = db.prepare('UPDATE catalog_downloads SET seen_run=? WHERE scope_id=? AND url=?');
-    for (const url of new Set(retainedUrls))
-      retain.run(run, row.scope_id, sourceUrl(url, row.directory).href);
-    const retained = (
-      db
-        .prepare('SELECT COUNT(*) n FROM catalog_downloads WHERE scope_id=? AND seen_run=?')
-        .get(row.scope_id, run) as { n: number }
-    ).n;
+    const retained = retainSourceUrls(
+      db,
+      row.scope_id,
+      run,
+      retainedUrls.map((url) => sourceUrl(url, row.directory).href),
+    );
     if (old.n > 0 && (staged.n + retained === 0 || staged.n + retained < old.n * 0.5))
       throw new CatalogPublishError('异常空或数量突降的结果不能覆盖');
     db.prepare(
@@ -323,14 +334,9 @@ export function publishRun(
       `INSERT INTO catalog_downloads(version_id,site_id,scope_id,filename,url,platform,arch,format,size,checksum,seen_run,crawled_at,metadata)
       SELECT v.id,?,?,t.filename,t.url,t.platform,t.arch,t.format,t.size,t.checksum,?,?,t.metadata
       FROM catalog_staged t JOIN catalog_versions v ON v.software_id=? AND v.version=t.version WHERE t.run_id=?
-      ON CONFLICT(url) DO UPDATE SET version_id=excluded.version_id,site_id=excluded.site_id,scope_id=excluded.scope_id,
-      filename=excluded.filename,platform=excluded.platform,arch=excluded.arch,format=excluded.format,size=excluded.size,
-      checksum=excluded.checksum,seen_run=excluded.seen_run,crawled_at=excluded.crawled_at,metadata=excluded.metadata`,
+       ON CONFLICT(url) DO UPDATE SET ${downloadUpsertFields(row.source_kind)}`,
     ).run(row.site_id, row.scope_id, run, now, row.software_id, run);
-    db.prepare('DELETE FROM catalog_downloads WHERE scope_id=? AND seen_run<>?').run(
-      row.scope_id,
-      run,
-    );
+    publishSourceMembers(db, row.scope_id, run);
     if (children) {
       const keep = new Set(children.map((value) => sourceUrl(value, row.directory).href));
       const previous = db
@@ -340,7 +346,7 @@ export function publishRun(
         if (keep.has(child.directory)) continue;
         const subtree = `WITH RECURSIVE gone(id) AS (SELECT ? UNION ALL SELECT s.id FROM catalog_scopes s JOIN gone g ON s.parent_id=g.id)`;
         db.prepare(
-          `${subtree} DELETE FROM catalog_downloads WHERE scope_id IN (SELECT id FROM gone)`,
+          `${subtree} DELETE FROM catalog_download_sources WHERE scope_id IN (SELECT id FROM gone)`,
         ).run(child.id);
         db.prepare(
           `${subtree} UPDATE catalog_scopes SET enabled=0,revision=revision+1,discovered_epoch=? WHERE id IN (SELECT id FROM gone)`,
@@ -353,6 +359,7 @@ export function publishRun(
       for (const directory of keep)
         discover.run(row.site_id, row.software_id, directory, row.scope_id, row.epoch);
     }
+    reconcileDownloadSources(db);
     db.prepare('UPDATE catalog_scopes SET epoch=?,revision=revision+1,checked_at=? WHERE id=?').run(
       row.epoch,
       now,

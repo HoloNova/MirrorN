@@ -16,6 +16,9 @@ services:
     image: redis:8-alpine
     command: ['redis-server', '--appendonly', 'yes', '--maxmemory-policy', 'noeviction']
     restart: unless-stopped
+    # Windows本地Node服务使用6389；仅绑定回环，不对局域网开放。
+    ports:
+      - '127.0.0.1:6389:6379'
     volumes:
       - mirrorn-queue:/data
     healthcheck:

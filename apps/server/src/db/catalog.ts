@@ -2,7 +2,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import type { Mirror, SiteResourceList, Tutorial } from '@mirrorn/shared';
 import { registerSoftware, registerSoftwareSite, syncSites } from './installers.js';
 import { resourceSite } from '../indexing/policy.js';
-import { loadDownloadRules, type RuleSet } from '../indexing/rules/load.js';
+import { loadDownloadRules, softwareKind, type RuleSet } from '../indexing/rules/load.js';
 import { compareRepoVersions } from '../indexing/versions.js';
 
 export interface ResourceRow {
@@ -64,11 +64,7 @@ export function syncCatalog(
       registerSoftware(db, {
         ...software,
         category,
-        kind: [...rules!.rules.values()]
-          .filter((rule) => rule.softwareIds.includes(software.slug))
-          .every((rule) => rule.matches.every((match) => match.purpose === 'system_image'))
-          ? 'iso'
-          : 'installer',
+        kind: softwareKind(rules!, software.slug),
         ...(software.tutorialId && !tutorials.has(software.tutorialId)
           ? { tutorialId: undefined }
           : {}),
@@ -77,6 +73,8 @@ export function syncCatalog(
     for (const binding of rules?.bindings.values() ?? [])
       for (const software of rules!.rules.get(binding.ruleId)!.softwareIds)
         registerSoftwareSite(db, binding.siteId, software);
+    for (const binding of rules?.officialCatalog?.bindings ?? [])
+      registerSoftwareSite(db, 'tsinghua', binding.softwareId);
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');
@@ -139,18 +137,29 @@ function toResource(db: DatabaseSync, raw: Raw): ResourceRow {
       )
       .all(raw.software_id, raw.site_id) as { platform: string }[]
   ).map((r) => r.platform);
+  const firstFile =
+    !raw.entry || new URL(raw.entry).pathname === '/'
+      ? (db
+          .prepare(
+            `SELECT d.url FROM catalog_downloads d JOIN catalog_versions v ON v.id=d.version_id WHERE v.software_id=? AND d.site_id=? ORDER BY d.id LIMIT 1`,
+          )
+          .get(raw.software_id, raw.site_id) as { url: string } | undefined)
+      : undefined;
+  const entry = firstFile
+    ? `${resourceSite(raw.site_slug).origin}/${new URL(firstFile.url).pathname.split('/')[1]}/`
+    : raw.entry;
   return {
     id: `${raw.site_slug}:${raw.resource_key}`,
     siteId: raw.site_slug,
     siteName: raw.site_name,
-    repoId: raw.entry ? new URL(raw.entry).pathname.split('/')[1]! : raw.repo,
+    repoId: entry ? new URL(entry).pathname.split('/')[1]! : raw.repo,
     name: raw.name,
     softwareId: raw.slug,
     ecosystemId: raw.ecosystem_slug,
     ecosystemLabel: raw.ecosystem_label,
     ecosystemCategory: raw.ecosystem_category,
     kind: raw.kind,
-    downloadEntry: raw.entry ?? `${resourceSite(raw.site_slug).origin}/${raw.repo}/`,
+    downloadEntry: entry ?? `${resourceSite(raw.site_slug).origin}/${raw.repo}/`,
     versionsHint: '',
     crawlDepth: null,
     platforms: platforms.includes('any')

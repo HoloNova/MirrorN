@@ -1,4 +1,6 @@
+import { mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { dirname } from 'node:path';
 import type { DatabaseSync as DatabaseSyncType } from 'node:sqlite';
 import { installCatalog } from './installers.js';
 
@@ -8,6 +10,8 @@ const { DatabaseSync } = requireBuiltin('node:sqlite') as { DatabaseSync: typeof
 
 /** 独立软件安装目录，不自动导入或删除旧的mirrorn.sqlite全量包数据。 */
 export function openInstallerDatabase(path: string): DatabaseSyncType {
+  // SQLite只创建数据库文件；迁移或首次启动时须先准备父目录。
+  mkdirSync(dirname(path), { recursive: true });
   const db = new DatabaseSync(path);
   db.exec('PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000');
   installCatalog(db);

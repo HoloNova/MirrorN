@@ -86,6 +86,8 @@ export const DownloadManifestSchema = z
   .object({
     schemaVersion: z.literal(2),
     templates: z.literal('templates.json'),
+    officialCatalog: z.literal('tsinghua-catalog.json').optional(),
+    versionPolicy: z.literal('recommendations.json').optional(),
     rules: z.literal('software/rules.json'),
     bindings: z
       .array(z.string().regex(/^sites\/(?:pku|tsinghua|ustc)\.json$/))

@@ -1,5 +1,10 @@
 import PQueue from 'p-queue';
-import { sourceUrl } from './policy.js';
+import { sourceUrl, SOURCE_CONCURRENCY, SOURCE_CACHE_ENTRIES } from './policy.js';
+
+interface SourcePool {
+  limiters: Map<string, PQueue>;
+  responses: Map<string, Promise<string>>;
+}
 
 export class SourceError extends Error {
   constructor(
@@ -12,15 +17,28 @@ export class SourceError extends Error {
 }
 /** 后台只读取软件目录元数据；JSON/HTML共用限制配置、按站点限速，不取包体。 */
 export class SourceClient {
-  private readonly limiters = new Map<string, PQueue>();
   requests = 0;
   bytes = 0;
+  reusedRequests = 0;
   constructor(
     private readonly fetchImpl: typeof fetch = fetch,
     private readonly timeoutMs = 30000,
     private readonly maxBytes = 4 * 1024 ** 2,
     private readonly maxDecoded = 8 * 1024 ** 2,
+    private readonly pool: SourcePool = { limiters: new Map(), responses: new Map() },
+    private readonly cacheScope?: string,
   ) {}
+  /** 共享站点并发池和同批次响应，每个任务独立记录实际网络开销。 */
+  fork(cacheScope?: string): SourceClient {
+    return new SourceClient(
+      this.fetchImpl,
+      this.timeoutMs,
+      this.maxBytes,
+      this.maxDecoded,
+      this.pool,
+      cacheScope,
+    );
+  }
   async json(value: string): Promise<unknown> {
     const text = await this.read(value, 'json');
     try {
@@ -36,12 +54,19 @@ export class SourceClient {
   private async read(value: string, kind: 'json' | 'html'): Promise<string> {
     const target = sourceUrl(value);
     const url = target.href;
-    let limiter = this.limiters.get(target.origin);
-    if (!limiter) {
-      limiter = new PQueue({ concurrency: 1, intervalCap: 1, interval: 1000 });
-      this.limiters.set(target.origin, limiter);
+    const cacheKey =
+      this.cacheScope === undefined ? undefined : `${this.cacheScope}:${kind}:${url}`;
+    const cached = cacheKey === undefined ? undefined : this.pool.responses.get(cacheKey);
+    if (cached) {
+      this.reusedRequests++;
+      return cached;
     }
-    return limiter.add(async () => {
+    let limiter = this.pool.limiters.get(target.origin);
+    if (!limiter) {
+      limiter = new PQueue({ concurrency: SOURCE_CONCURRENCY });
+      this.pool.limiters.set(target.origin, limiter);
+    }
+    const request = limiter.add(async () => {
       const controller = new AbortController();
       let timer: ReturnType<typeof setTimeout> | undefined;
       const resetTimer = () => {
@@ -110,5 +135,15 @@ export class SourceClient {
         clearTimeout(timer);
       }
     }) as Promise<string>;
+    if (cacheKey !== undefined) {
+      this.pool.responses.set(cacheKey, request);
+      while (this.pool.responses.size > SOURCE_CACHE_ENTRIES)
+        this.pool.responses.delete(this.pool.responses.keys().next().value!);
+    }
+    return request.catch((error) => {
+      if (cacheKey !== undefined && this.pool.responses.get(cacheKey) === request)
+        this.pool.responses.delete(cacheKey);
+      throw error;
+    });
   }
 }

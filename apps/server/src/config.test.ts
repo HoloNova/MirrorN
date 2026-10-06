@@ -113,7 +113,7 @@ describe('resolveServerEnv', () => {
         host: '127.0.0.1',
         snapshotDir: 'apps/server/.data',
         syncEnabled: true,
-        crawlEnabled: true,
+        crawlEnabled: false,
         crawlTimeoutMs: 30000,
         redisUrl: 'redis://127.0.0.1:6389/0',
         syncIntervalMs: 15 * 60 * 1000,

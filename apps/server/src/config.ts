@@ -221,7 +221,7 @@ export function resolveServerEnv(input: ResolvePortInput): ServerEnvResolution {
       host: env.MIRRORN_HOST?.trim() || '127.0.0.1',
       snapshotDir,
       syncEnabled: readBoolean(env.MIRRORN_SYNC_ENABLED, true),
-      crawlEnabled: readBoolean(env.MIRRORN_CRAWL_ENABLED, true),
+      crawlEnabled: readBoolean(env.MIRRORN_CRAWL_ENABLED, false),
       redisUrl,
       crawlTimeoutMs: crawlTimeout.value,
       syncIntervalMs: interval.value,

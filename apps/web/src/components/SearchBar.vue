@@ -3,7 +3,8 @@ import { Search, X } from '@lucide/vue';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { searchCatalog, type CatalogItem } from '../lib/resourceApi';
+import type { CatalogItem } from '../lib/resourceApi';
+import { curatedList } from '../lib/curationApi';
 import { usePagedList } from '../composables/usePagedList';
 import PageEnd from './PageEnd.vue';
 import { isEditableElement, moveIndex, resolveSearchKey, shouldFocusSearch } from '../lib/keys';
@@ -27,7 +28,23 @@ const {
   nextCursor,
   reset,
   load,
-} = usePagedList<SearchHit>((cursor, signal) => searchCatalog(query.value.trim(), cursor, signal));
+} = usePagedList<SearchHit>(async (_cursor, signal) => {
+  const items = await curatedList(query.value.trim(), signal);
+  return {
+    items: items.map((item) => ({
+      id: item.id,
+      type: 'ecosystem' as const,
+      name: item.name,
+      ecosystemId: item.id,
+      ecosystemLabel: item.summary,
+      kind: item.category,
+      softwareCount: item.componentCount + 1,
+      siteCount: 0,
+    })),
+    nextCursor: null,
+    total: items.length,
+  };
+});
 let timer: ReturnType<typeof setTimeout> | undefined;
 watch(query, (value) => {
   if (timer) clearTimeout(timer);
@@ -191,9 +208,7 @@ defineExpose({ focus: () => inputRef.value?.focus() });
         @click="activate(hit)"
       >
         <span class="hit-title">{{ hit.name }}</span>
-        <span class="hit-subtitle">{{
-          hit.type === 'ecosystem' ? `${hit.softwareCount} 款软件` : hit.ecosystemLabel
-        }}</span>
+        <span class="hit-subtitle">{{ hit.ecosystemLabel || '已收录生态' }}</span>
         <span class="hit-kind">{{ hit.type === 'ecosystem' ? '生态' : '软件' }}</span>
       </div>
     </div>

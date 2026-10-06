@@ -13,6 +13,10 @@ import {
   type DownloadRule,
   type DownloadBinding,
   type SoftwareIdentity,
+  TunaCatalogConfigSchema,
+  type TunaCatalogConfig,
+  VersionPolicySchema,
+  type VersionPolicy,
 } from '@mirrorn/shared';
 import { sourceUrl, resourceSite } from '../policy.js';
 
@@ -22,9 +26,13 @@ export interface RuleSet {
   readonly rules: ReadonlyMap<string, DownloadRule>;
   readonly bindings: ReadonlyMap<string, DownloadBinding>;
   readonly active: readonly DownloadBinding[];
+  readonly officialCatalog?: TunaCatalogConfig;
+  readonly versionPolicy?: VersionPolicy;
 }
-const here = dirname(fileURLToPath(import.meta.url));
-const bundled = ['server.js', 'index-worker.js'].includes(basename(fileURLToPath(import.meta.url)));
+// tsx开发线程的模块URL带命名空间查询参数，先转文件路径再判断扩展名。
+const modulePath = fileURLToPath(import.meta.url);
+const here = dirname(modulePath);
+const bundled = ['server.js', 'index-worker.js'].includes(basename(modulePath));
 export const defaultRuleDataDir = bundled
   ? resolve(here, '../data')
   : resolve(here, '../../../../../data');
@@ -54,6 +62,13 @@ export function loadDownloadRules(dataDir = defaultRuleDataDir): RuleSet {
     return value;
   }
   const manifest = DownloadManifestSchema.parse(json('download-rules/manifest.json'));
+  const officialCatalog = manifest.officialCatalog
+    ? TunaCatalogConfigSchema.parse(json(`download-rules/${manifest.officialCatalog}`))
+    : undefined;
+  // 同一生态跨源站共用的推荐版本策略；缺省时不限制，采集与清理都按未配置处理。
+  const versionPolicy = manifest.versionPolicy
+    ? VersionPolicySchema.parse(json(`download-rules/${manifest.versionPolicy}`))
+    : undefined;
   const templates = unique(
     DownloadTemplateSchema.array().parse(json(`download-rules/${manifest.templates}`)),
     (r) => r.id,
@@ -153,6 +168,33 @@ export function loadDownloadRules(dataDir = defaultRuleDataDir): RuleSet {
     new RegExp(binding.leaf);
     binding.steps.forEach((pattern) => new RegExp(pattern));
   }
+  if (officialCatalog) {
+    if (!sources.has('tsinghua')) throw new Error('官方清单必须登记清华来源');
+    const mapped = new Set<string>();
+    for (const binding of officialCatalog.bindings) {
+      const software = identityMap.get(binding.softwareId);
+      if (!software) throw new Error(`官方清单软件未登记：${binding.softwareId}`);
+      for (const root of binding.roots) {
+        if (/(?:^|\/)\.{1,2}(?:\/|$)/.test(root)) throw new Error(`官方清单路径异常：${root}`);
+        const repo = sources.get('tsinghua')!.resources.find((r) => r.id === root.split('/')[0]);
+        if (!repo || repo.ecosystemId !== software.ecosystemId)
+          throw new Error(`官方清单仓库/生态不一致：${binding.softwareId}/${root}`);
+        sourceUrl(
+          `https://mirrors.tuna.tsinghua.edu.cn/${root}`,
+          'https://mirrors.tuna.tsinghua.edu.cn/',
+        );
+        const key = `${binding.group}:${root}:${binding.filename ?? '*'}`;
+        if (mapped.has(key)) throw new Error(`官方清单映射重复：${key}`);
+        mapped.add(key);
+      }
+    }
+    if (
+      officialCatalog.excludedGroups.some((g) =>
+        officialCatalog.bindings.some((b) => b.group === g.group),
+      )
+    )
+      throw new Error('官方清单分组不能同时接入和排除');
+  }
   // 配置与执行代码共同决定版本；打包后主进程和采集线程使用同一worker文件。
   const code = bundled
     ? [readFileSync(resolve(here, 'index-worker.js'), 'utf8')]
@@ -167,12 +209,15 @@ export function loadDownloadRules(dataDir = defaultRuleDataDir): RuleSet {
         '../directory',
         '../policy',
         '../versions',
+        '../recommendations',
         '../../db/installers',
+        '../../db/downloadSources',
+        '../../db/versionPolicy',
+        '../tuna/catalog',
+        '../tuna/normalize',
+        '../tuna/import',
       ].map((name) =>
-        readFileSync(
-          resolve(here, `${name}${import.meta.url.endsWith('.ts') ? '.ts' : '.js'}`),
-          'utf8',
-        ),
+        readFileSync(resolve(here, `${name}${modulePath.endsWith('.ts') ? '.ts' : '.js'}`), 'utf8'),
       );
   const revision = createHash('sha256')
     .update(JSON.stringify(input))
@@ -180,9 +225,26 @@ export function loadDownloadRules(dataDir = defaultRuleDataDir): RuleSet {
     .digest('hex');
   return Object.freeze({
     revision,
+    ...(officialCatalog ? { officialCatalog: freeze(officialCatalog) } : {}),
+    ...(versionPolicy ? { versionPolicy: freeze(versionPolicy) } : {}),
     identities: freeze(identities),
     rules,
     bindings,
     active: freeze([...bindings.values()].filter((b) => rules.get(b.ruleId)!.status === 'active')),
   });
+}
+
+/** 软件身份不因新增非目录来源而误判为ISO；空规则集合也不是ISO证据。 */
+export function softwareKind(set: RuleSet, software: string): 'iso' | 'installer' {
+  const purposes = [
+    ...[...set.rules.values()]
+      .filter((rule) => rule.softwareIds.includes(software))
+      .flatMap((rule) => rule.matches.map((match) => match.purpose)),
+    ...(set.officialCatalog?.bindings
+      .filter((binding) => binding.softwareId === software)
+      .map((binding) => binding.purpose) ?? []),
+  ];
+  return purposes.length > 0 && purposes.every((purpose) => purpose === 'system_image')
+    ? 'iso'
+    : 'installer';
 }

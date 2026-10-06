@@ -1,0 +1,595 @@
+{
+  "bindings": [
+    {
+      "group": "Ubuntu",
+      "softwareId": "ubuntu",
+      "roots": ["ubuntu-releases/", "ubuntu-cdimage/ubuntu/releases/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Debian",
+      "softwareId": "debian",
+      "roots": ["debian-cd/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Arch Linux",
+      "softwareId": "archlinux",
+      "roots": ["archlinux/iso/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Fedora",
+      "softwareId": "fedora",
+      "roots": ["fedora/releases/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "CentOS",
+      "softwareId": "centos-stream",
+      "roots": ["centos-stream/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "BlackArch",
+      "softwareId": "blackarch",
+      "roots": ["blackarch/iso/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Kali",
+      "softwareId": "kali",
+      "roots": ["kali-images/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Artix Linux",
+      "softwareId": "artix",
+      "roots": ["artixlinux-iso/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Linux Mint",
+      "softwareId": "linuxmint",
+      "roots": ["linuxmint-cd/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "KaOS",
+      "softwareId": "kaos",
+      "roots": ["KaOS/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "EndeavourOS",
+      "softwareId": "endeavouros",
+      "roots": ["endeavouros/iso/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "NixOS",
+      "softwareId": "nixos",
+      "roots": ["nixos-images/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "优麒麟",
+      "softwareId": "ubuntukylin",
+      "roots": ["ubuntukylin-cdimage/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Solus",
+      "softwareId": "solus",
+      "roots": ["solus/images/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Qubes OS",
+      "softwareId": "qubesos",
+      "roots": ["qubesos/iso/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Alpine",
+      "softwareId": "alpine",
+      "roots": ["alpine/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "openSUSE",
+      "softwareId": "opensuse-tumbleweed",
+      "roots": ["opensuse/tumbleweed/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "openSUSE",
+      "softwareId": "opensuse-leap",
+      "roots": ["opensuse/distribution/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Proxmox",
+      "softwareId": "proxmox-ve",
+      "roots": ["proxmox/iso/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"],
+      "filename": "^proxmox-ve_.*$"
+    },
+    {
+      "group": "Proxmox",
+      "softwareId": "proxmox-backup",
+      "roots": ["proxmox/iso/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"],
+      "filename": "^proxmox-backup-server_.*$"
+    },
+    {
+      "group": "Proxmox",
+      "softwareId": "proxmox-mailgateway",
+      "roots": ["proxmox/iso/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"],
+      "filename": "^proxmox-mail-gateway_.*$"
+    },
+    {
+      "group": "Anthon",
+      "softwareId": "aosc",
+      "roots": ["anthon/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Ubuntu 衍生版",
+      "softwareId": "kubuntu",
+      "roots": ["ubuntu-cdimage/kubuntu/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Ubuntu 衍生版",
+      "softwareId": "xubuntu",
+      "roots": ["ubuntu-cdimage/xubuntu/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Ubuntu 衍生版",
+      "softwareId": "lubuntu",
+      "roots": ["ubuntu-cdimage/lubuntu/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Ubuntu 衍生版",
+      "softwareId": "ubuntu-mate",
+      "roots": ["ubuntu-cdimage/ubuntu-mate/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Ubuntu 衍生版",
+      "softwareId": "ubuntu-gnome",
+      "roots": ["ubuntu-cdimage/ubuntu-gnome/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "Ubuntu 衍生版",
+      "softwareId": "ubuntukylin",
+      "roots": ["ubuntu-cdimage/ubuntukylin/"],
+      "formats": ["iso"],
+      "purpose": "system_image",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "KiCad",
+      "softwareId": "kicad",
+      "roots": ["kicad/"],
+      "formats": ["exe", "dmg"],
+      "purpose": "installer"
+    },
+    {
+      "group": "R",
+      "softwareId": "r-cran",
+      "roots": ["CRAN/"],
+      "formats": ["exe", "pkg"],
+      "purpose": "installer"
+    },
+    {
+      "group": "VLC",
+      "softwareId": "vlc",
+      "roots": ["videolan-ftp/"],
+      "formats": ["exe", "msi", "zip", "7z", "dmg"],
+      "purpose": "installer"
+    },
+    {
+      "group": "Python",
+      "softwareId": "python",
+      "roots": ["python/"],
+      "formats": ["exe", "msi", "pkg"],
+      "purpose": "installer"
+    },
+    {
+      "group": "MSYS2",
+      "softwareId": "msys2",
+      "roots": ["msys2/distrib/"],
+      "formats": ["exe"],
+      "purpose": "installer",
+      "platforms": ["windows"]
+    },
+    {
+      "group": "IINA",
+      "softwareId": "iina",
+      "roots": ["iina/"],
+      "formats": ["dmg"],
+      "purpose": "installer",
+      "platforms": ["macos"]
+    },
+    {
+      "group": "Docker",
+      "softwareId": "docker-engine",
+      "roots": ["docker-ce/"],
+      "formats": ["zip", "tar.gz", "tgz"],
+      "purpose": "installer"
+    },
+    {
+      "group": "Elvish Shell",
+      "softwareId": "elvish",
+      "roots": ["elvish/"],
+      "formats": ["tar.gz", "zip"],
+      "purpose": "installer"
+    },
+    {
+      "group": "LibreOffice",
+      "softwareId": "libreoffice",
+      "roots": ["libreoffice/"],
+      "formats": ["dmg", "msi", "tar.gz"],
+      "purpose": "installer",
+      "reject": ["^.*_(?:helppack|langpack|sdk).*$", "^.*\\.src\\..*$"]
+    },
+    {
+      "group": "PuTTY",
+      "softwareId": "putty",
+      "roots": ["putty/"],
+      "formats": ["exe", "msi", "zip"],
+      "purpose": "installer",
+      "platforms": ["windows"],
+      "reject": ["^putty-[0-9.]+\\.(?:zip|tar\\..*)$"]
+    },
+    {
+      "group": "Wireshark",
+      "softwareId": "wireshark",
+      "roots": ["wireshark/"],
+      "formats": ["exe", "msi", "dmg"],
+      "purpose": "installer",
+      "filename": "^Wireshark.*$"
+    },
+    {
+      "group": "Qt",
+      "softwareId": "qt-creator",
+      "roots": ["qt/official_releases/qtcreator/"],
+      "formats": ["exe", "dmg", "run"],
+      "purpose": "installer"
+    },
+    {
+      "group": "Qt",
+      "softwareId": "qt-online-installer",
+      "roots": ["qt/official_releases/online_installers/"],
+      "formats": ["exe", "dmg", "run"],
+      "purpose": "installer"
+    },
+    {
+      "group": "Eclipse IDE",
+      "softwareId": "eclipse",
+      "roots": ["eclipse/"],
+      "formats": ["zip", "tar.gz", "dmg"],
+      "purpose": "installer"
+    },
+    {
+      "group": "VirtualBox",
+      "softwareId": "virtualbox",
+      "roots": ["virtualbox/"],
+      "formats": ["exe", "dmg", "run", "deb", "rpm"],
+      "purpose": "installer",
+      "reject": ["^VirtualBoxSDK.*$", "^.*Extension_Pack.*$"]
+    },
+    {
+      "group": "Julia",
+      "softwareId": "julia",
+      "roots": ["julia-releases/"],
+      "formats": ["exe", "dmg", "tar.gz"],
+      "purpose": "installer"
+    },
+    {
+      "group": "Conda",
+      "softwareId": "anaconda-installer",
+      "roots": ["anaconda/miniconda/"],
+      "formats": ["exe", "pkg", "sh"],
+      "purpose": "installer"
+    },
+    {
+      "group": "Conda",
+      "softwareId": "anaconda-distribution",
+      "roots": ["anaconda/archive/"],
+      "formats": ["exe", "pkg", "sh"],
+      "purpose": "installer"
+    },
+    {
+      "group": "Wireshark",
+      "softwareId": "stratoshark",
+      "roots": ["wireshark/"],
+      "formats": ["exe", "msi", "dmg"],
+      "purpose": "installer",
+      "filename": "^Stratoshark.*$"
+    },
+    {
+      "group": "OBS",
+      "softwareId": "obs",
+      "roots": ["github-release/obsproject/obs-studio/"],
+      "formats": ["exe", "dmg", "zip"],
+      "purpose": "installer"
+    },
+    {
+      "group": "miniforge",
+      "softwareId": "miniforge",
+      "roots": ["github-release/conda-forge/miniforge/"],
+      "formats": ["sh", "exe"],
+      "purpose": "installer"
+    },
+    {
+      "group": "Deno",
+      "softwareId": "deno",
+      "roots": ["github-release/denoland/deno/"],
+      "formats": ["zip"],
+      "purpose": "installer",
+      "reject": ["^denort.*$", "^.*-src\\..*$"]
+    },
+    {
+      "group": "cmder",
+      "softwareId": "cmder",
+      "roots": ["github-release/cmderdev/cmder/"],
+      "formats": ["zip", "7z"],
+      "purpose": "installer",
+      "platforms": ["windows"]
+    },
+    {
+      "group": "VS Codium",
+      "softwareId": "vscodium",
+      "roots": ["github-release/VSCodium/vscodium/"],
+      "formats": ["exe", "msi", "zip", "tar.gz", "deb", "rpm", "dmg"],
+      "purpose": "installer",
+      "reject": ["^vscodium-reh.*$"]
+    },
+    {
+      "group": "Git",
+      "softwareId": "git",
+      "roots": ["github-release/git-for-windows/git/"],
+      "formats": ["exe", "7z.exe", "zip", "tar.bz2"],
+      "purpose": "installer",
+      "platforms": ["windows"]
+    },
+    {
+      "group": "rust-analyzer",
+      "softwareId": "rust-analyzer",
+      "roots": ["github-release/rust-analyzer/rust-analyzer/"],
+      "formats": ["gz", "zip"],
+      "purpose": "installer"
+    },
+    {
+      "group": "Ventoy",
+      "softwareId": "ventoy",
+      "roots": ["github-release/ventoy/Ventoy/"],
+      "formats": ["zip", "tar.gz"],
+      "purpose": "installer"
+    },
+    {
+      "group": "FreeCAD",
+      "softwareId": "freecad",
+      "roots": ["github-release/FreeCAD/FreeCAD/"],
+      "formats": ["exe", "msi", "zip", "7z", "dmg", "AppImage", "tar.xz"],
+      "purpose": "installer"
+    },
+    {
+      "group": "PowerToys",
+      "softwareId": "powertoys",
+      "roots": ["github-release/microsoft/PowerToys/"],
+      "formats": ["exe"],
+      "purpose": "installer",
+      "platforms": ["windows"]
+    },
+    {
+      "group": "Minikube",
+      "softwareId": "minikube",
+      "roots": ["github-release/kubernetes/minikube/"],
+      "formats": ["binary", "exe", "deb", "rpm", "tar.gz"],
+      "purpose": "installer"
+    },
+    {
+      "group": "NanaZip",
+      "softwareId": "nanazip",
+      "roots": ["github-release/M2Team/NanaZip/"],
+      "formats": ["msixbundle"],
+      "purpose": "installer",
+      "platforms": ["windows"]
+    },
+    {
+      "group": "Stellarium",
+      "softwareId": "stellarium",
+      "roots": ["github-release/Stellarium/stellarium/"],
+      "formats": ["exe", "dmg", "AppImage", "zip"],
+      "purpose": "installer"
+    },
+    {
+      "group": "DBeaver CE",
+      "softwareId": "dbeaver",
+      "roots": ["github-release/dbeaver/dbeaver/"],
+      "formats": ["exe", "zip", "dmg", "pkg", "tar.gz", "deb", "rpm"],
+      "purpose": "installer"
+    },
+    {
+      "group": "Atom",
+      "softwareId": "atom",
+      "roots": ["github-release/atom/atom/"],
+      "formats": ["exe", "zip", "tar.gz", "deb", "rpm"],
+      "purpose": "installer"
+    },
+    {
+      "group": "RustDesk",
+      "softwareId": "rustdesk",
+      "roots": ["github-release/rustdesk/rustdesk/"],
+      "formats": ["exe", "msi", "dmg", "deb", "rpm", "AppImage", "zip", "flatpak", "pkg.tar.zst"],
+      "purpose": "installer"
+    },
+    {
+      "group": "auth-thu",
+      "softwareId": "auth-thu",
+      "roots": ["github-release/z4yx/GoAuthing/"],
+      "formats": ["binary", "exe"],
+      "purpose": "installer"
+    },
+    {
+      "group": "orchestrator",
+      "softwareId": "orchestrator",
+      "roots": ["github-release/openark/orchestrator/"],
+      "formats": ["deb", "rpm", "tar.gz"],
+      "purpose": "installer",
+      "platforms": ["linux"]
+    },
+    {
+      "group": "TeX 排版系统",
+      "softwareId": "texlive",
+      "roots": ["CTAN/"],
+      "formats": ["iso"],
+      "purpose": "installer",
+      "platforms": ["windows", "linux"],
+      "filename": "^texlive.*\\.iso$"
+    },
+    {
+      "group": "TeX 排版系统",
+      "softwareId": "mactex",
+      "roots": ["CTAN/"],
+      "formats": ["pkg"],
+      "purpose": "installer",
+      "platforms": ["macos"],
+      "filename": "^mactex-[0-9].*\\.pkg$"
+    },
+    {
+      "group": "TeX 排版系统",
+      "softwareId": "basictex",
+      "roots": ["CTAN/"],
+      "formats": ["pkg"],
+      "purpose": "installer",
+      "platforms": ["macos"],
+      "filename": "^mactex-basictex-.*\\.pkg$"
+    },
+    {
+      "group": "TeX 排版系统",
+      "softwareId": "texstudio",
+      "roots": ["github-release/texstudio-org/texstudio/"],
+      "formats": ["exe", "dmg", "AppImage", "deb", "rpm", "zip"],
+      "purpose": "installer"
+    },
+    {
+      "group": "TeX 排版系统",
+      "softwareId": "miktex",
+      "roots": ["CTAN/systems/win32/miktex/setup/"],
+      "formats": ["exe", "dmg"],
+      "purpose": "installer"
+    },
+    {
+      "group": "TeX 排版系统",
+      "softwareId": "lyx",
+      "roots": ["lyx/bin/"],
+      "formats": ["exe", "dmg", "tar.gz"],
+      "purpose": "installer"
+    }
+  ],
+  "excludedGroups": [
+    {
+      "group": "Armbian",
+      "reason": "板卡磁盘镜像，超出现有桌面安装器/系统ISO范围"
+    },
+    {
+      "group": "Arch Linux ARM",
+      "reason": "设备rootfs归档，非现有安装ISO"
+    },
+    {
+      "group": "Ubuntu Core",
+      "reason": "设备磁盘镜像，非现有安装ISO"
+    },
+    {
+      "group": "LineageOS",
+      "reason": "Android设备ROM"
+    },
+    {
+      "group": "Raspberry Pi OS (原 Raspbian)",
+      "reason": "设备磁盘镜像"
+    },
+    {
+      "group": "NetBSD",
+      "reason": "当前平台范围不含BSD"
+    },
+    {
+      "group": "F-Droid",
+      "reason": "当前平台范围不含Android"
+    },
+    {
+      "group": "Adobe Source Han",
+      "reason": "字体不作为安装器"
+    },
+    {
+      "group": "Adobe Source",
+      "reason": "字体不作为安装器"
+    },
+    {
+      "group": "ThuThesis 论文模板",
+      "reason": "论文模板不作为安装器"
+    }
+  ]
+}

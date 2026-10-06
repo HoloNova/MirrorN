@@ -82,3 +82,15 @@ export type {
   DownloadBinding,
   SoftwareIdentity,
 } from './downloadRules.js';
+
+export {
+  TunaCatalogBindingSchema,
+  TunaCatalogConfigSchema,
+  TunaCatalogPayloadSchema,
+} from './tunaCatalog.js';
+export type { TunaCatalogBinding, TunaCatalogConfig } from './tunaCatalog.js';
+
+export { VersionPolicySchema, VersionRuleSchema } from './versionPolicy.js';
+export type { VersionPolicy, VersionRule } from './versionPolicy.js';
+
+export * from './curation.js';

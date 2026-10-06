@@ -30,6 +30,8 @@ import {
   ecosystemCatalog,
 } from './db/discovery.js';
 import { registerStaticRoutes } from './static.js';
+import type { CurationStore } from './curation/store.js';
+import { registerCurationRoutes } from './curation/routes.js';
 import {
   computeFingerprint,
   resolveClientAddress,
@@ -41,6 +43,8 @@ export interface AppOptions {
   status?: StatusStore;
   /** 站点资源库；不传时资源接口返回空列表（数据库不可用时页面降级而不是报错）。 */
   db?: DatabaseSync;
+  /** 人工策划内容，独立于旧自动采集库。 */
+  curated?: CurationStore;
   fingerprint?: FingerprintOptions;
   /** 前端产物目录（容器部署时用）；不传则只提供 API。 */
   staticDir?: string;
@@ -379,6 +383,8 @@ export function createApp(options: AppOptions = {}): Hono {
     context.header('Cache-Control', 'no-store');
     return context.json(payload);
   });
+
+  registerCurationRoutes(app, options.curated);
 
   // 静态托管放在最后注册：`/api/*` 路由先匹配，不会被通配符抢走。
   if (options.staticDir !== undefined) {

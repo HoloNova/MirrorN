@@ -8,10 +8,12 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "dev": "node scripts/require-free-port.mjs web server && pnpm validate:data && concurrently --names web,server --prefix-colors cyan,magenta \"pnpm --filter @mirrorn/web dev\" \"pnpm --filter @mirrorn/server dev\"",
+    "dev": "node scripts/require-free-port.mjs web server && pnpm validate:data && node scripts/dev.mjs",
     "dev:web": "node scripts/require-free-port.mjs web && pnpm validate:data && pnpm --filter @mirrorn/web dev",
     "dev:server": "node scripts/require-free-port.mjs server && pnpm build:shared && pnpm --filter @mirrorn/server dev",
     "build:shared": "pnpm --filter @mirrorn/shared build",
+    "admin:setup": "pnpm build:shared && pnpm --filter @mirrorn/server exec tsx src/curation/maintenance.ts setup",
+    "content:backup": "pnpm build:shared && pnpm --filter @mirrorn/server exec tsx src/curation/maintenance.ts backup",
     "build:web": "pnpm validate:data && pnpm --filter @mirrorn/web build",
     "build": "pnpm validate:data && pnpm --filter @mirrorn/server build && pnpm --filter @mirrorn/web build",
     "typecheck": "pnpm build:shared && pnpm --filter @mirrorn/shared typecheck && pnpm --filter @mirrorn/server typecheck && pnpm --filter @mirrorn/web typecheck && tsc --noEmit -p tsconfig.scripts.json",

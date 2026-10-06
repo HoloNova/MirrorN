@@ -166,5 +166,155 @@
     "label": "Ubuntu",
     "category": "distro",
     "aliases": ["ubuntu"]
+  },
+  {
+    "id": "fedora",
+    "label": "Fedora",
+    "category": "distro",
+    "aliases": ["fedora"]
+  },
+  {
+    "id": "blackarch",
+    "label": "BlackArch",
+    "category": "distro",
+    "aliases": ["blackarch"]
+  },
+  {
+    "id": "kali",
+    "label": "Kali",
+    "category": "distro",
+    "aliases": ["kali"]
+  },
+  {
+    "id": "artix",
+    "label": "Artix Linux",
+    "category": "distro",
+    "aliases": ["artix"]
+  },
+  {
+    "id": "linuxmint",
+    "label": "Linux Mint",
+    "category": "distro",
+    "aliases": ["linuxmint"]
+  },
+  {
+    "id": "kaos",
+    "label": "KaOS",
+    "category": "distro",
+    "aliases": ["kaos"]
+  },
+  {
+    "id": "endeavouros",
+    "label": "EndeavourOS",
+    "category": "distro",
+    "aliases": ["endeavouros"]
+  },
+  {
+    "id": "nixos",
+    "label": "NixOS",
+    "category": "distro",
+    "aliases": ["nixos"]
+  },
+  {
+    "id": "solus",
+    "label": "Solus",
+    "category": "distro",
+    "aliases": ["solus"]
+  },
+  {
+    "id": "qubesos",
+    "label": "Qubes OS",
+    "category": "distro",
+    "aliases": ["qubesos"]
+  },
+  {
+    "id": "alpine",
+    "label": "Alpine",
+    "category": "distro",
+    "aliases": ["alpine"]
+  },
+  {
+    "id": "proxmox",
+    "label": "Proxmox Virtual Environment",
+    "category": "distro",
+    "aliases": ["proxmox"]
+  },
+  {
+    "id": "kicad",
+    "label": "KiCad",
+    "category": "toolchain",
+    "aliases": ["kicad"]
+  },
+  {
+    "id": "vlc",
+    "label": "VLC",
+    "category": "toolchain",
+    "aliases": ["vlc"]
+  },
+  {
+    "id": "msys2",
+    "label": "MSYS2",
+    "category": "toolchain",
+    "aliases": ["msys2"]
+  },
+  {
+    "id": "iina",
+    "label": "IINA",
+    "category": "toolchain",
+    "aliases": ["iina"]
+  },
+  {
+    "id": "docker-engine",
+    "label": "Docker Engine",
+    "category": "toolchain",
+    "aliases": ["docker-engine"]
+  },
+  {
+    "id": "elvish",
+    "label": "Elvish Shell",
+    "category": "toolchain",
+    "aliases": ["elvish"]
+  },
+  {
+    "id": "libreoffice",
+    "label": "LibreOffice",
+    "category": "toolchain",
+    "aliases": ["libreoffice"]
+  },
+  {
+    "id": "putty",
+    "label": "PuTTY",
+    "category": "toolchain",
+    "aliases": ["putty"]
+  },
+  {
+    "id": "wireshark",
+    "label": "Wireshark",
+    "category": "toolchain",
+    "aliases": ["wireshark"]
+  },
+  {
+    "id": "qt",
+    "label": "Qt Creator",
+    "category": "toolchain",
+    "aliases": ["qt"]
+  },
+  {
+    "id": "eclipse",
+    "label": "Eclipse IDE",
+    "category": "toolchain",
+    "aliases": ["eclipse"]
+  },
+  {
+    "id": "virtualbox",
+    "label": "VirtualBox",
+    "category": "toolchain",
+    "aliases": ["virtualbox"]
+  },
+  {
+    "id": "github-release",
+    "label": "GitHub 软件发布",
+    "category": "toolchain",
+    "aliases": ["github-release"]
   }
 ]

@@ -2,6 +2,7 @@ import { mkdtempSync, cpSync, readFileSync, writeFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
+import { Worker } from 'node:worker_threads';
 import { loadDownloadRules, defaultRuleDataDir } from './load.js';
 import {
   DownloadRuleSchema,
@@ -33,9 +34,45 @@ function edited<T>(path: string, mutate: (data: T, directory: string) => void) {
   }
 }
 describe('发布时校验与一次性规则快照', () => {
+  it('开发线程使用tsx命名空间加载TS，规则摘要一致且清华已启用', async () => {
+    const worker = new Worker(
+      `
+      const { parentPort, workerData } = require('node:worker_threads');
+      import('tsx/esm/api').then(({ tsImport }) => tsImport(workerData.url, workerData.from))
+        .then(({ loadDownloadRules }) => {
+          const set = loadDownloadRules();
+          parentPort.postMessage({ revision: set.revision, tsinghua: set.active.some(b => b.siteId === 'tsinghua'), official: !!set.officialCatalog });
+        }).catch(error => parentPort.postMessage({ error: String(error) }));
+    `,
+      {
+        eval: true,
+        workerData: { url: new URL('./load.ts', import.meta.url).href, from: import.meta.url },
+      },
+    );
+    try {
+      const message = await new Promise((resolve, reject) => {
+        worker.once('message', resolve);
+        worker.once('error', reject);
+      });
+      expect(message).toEqual({
+        revision: loadDownloadRules().revision,
+        tsinghua: true,
+        official: true,
+      });
+    } finally {
+      await worker.terminate();
+    }
+  }, 10000);
   it('规则与站点绑定分离，全部真实身份引用，停用/draft不执行', () => {
     const set = loadDownloadRules();
-    expect(set.identities.length).toBe(28);
+    const identities = new Set(set.identities.map((identity) => identity.slug));
+    expect(identities.size).toBe(set.identities.length);
+    expect(identities.has('python')).toBe(true);
+    expect(identities.has('obs')).toBe(true);
+    expect(
+      set.officialCatalog?.bindings.every((binding) => identities.has(binding.softwareId)),
+    ).toBe(true);
+    expect(Object.isFrozen(set.officialCatalog)).toBe(true);
     expect(set.active.length).toBe(29);
     expect(
       set.active

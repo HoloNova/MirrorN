@@ -14,3 +14,6 @@ coverage/
 
 # 外部 Agent 原始研究草稿；正式复核结果位于 docs/research/。
 /docs/tmp/
+
+# 人工内容的本地数据库备份（含管理员密码摘要，不提交）。
+/backups/

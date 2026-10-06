@@ -18,7 +18,7 @@ import { resolveApiBase } from './composables/useMirrorStatus';
 const route = useRoute();
 const layout = computed(() => (route.meta.layout === 'doc' ? 'doc' : 'app'));
 const online = computed(() => resolveApiBase() !== undefined);
-const dataMode = computed(() => (online.value ? '同步状态在线' : '本地数据'));
+const dataMode = computed(() => (online.value ? '人工收录 · 在线' : '未连接后端'));
 const dataState = computed<'online' | 'local'>(() => (online.value ? 'online' : 'local'));
 </script>
 

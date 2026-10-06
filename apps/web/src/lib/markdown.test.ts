@@ -52,6 +52,12 @@ describe('renderMarkdown', () => {
     );
   });
 
+  it('后台正文中的脚本和data链接不生成可点击入口', () => {
+    expect(renderMarkdown('[脚本](javascript:evil) [内容](data:text/html,test)')).toBe(
+      '<p>脚本 内容</p>',
+    );
+  });
+
   it('空文档渲染成空串', () => {
     expect(renderMarkdown('')).toBe('');
     expect(renderMarkdown('\n\n')).toBe('');

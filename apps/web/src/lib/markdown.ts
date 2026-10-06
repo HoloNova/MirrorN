@@ -39,7 +39,10 @@ function renderInline(text: string): string {
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
     .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_match, label: string, href: string) => {
       // 站内链接（以 # 开头）留在当前页打开；外部链接新开标签，避免用户丢失当前配置。
-      const external = /^https?:\/\//.test(href);
+      // 后台手工正文也不能生成脚本链接；仅开放HTTP(S)和站内锚点/相对路径。
+      const external = /^https?:\/\//i.test(href);
+      if (!external && !/^#[\w/-]*$/.test(href) && !/^\/(?!\/)[\w/?#=.&%-]*$/.test(href))
+        return label;
       const attributes = external ? ' target="_blank" rel="noopener"' : '';
       return `<a href="${href}"${attributes}>${label}</a>`;
     });

@@ -2,5 +2,7 @@
   "schemaVersion": 2,
   "templates": "templates.json",
   "rules": "software/rules.json",
-  "bindings": ["sites/pku.json", "sites/tsinghua.json"]
+  "bindings": ["sites/pku.json", "sites/tsinghua.json"],
+  "officialCatalog": "tsinghua-catalog.json",
+  "versionPolicy": "recommendations.json"
 }

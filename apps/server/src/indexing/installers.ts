@@ -12,15 +12,19 @@ import {
 import { PKU_ORIGIN, resourceSite } from './policy.js';
 import { directoryEntries as entries } from './directory.js';
 import { SourceClient, SourceError } from './source.js';
-import { loadDownloadRules, type RuleSet } from './rules/load.js';
+import { loadDownloadRules, softwareKind, type RuleSet } from './rules/load.js';
+import { importTunaCatalog } from './tuna/import.js';
 import { classifyFile } from './rules/classify.js';
 import { bindingDirectory, directoryDecision } from './rules/templates.js';
 import { recordPending, prunePending, resolvePending } from './rules/pending.js';
 import { compareRepoVersions } from './versions.js';
+import { recommendedDirectories, selectRecommendedVersions } from './recommendations.js';
+import { applyVersionPolicy } from '../db/versionPolicy.js';
 
 export type InstallerJob =
   | { kind: 'refresh'; ruleRevision: string }
   | { kind: 'inventory'; repoId: 'apache'; epoch: number; ruleRevision: string }
+  | { kind: 'official'; epoch: number; ruleRevision: string }
   | {
       kind: 'directory';
       bindingId: string;
@@ -41,16 +45,14 @@ export function registerInstallers(db: DatabaseSync, set: RuleSet) {
     registerSoftware(db, {
       ...identity,
       category,
-      kind: [...set.rules.values()]
-        .filter((rule) => rule.softwareIds.includes(identity.slug))
-        .every((rule) => rule.matches.every((match) => match.purpose === 'system_image'))
-        ? 'iso'
-        : 'installer',
+      kind: softwareKind(set, identity.slug),
     });
   }
   for (const binding of set.bindings.values())
     for (const software of set.rules.get(binding.ruleId)!.softwareIds)
       registerSoftwareSite(db, binding.siteId, software);
+  for (const binding of set.officialCatalog?.bindings ?? [])
+    registerSoftwareSite(db, 'tsinghua', binding.softwareId);
 }
 export function installerTaskKey(job: InstallerJob): string {
   return createHash('sha256').update(JSON.stringify(job)).digest('hex');
@@ -69,6 +71,8 @@ export async function executeInstallerJob(
   if (job.kind === 'refresh') {
     const epoch = Date.now();
     registerInstallers(db, set);
+    // 先按版本策略清掉归档版本，后面的目录与清单任务才不会被“数量突降”拦截。
+    const pruned = applyVersionPolicy(db, set);
     prunePending(db, epoch);
     db.prepare("DELETE FROM catalog_runs WHERE state<>'staging' AND finished_at<?").run(
       epoch - 7 * 86400000,
@@ -82,9 +86,11 @@ export async function executeInstallerJob(
       ruleRevision: set.revision,
     }));
     jobs.push({ kind: 'inventory', repoId: 'apache', epoch, ruleRevision: set.revision });
+    if (set.officialCatalog) jobs.push({ kind: 'official', epoch, ruleRevision: set.revision });
     await enqueue(jobs);
-    return { discovered: jobs.length };
+    return { discovered: jobs.length, pruned };
   }
+  if (job.kind === 'official') return importTunaCatalog(db, job.epoch, source, set);
   if (job.kind === 'inventory') {
     const directory = `${PKU_ORIGIN}/apache/`;
     const listing = await entries(source, directory);
@@ -148,14 +154,41 @@ export async function executeInstallerJob(
       presentDirectories = new Set<string>(),
       classifiedNames = new Set<string>();
     const files = new Map<string, Download[]>();
-    const stats = { accepted: 0, rejected: 0, pending: 0, pendingDirectories: 0, overflow: 0 };
+    const stats = {
+      accepted: 0,
+      rejected: 0,
+      pending: 0,
+      pendingDirectories: 0,
+      overflow: 0,
+      filteredVersions: 0,
+      filteredFiles: 0,
+    };
+    // 目录层限版本：只和同一层、同一步骤模式的兄弟目录比较，不用深度去猜版本。
+    const versionStep = binding.steps[job.depth];
+    const recommended = recommendedDirectories(
+      set,
+      rule.softwareIds,
+      versionStep
+        ? listing
+            .filter(
+              (entry) => entry.type === 'directory' && new RegExp(versionStep).test(entry.name),
+            )
+            .map((entry) => entry.name)
+        : [],
+    );
     for (const entry of listing) {
       if (entry.type === 'directory') {
         const child = `${url.href}${encodeURIComponent(entry.name)}/`;
         presentDirectories.add(child);
         const decision = directoryDecision(binding, url.href, job.depth, entry.name);
-        if (decision === 'descend') next.push({ ...job, directory: child, depth: job.depth + 1 });
-        else if (decision === 'pending') {
+        if (decision === 'descend') {
+          if (recommended?.has(entry.name) === false) {
+            stats.filteredVersions++;
+            classifiedNames.add(entry.name);
+            continue;
+          }
+          next.push({ ...job, directory: child, depth: job.depth + 1 });
+        } else if (decision === 'pending') {
           stats.pendingDirectories++;
           if (
             !recordPending(
@@ -198,6 +231,18 @@ export async function executeInstallerJob(
         classifiedNames.add(entry.name);
       }
     }
+    const now = Date.now();
+    for (const [software, downloads] of [...files]) {
+      const versions = [...new Set(downloads.map((download) => download.version))];
+      if (versions.length < 2) continue;
+      const keep = new Set(selectRecommendedVersions(set, software, versions, now));
+      if (keep.size === versions.length) continue;
+      const retained = downloads.filter((download) => keep.has(download.version));
+      if (!retained.length) continue;
+      stats.filteredFiles += downloads.length - retained.length;
+      files.set(software, retained);
+    }
+    const stagedFiles = [...files.values()].reduce((total, list) => total + list.length, 0);
     next.sort((a, b) =>
       a.kind === 'directory' && b.kind === 'directory'
         ? compareRepoVersions(
@@ -208,8 +253,7 @@ export async function executeInstallerJob(
         : 0,
     );
     for (const { software, run } of runs) stageDownloads(db, run, files.get(software) ?? []);
-    // Redis持久化成功之前不能公布父目录；完整原清单与过滤后的下一步任务是两回事。
-    await enqueue(next);
+    // 先提交父目录授权，再派发子任务；并行消费者不能抢在父目录发布前执行。
     db.exec('BEGIN IMMEDIATE');
     let count = 0;
     try {
@@ -226,7 +270,7 @@ export async function executeInstallerJob(
           if (
             presentDirectories.has(old.directory) ||
             (next.length === 0 &&
-              stats.accepted === 0 &&
+              stagedFiles === 0 &&
               (stats.pending > 0 || stats.pendingDirectories > 0))
           )
             keep.add(old.directory);
@@ -244,6 +288,8 @@ export async function executeInstallerJob(
       db.exec('ROLLBACK');
       throw error;
     }
+    // 入队失败由父任务重试，任务键保持幂等；网络等待不占用SQLite事务。
+    await enqueue(next);
     return { files: count, discovered: next.length, ...stats };
   } catch (error) {
     for (const { run } of runs) failRun(db, run, error);

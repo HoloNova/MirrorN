@@ -2,6 +2,8 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { serve } from '@hono/node-server';
+import { existsSync } from 'node:fs';
+import { CurationStore } from './curation/store.js';
 
 import { createApp } from './app.js';
 import { resolveServerEnv } from './config.js';
@@ -13,6 +15,8 @@ import { loadDownloadRules, type RuleSet } from './indexing/rules/load.js';
 import { createStatusStore } from './state/statusStore.js';
 import { loadStatusSources, type StatusSourceDefinition } from './upstream/statusSources.js';
 
+const envRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+if (existsSync(resolve(envRoot, '.env'))) process.loadEnvFile(resolve(envRoot, '.env'));
 const resolution = resolveServerEnv({ argv: process.argv.slice(2), env: process.env });
 
 if (!resolution.ok) {
@@ -31,6 +35,16 @@ const dataDir = config.dataDir ?? defaultDataDir;
 const snapshotPath = resolve(repoRoot, config.snapshotDir, 'mirrors-status.json');
 // 站点资源库：抓回来的文件清单、版本与抓取历史都在这里（node:sqlite，无额外依赖）。
 const databasePath = resolve(repoRoot, config.snapshotDir, 'mirrorn-installers.sqlite');
+let curated: CurationStore | undefined;
+try {
+  const path = resolve(repoRoot, config.snapshotDir, 'mirrorn-curated.sqlite');
+  curated = new CurationStore(path);
+  console.log(
+    `人工内容库：${path}；${curated.credential() ? '后台管理员已配置' : '请执行 pnpm admin:setup 设置管理员'}`,
+  );
+} catch (error) {
+  console.error(`人工内容库不可用：${String(error)}`);
+}
 
 type Database = ReturnType<typeof openInstallerDatabase>;
 let db: Database | undefined;
@@ -47,8 +61,17 @@ try {
     }
     const synced = syncCatalog(db, { ...catalog, rules });
     rulesReady = rules !== null;
+    if (!config.crawlEnabled) console.log('旧自动采集默认关闭，公开内容由后台人工发布');
+    const enabledSites = rules
+      ? [
+          ...new Set([
+            ...rules.active.map((binding) => binding.siteId),
+            ...(rules.officialCatalog ? ['tsinghua'] : []),
+          ]),
+        ].map((id) => catalog.mirrors.find((mirror) => mirror.id === id)?.name ?? id)
+      : [];
     console.log(
-      `资源库：${synced.sites} 个站点、${synced.resources} 个软件入口、${synced.ecosystems} 个生态（${databasePath}）；只启用北大`,
+      `资源库：${synced.sites} 个站点、${synced.resources} 个软件入口、${synced.ecosystems} 个生态（${databasePath}）；${config.crawlEnabled && enabledSites.length ? `已启用采集：${enabledSites.join('、')}` : '旧采集暂停'}`,
     );
   } catch (error) {
     console.error(`身份配置更新失败，暂停采集，已有查询继续可用：${String(error)}`);
@@ -112,6 +135,7 @@ if (config.syncEnabled && sources.length > 0) {
 
 const app = createApp({
   status: statusStore,
+  ...(curated === undefined ? {} : { curated }),
   ...(db === undefined ? {} : { db }),
   fingerprint: {
     trustProxy: config.trustProxy,
@@ -150,6 +174,7 @@ function shutdown(signal: string): void {
   server.close(() => {
     void (indexWorker?.stop() ?? Promise.resolve()).finally(() => {
       db?.close();
+      curated?.close();
       process.exit(0);
     });
   });
