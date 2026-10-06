@@ -1,14 +1,5 @@
 ## 项目规范
 
-### 当前主线与阅读入口（2026-10-06）
-
-- MirrorN 已切换为 Git 驱动的资源文档站，旧项目在 `archive/legacy/`；归档中的规则与设计只作历史资料，不指导新实现。
-- 开始工作先读 `MAIN.md`（产品边界）、`PLAN.md`（实际状态与不恢复区）、`docs/architecture.md`（目标结构）；内容／组件改动再读 `docs/content-spec.md`，UI 改动读 `DESIGN.md`。
-- 文档索引为 `docs/README.md`。产品、规格、实现、验收和上线状态必须分开，不能把规划当作已有能力。
-- 不恢复旧后台、数据库、采集、测速、旧 CI 或旧 CSS；新源码不能导入 archive，资源扫描和构建不能包含归档及 `.local/`。
-- 资源以 `index.md` 普通 Markdown＋自定义指令维护，站点统一解析成可复用组件，不要求作者手写 MDX／JSX 标签。资源由 Git PR 维护，不建设管理端或动态密钥登录。新站采用静态构建；数据库和在线后端不属于现行主线。
-
-
 ### Initiative and follow-through
 
 You should infer the user's intent and task scope from the instructions and prior conversation context. Your job is to bias towards action and carry the user's intended task to completion.
@@ -37,7 +28,7 @@ Use plain language over jargon, and reference technical details only to the degr
 
 ### Subagent delegation
 
-未经用户明确要求，使用主会话直接完成。只有获得明确委派要求后才使用子代理，并给出单一目标、范围和验收条件。
+If at any point you can parallelize work by delegating tasks to another agent (no matter if you are the root or subagent), you should do so using collaboration tools if it could save time or improve quality.
 
 ### Testing and verification 
 
@@ -58,4 +49,4 @@ Run tests appropriate to the change and complete required checks. Once those pas
 - MAIN.md 中的内容为项目主体的说明
 - 当前项目全量运行一次需要较长时间，所以用户未明确要求或者确实需要，不允许直接执行全量的编译、测试等操作
 - 在制定规划时不允许有任何假设（如假设已实现）或者实际情况没有了解完全的问题
-- 日常 UI 验收由用户在 Windows 本地自行启动浏览器，不更新公网挂载，不使用浏览器自动验收。生产发布按 docs/delivery.md 的独立交付流程，在用户明确配置或授权发布目标后进行。
+- 本项目目前只走公网验收，请在需要我验收时将其挂载的资源进行更新

@@ -1,19 +1,22 @@
-apps/server/.data/
-node_modules/
-dist/
-coverage/
-.vite/
+# Local agent state, preserved legacy data and credentials (never publish)
 /.pi/
+/.local/
+/backups/
 .env
 .env.*
 !.env.example
-.DS_Store
-*.log
+
+# Reproducible dependencies and build output, including inside the archive
+node_modules/
+dist/
+coverage/
+.astro/
+.vite/
 *.tsbuildinfo
+*.log
+.DS_Store
 .superdesign/
 
-# 外部 Agent 原始研究草稿；正式复核结果位于 docs/research/。
-/docs/tmp/
-
-# 人工内容的本地数据库备份（含管理员密码摘要，不提交）。
-/backups/
+# Legacy runtime data is never source content
+archive/legacy/apps/server/.data/
+archive/legacy/docs/tmp/

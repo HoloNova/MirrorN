@@ -1,232 +1,108 @@
-## Overview
-
-Vercel's Geist system is an exercise in subtraction. The page is a near-white sheet (`{colors.canvas}` — #fafafa) carrying near-black ink (`{colors.ink}` — #171717), and almost nothing else competes. Headings, body copy, primary buttons, and the thin 1px borders that define every card all draw from the same ink-and-grey ladder. The one place color is allowed to exist is the hero, where a soft multi-stop **mesh gradient** — cyan, blue, violet, magenta, amber — blooms behind or beside the headline as the brand's entire decorative system. Everywhere else, restraint.
-
-Typography does the heavy lifting. **Geist Sans** sets the display headline in tightly-tracked weight-600 (the hero h1 runs -2.4px letter-spacing), and **Geist Mono** appears as small uppercase eyebrows labeling sections like a technical spec sheet. Buttons split into two shapes by context: the marketing CTAs are fully rounded black **pills** (`{rounded.pill}` — 100px, "Start Deploying" / "Get a Demo"), while nav and in-app controls use a tight 6px square (`{rounded.sm}`, "Sign Up" / "Log In"). The contrast between the rounded marketing pill and the square app button is itself a deliberate signal of which surface you're on.
-
-Surfaces barely lift. Cards are white (`{colors.canvas-elevated}`) on the #fafafa canvas, separated by a 1px hairline (`{colors.hairline}` — #ebebeb) and, at most, a whisper-soft layered shadow. Feature sections are built from precise grids of these hairline cards, often holding thin node-graph or code-editor illustrations rendered in the same ink-on-white palette. The page reads like documentation that happens to be selling something — engineered, exact, and confident enough to let a single gradient be the only flourish.
-
-**Key Characteristics:**
-- A single near-black ink (`{colors.ink}`) carries headings, body, primary CTAs, and borders on a near-white canvas (`{colors.canvas}`) — near-zero chromatic chrome.
-- The multi-stop mesh gradient (cyan → blue → violet → magenta → amber) is the entire decorative system, confined to the hero.
-- Two button shapes by context: rounded black **pills** (`{rounded.pill}`) for marketing CTAs, tight 6px squares (`{rounded.sm}`) for nav/app controls.
-- Geist Sans for tightly-tracked display type (`{typography.display-xl}` at -2.4px), Geist Mono for uppercase technical eyebrows (`{typography.mono-eyebrow}`).
-- Hairline-bordered white cards (`{colors.hairline}` on `{colors.canvas-elevated}`) in precise grids; depth via 1px border + whisper shadow, never heavy elevation.
-- The classic Vercel gradient trio (develop/preview/ship) survives as a named accent system: `{colors.gradient-develop-start}`→end, preview, ship.
-- Color-block page rhythm: white hero with mesh gradient → logo strip → hairline feature-card grid → code-editor band → template cards → black-text CTA band → grey footer.
-
-## Colors
-
-> Source pages analyzed: the home page, the AI Gateway page, the customers page, and the pricing page. The ink/canvas/hairline trio recurs on every page; the accent blue (`{colors.link}`) surfaces on pricing, and the mesh-gradient stops live in the hero.
-
-### Brand & Accent
-- **Ink** (`{colors.primary}` / `{colors.ink}` — #171717): the brand's defining near-black. Headings, primary CTA fill, logo, and the darkest text tier. Paired with `{colors.on-primary}` (white).
-- **Vercel Blue** (`{colors.link}` — #0070f3): the link and accent blue — inline links, pricing highlights, focus signals. Darker press tone `{colors.link-deep}` (#0761d1), pale wash `{colors.link-soft}` (#d3e5ff).
-- **Violet** (`{colors.violet}` — #7928ca), **Cyan** (`{colors.cyan}` — #50e3c2), **Pink** (`{colors.pink}` — #ff0080), **Magenta** (`{colors.magenta}` — #eb367f): the chromatic accent family, used sparingly for illustration accents and as mesh-gradient stops, never as chrome fills.
-
-### Surface
-- **Canvas** (`{colors.canvas}` — #fafafa): the default page background — the near-white sheet everything sits on.
-- **Elevated** (`{colors.canvas-elevated}` — #ffffff): pure white for cards, buttons, inputs, and code blocks lifted off the canvas.
-- **Hairline-Soft Surface** (`{colors.hairline-soft}` — #f2f2f2): the faintest grey fill for subtle alternating panels and inset wells.
-
-### Text
-- **Ink** (`{colors.ink}` — #171717): primary headings and high-emphasis text.
-- **Body** (`{colors.body}` — #4d4d4d): standard paragraph and secondary copy, nav links.
-- **Mute** (`{colors.mute}` — #8f8f8f): lower-emphasis captions, logo-strip labels, metadata.
-- **Faint** (`{colors.faint}` — #a1a1a1): the lowest tier — placeholders, disabled labels.
+# MirrorN 新站设计规范
 
-### Borders
-- **Hairline** (`{colors.hairline}` — #ebebeb): the 1px border on every card, input, and divider — the structural workhorse of the system.
-
-### Semantic
-- **Error** (`{colors.error}` — #ee0000): validation / destructive, with a deep press tier `{colors.error-deep}` (#c50000).
-- **Warning** (`{colors.warning}` — #f5a623): caution states, with soft `{colors.warning-soft}` and deep `{colors.warning-deep}` tiers.
-- **Success** maps to `{colors.link}` (#0070f3) — the blue doubles as the positive/active signal.
-
-### Brand Gradient
-Three named two-stop gradients form the legacy Vercel gradient identity, surviving as illustration and accent washes:
-- **Develop**: `{colors.gradient-develop-start}` (#007cf0) → `{colors.gradient-develop-end}` (#00dfd8) — blue to cyan.
-- **Preview**: `{colors.gradient-preview-start}` (#7928ca) → `{colors.gradient-preview-end}` (#ff0080) — violet to pink.
-- **Ship**: `{colors.gradient-ship-start}` (#ff4d4d) → `{colors.gradient-ship-end}` (#f9cb28) — red to amber.
-These, blended together, form the hero's multi-stop mesh.
+> 新方向：以 MDN 的顶部导航、文档阅读与语义颜色体系为参考。旧 Vercel／Geist 方案已归档，不沿用旧样式实现。
 
-## Typography
+## 1. 设计意图
 
-### Font Family
-The system runs entirely on **Geist** — Vercel's own type family. **Geist Sans** (with an `Arial` system fallback) sets all UI and prose; **Geist Mono** sets code, inline technical tokens, and the small uppercase section eyebrows. There is no third face. Geist Sans is a clean geometric-humanist sans; substitute **Inter** if Geist is unavailable, and **JetBrains Mono** or **IBM Plex Mono** for Geist Mono.
+这是资源与文档站，不是镜像控制台、商业 SaaS 营销页或卡片仪表盘。顶部导航始终承担主信息架构；正文使用自然的文章层次。色彩克制、链接明确、技术内容易读。
 
-### Hierarchy
+用户提供的 MDN 分析用于方向参考，不视为本项目逐项复刻 MDN 最新源码的证据。本文件里的尺寸和颜色是 MirrorN 自己的设计基线。
 
-| Token | Size | Weight | Line Height | Letter Spacing | Use |
-|---|---|---|---|---|---|
-| `{typography.display-xl}` | 48px | 600 | 48px | -2.4px | Hero headline |
-| `{typography.heading-lg}` | 32px | 600 | 40px | -1.28px | Major section headings |
-| `{typography.heading-md}` | 20px | 600 | 28px | -0.4px | Sub-section / card headings |
-| `{typography.label-sm}` | 14px | 500 | 20px | -0.28px | Strong labels, nav emphasis |
-| `{typography.mono-eyebrow}` | 12px | 500 | 16px | 0 | Uppercase Geist Mono section eyebrows |
-| `{typography.body-lg}` | 16px | 400 | 24px | 0 | Lead paragraphs, large body |
-| `{typography.body-md}` | 14px | 400 | 20px | 0 | Default body, nav links, table cells |
-| `{typography.body-sm}` | 12px | 400 | 16px | 0 | Captions, footnotes, metadata |
-| `{typography.button-lg}` | 16px | 500 | 20px | 0 | Marketing pill button labels |
-| `{typography.button-md}` | 14px | 500 | 20px | 0 | Nav / app button labels |
-| `{typography.code}` | 14px | 400 | 20px | 0 | Code blocks, inline code (Geist Mono) |
+## 2. 颜色 Tokens
 
-### Principles
-- Display type is defined by tight negative tracking — the larger the heading, the tighter (-2.4px at hero scale, -1.28px at section scale). Body type sits at neutral spacing.
-- Weight is binary: 600 for headings and 500 for buttons/labels; everything else is 400. There is no light or black weight, and no italic.
-- Geist Mono is reserved for two roles only — code, and the small uppercase eyebrow labels that introduce sections like spec-sheet headers.
+采用语义命名；组件不各自发明灰色或直接写主题判断。基础主题支持 system/light/dark，首次跟随系统，用户选择可持久保存。
 
-### Note on Font Substitutes
-Geist Sans and Geist Mono are freely available (open-source, via Vercel / Google Fonts). If unavailable, **Inter** (sans) and **JetBrains Mono** (mono) are the closest open substitutes; keep heading weight at 600 and preserve the negative display tracking.
+| Token | 亮色 | 暗色 | 用途 |
+| --- | --- | --- | --- |
+| --color-page | #ffffff | #15141a | 页面底色 |
+| --color-surface | #ffffff | #1c1b22 | 浮层、控件表面 |
+| --color-surface-muted | #f0f0f2 | #2b2a33 | 代码与内嵌区域 |
+| --color-text | #1b1b1b | #fbfbfe | 正文与标题 |
+| --color-text-muted | #5b5b66 | #cfcfd8 | 辅助文字 |
+| --color-border | #d1d1db | #3b3a42 | 结构细线 |
+| --color-link | #0060df | #73bbf8 | 链接和激活态 |
+| --color-focus | #0060df | #73bbf8 | 键盘焦点 |
+| --color-info | #0060df | #73bbf8 | 信息提示 |
+| --color-warning | #8a4b00 | #ffc76b | 注意事项 |
+| --color-danger | #b42318 | #ff9a90 | 错误／弃用 |
+| --color-success | #176b3a | #80d5a0 | 正向说明 |
 
-## Layout
+语义背景使用对应颜色的浅色混合，不用饱和整块背景；状态同时有文字和形状，不仅靠颜色区分。主题实现可使用 CSS 变量覆盖，不把 light-dark() 支持作为唯一前提。正文对比度至少 4.5:1，必要大字和非文本控件至少 3:1，实际页面验收时核对。
 
-### Spacing System
-- **Base unit**: 4px. The scale steps 4 → 8 → 12 → 16 → 24 → 32 → 40 → 64 → 96 → 128px.
-- **Tokens**: `{spacing.xxs}` 4px · `{spacing.xs}` 8px · `{spacing.sm}` 12px · `{spacing.md}` 16px · `{spacing.lg}` 24px · `{spacing.xl}` 32px · `{spacing.2xl}` 40px · `{spacing.3xl}` 64px · `{spacing.4xl}` 96px · `{spacing.section}` 128px.
-- **Card interiors** sit at `{spacing.lg}`–`{spacing.xl}` (24–32px); **section bands** run `{spacing.4xl}`–`{spacing.section}` (96–128px) of vertical rhythm.
-- **Button padding** is horizontal-only — marketing pills run `0px 14px`, nav buttons `0px 6px` — with height set by line-height rather than vertical padding.
+## 3. 字体与排版
 
-### Grid & Container
-- Centered max-width container (~1200px) with comfortable gutters; the hero and CTA bands center their content.
-- Feature sections use 2-up, 3-up, and 4-up hairline-card grids that collapse toward 1-up on narrow widths.
-- The pricing page uses a multi-column tier grid; the customers page a logo / case-study grid.
+正文/UI：Inter，随后使用系统中文无衬线回退；代码：JetBrains Mono，随后系统等宽字体。字体优先自托管并提供 system fallback，不依赖外部字体请求才能显示文字。初期不引入第三套窄体字。
 
-### Whitespace Philosophy
-Whitespace is structural. The near-white canvas and generous section padding do the separating work; cards are grouped by thin hairlines rather than heavy backgrounds. The page breathes — large vertical gaps between bands, tight internal rhythm inside cards.
+| 角色 | 桌面字号 | 行高 | 字重 |
+| --- | --- | --- | --- |
+| 页面 h1 | 40px | 1.25 | 600 |
+| h2 | 30–32px | 1.3 | 600 |
+| h3 | 24px | 1.35 | 600 |
+| 正文 | 16px | 1.75 | 400 |
+| UI | 14–16px | 1.5 | 400/500 |
+| 说明文字 | 13–14px | 1.5 | 400 |
+| 代码 | 14px | 1.6 | 400 |
 
-### Responsive Strategy
+中文不套用英文标题的强负字距。移动端 h1 缩至约 30–32px，正文不因屏幕变窄而缩成小字。阅读宽度以实际中文段落为准，不把 75 个英文字符等同于 75 个汉字。
 
-#### Breakpoints
-| Name | Width | Key Changes |
-|---|---|---|
-| Mobile | ≤ 640px | Single-column stacks; nav → menu trigger; hero type scales down; pill CTAs go full-width |
-| Tablet | 768px | 2-up card grids; condensed nav |
-| Laptop | 1024px | 3–4-up grids; full nav row |
-| Desktop | 1200px+ | Centered max-width container, full multi-column grids |
+## 4. 全站布局
 
-#### Touch Targets
-Marketing pill CTAs (`{components.button-primary}`) and nav buttons clear the 44px WCAG-AAA target via line-height-driven height. Circular icon buttons (`{components.button-icon-circular}`) keep adequate hit area.
+顶部主导航基准高度 64px，内容最大宽度约 1440px，左右留白从 16px 到 32px。间距使用 4、8、12、16、24、32、48、64px 的统一尺度。控件圆角约 6px，卡片与代码块约 8px；边框优先，阴影仅用于浮层。
 
-#### Collapsing Strategy
-The nav row collapses behind a menu trigger; multi-column hairline-card grids reflow to a single column; code-editor and node-graph illustrations scale or scroll rather than shrink illegibly; the pricing tier grid stacks vertically.
+```text
+MirrorN     首页   已收录   关于本站                 GitHub   主题
+──────────────────────────────────────────────────────────────
+                     当前页面内容
+```
 
-#### Image Behavior
-The hero mesh gradient is a CSS/SVG composition that scales fluidly. Feature illustrations (node graphs, code editors) are vector/HTML, ink-on-white, scaling crisply. Customer logos sit in a greyscale strip. No heavy raster photography.
+当前导航项有文字与形状状态。GitHub 是项目外链，不成为第四个主模块；实际地址未配置时不显示占位链接。移动端主菜单可折叠，主题控制仍可访问。禁止页面主内容横向溢出。
 
-## Elevation & Depth
+### 首页
 
-| Level | Treatment | Use |
-|---|---|---|
-| 0 — Flat | 1px hairline (`{colors.hairline}`), no shadow | Default feature cards, inputs, dividers, the canvas |
-| 1 — Whisper | Border + `0px 1px 1px rgba(0,0,0,0.04)` micro-shadow | Lightly-raised cards |
-| 2 — Floating | Layered soft shadow (`0px 2px 2px` + `0px 8px 16px -4px` low-alpha black) + inset hairline | Menus, modals, tooltips |
+搜索位于视觉重心，标题和定位说明围绕搜索服务，不放 KPI、下载量或无法证实的宣传语。结果出现时保持输入焦点，采用有限的布局变化，不让每个结果轮番动画。
 
-Depth is deliberately minimal. The system prefers a crisp 1px hairline plus the near-white-on-white surface step to a shadow; when a surface floats, it uses a finely-layered, very-low-alpha shadow stack rather than a single heavy drop.
+视觉增强集中在这个页面：可使用克制的背景或交互动效，但不用旧版强制网格渐变作为第二套品牌语言。尊重 reduced-motion；没有动画也能完整使用。
 
-### Decorative Depth
-The hero **mesh gradient** is the only atmospheric element — a soft multi-stop bloom of the brand accent colors against the white canvas. Feature illustrations (ink node-graphs, code editors) add a sense of product depth without color. No glows, no heavy gradients elsewhere.
+### 已收录
 
-## Shapes
+分类标题行使用原生 details/summary 或等价可访问语义，默认全部折叠。展开时名称卡片在桌面形成多列，移动端降为单列或两列，按可读宽度决定。卡片只显示名称；hover／focus 有细微边框与底色反馈，不显示额外下载操作。
 
-### Border Radius Scale
+### 资源文档
 
-| Token | Value | Use |
-|---|---|---|
-| `{rounded.none}` | 0px | Full-bleed bands, dividers |
-| `{rounded.sm}` | 6px | Nav / app buttons, inputs |
-| `{rounded.md}` | 12px | Feature cards, code blocks |
-| `{rounded.lg}` | 16px | Pricing cards, larger panels |
-| `{rounded.pill-category}` | 64px | Category-tab pills (AI Apps / Web Apps) |
-| `{rounded.pill}` | 100px | Marketing CTA pills |
-| `{rounded.full}` | 9999px | Circular icon buttons, avatars, nav ghost links |
+```text
+顶部主导航
+资源面包屑
+┌─────────────────────────────────┬────────────────┐
+│ 资源标题、简介、维护状态           │ 本页目录        │
+│                                 │ • 获取资源      │
+│ Markdown 正文与资源组件           │ • 安装说明      │
+│                                 │ • 兼容性        │
+│ 编辑此页、贡献者信息               │                │
+└─────────────────────────────────┴────────────────┘
+```
 
-The radius language is bimodal: tight 6px squares for functional chrome, full pills for marketing CTAs and category tabs, with 12–16px on content cards in between.
+正文建议最大 48rem，右目录约 12–15rem，列间距约 2rem。没有足够标题时不显示空目录，也不保留空侧栏。当前不创建左侧全站资源树；将来有真实文集需求再扩展。
 
-### Geometry
-Cards are rectangles at 12–16px radius; marketing buttons and category tabs are full pills; icon buttons and avatars are circular. Illustrations are line-weight vector graphics in ink on white.
+宽屏约 ≥1200px 显示右目录；768–1199px 将目录放到正文顶部可折叠；<768px 保持单栏，表格与代码各自在容器内横向滚动。具体断点以布局不拥挤为验收依据，不机械复制三栏 MDN 参数。
 
-## Components
+目录 sticky top 与真实导航／面包屑高度关联；章节使用 scroll-margin-top 避免锚点被顶栏遮挡。当前章节有左侧指示线和文字高亮。
 
-> No hover states are documented. Each spec covers Default and (where extracted) pressed/active states. Variants live as separate `components:` entries.
+### 关于与错误页
 
-### Navigation
+关于采用简单阅读布局，不做营销落地页。404 给出返回首页和已收录目录的明确入口，不声称资源一定曾经存在。
 
-**`nav-bar`** — top navigation
-- Background `{colors.canvas}`, bottom hairline `{colors.hairline}`, text `{colors.body}`, type `{typography.body-md}`, padding `{spacing.sm} {spacing.lg}`. Holds the black wordmark, ghost nav links, and the Sign Up / Log In buttons at right.
+## 5. 文档与交互组件
 
-**`nav-link`** — individual nav item
-- Body-grey text `{colors.body}`, type `{typography.body-md}`, fully rounded hit area `{rounded.full}`, padding `{spacing.xs} {spacing.sm}`. Transparent until interacted.
+- 链接使用强调色；正文链接有可识别下划线，不只在悬停后出现。
+- 代码块有语言说明与复制按钮；代码默认保留原始空白、容器横向滚动，不任意换行破坏命令辨识。超长普通文本链接可折行。
+- Notice 使用细色条、可读标题与低对比背景，不用整块高饱和警报。
+- 下载控件明确区分下载文件、访问页面、访问仓库、复制命令。展示版本和平台，不凭浏览器检测自动开始下载。
+- Checksum 完整值可选择、可复制；视觉换行不能改变复制内容。
+- 表格有表头和行列关系，移动端滚动而非压成不可读小字。
+- 复制失败给出手动选择文字的提示；成功反馈可被辅助技术读取。
 
-### Buttons
+全站不使用 Emoji 作为功能图标；统一使用一种轻量 SVG 图标来源。来自文档的图标只能通过受控注册 ID 或安全图片使用。
 
-**`button-primary`** — the black marketing pill ("Start Deploying", "Deploy")
-- Background `{colors.primary}`, text `{colors.on-primary}`, type `{typography.button-lg}`, fully rounded `{rounded.pill}` (100px), padding `0px 14px`.
+## 6. 人工验收底线
 
-**`button-secondary`** — the white marketing pill ("Get a Demo")
-- Background `{colors.canvas-elevated}`, text `{colors.ink}`, type `{typography.button-lg}`, rounded `{rounded.pill}`, padding `0px 14px`. Same pill shape as primary, inverted fill.
-
-**`button-primary-sm`** — the compact black nav CTA ("Sign Up")
-- Background `{colors.primary}`, text `{colors.on-primary}`, type `{typography.button-md}`, tight square `{rounded.sm}` (6px), padding `0px 6px`.
-
-**`button-ghost-sm`** — the white nav/app button ("Log In", "Ask AI")
-- Background `{colors.canvas-elevated}`, text `{colors.ink}`, 1px hairline `{colors.hairline}`, type `{typography.button-md}`, rounded `{rounded.sm}`, padding `0px 6px`.
-
-**`button-category-pill`** — the category-tab pill ("AI Apps", "Web Apps", "Ecommerce")
-- Background `{colors.canvas-elevated}`, text `{colors.ink}`, type `{typography.button-md}`, rounded `{rounded.pill-category}` (64px), padding `0px 16px`.
-
-**`button-icon-circular`** — circular icon / carousel control
-- Background `{colors.canvas-elevated}`, text `{colors.ink}`, 1px hairline `{colors.hairline}`, type `{typography.body-lg}`, rounded `{rounded.full}`, no padding.
-
-### Inputs & Forms
-
-**`text-input`** — default form field
-- Background `{colors.canvas-elevated}`, ink text `{colors.ink}`, 1px hairline `{colors.hairline}`, type `{typography.body-md}`, rounded `{rounded.sm}`, padding `{spacing.xs} {spacing.sm}`.
-
-### Cards & Containers
-
-**`feature-card`** — flat hairline content card
-- Background `{colors.canvas-elevated}`, 1px hairline `{colors.hairline}`, ink text `{colors.ink}`, type `{typography.body-md}`, rounded `{rounded.md}`, padding `{spacing.lg}`. The workhorse grid tile, often holding a node-graph or code illustration.
-
-**`feature-card-elevated`** — lifted card variant
-- Same chrome as `feature-card` with the Level-2 floating shadow for menus / featured tiles.
-
-**`pricing-card`** — pricing tier card
-- Background `{colors.canvas-elevated}`, 1px hairline `{colors.hairline}`, ink text `{colors.ink}`, type `{typography.body-md}`, rounded `{rounded.lg}`, padding `{spacing.xl}`.
-
-**`code-block`** — code / terminal surface
-- Background `{colors.canvas-elevated}`, ink text `{colors.ink}`, 1px hairline `{colors.hairline}`, monospace `{typography.code}`, rounded `{rounded.md}`, padding `{spacing.md}`. Syntax rendered in the ink-and-accent palette.
-
-### Bands
-
-**`logo-strip`** — customer logo band
-- Background `{colors.canvas}`, mute text `{colors.mute}`, type `{typography.body-md}`, padding `{spacing.xl} {spacing.lg}`. A greyscale row of customer wordmarks.
-
-**`hero-band`** — full-width hero section
-- Background `{colors.canvas}` with the mesh gradient, ink text `{colors.ink}`, display type `{typography.display-xl}`, padding `{spacing.section} {spacing.lg}`.
-
-**`cta-band`** — end-of-page call-to-action band ("Start Deploying")
-- Background `{colors.canvas}`, ink text `{colors.ink}`, display type `{typography.display-xl}`, padding `{spacing.4xl} {spacing.lg}`, with a `{components.button-primary}` pill.
-
-### Footer
-
-**`footer`** — site footer
-- Background `{colors.canvas}`, top hairline `{colors.hairline}`, body-grey text `{colors.body}`, type `{typography.body-md}`, padding `{spacing.3xl} {spacing.lg}`. Multi-column link groups under the wordmark.
-
-## Do's and Don'ts
-
-### Do
-- Keep the canvas near-white (`{colors.canvas}`) and let near-black ink (`{colors.ink}`) carry headings, CTAs, and borders — the system is a black-and-white duet.
-- Confine color to the hero mesh gradient and small illustration accents; reserve `{colors.link}` for links and focus.
-- Use the two button shapes by context: black pill (`{components.button-primary}`) for marketing CTAs, 6px square (`{components.button-primary-sm}`) for nav/app.
-- Define cards and inputs with a 1px hairline (`{colors.hairline}`) before any shadow — flat is the default.
-- Set display headings in Geist Sans 600 with tight negative tracking; label sections with uppercase Geist Mono eyebrows (`{typography.mono-eyebrow}`).
-- Step the grey text ladder deliberately: `{colors.ink}` → `{colors.body}` → `{colors.mute}` → `{colors.faint}`.
-
-### Don't
-- Don't fill large surfaces with the accent colors — violet/cyan/pink/blue live in the gradient and illustrations, not as chrome.
-- Don't mix the button shapes within one context — marketing CTAs stay pills, app/nav controls stay 6px squares.
-- Don't pile on shadows — depth is a 1px hairline plus, at most, a finely-layered low-alpha shadow stack.
-- Don't set body copy in pure black (`#000000`) — the brand's ink is #171717 and body steps to `{colors.body}`.
-- Don't add a second decorative system — the mesh gradient is the only flourish; everything else is ink on white.
-- Don't loosen the display tracking — large Geist headings carry tight negative letter-spacing by design.
+桌面和窄屏、亮暗主题、键盘操作、可见焦点、触摸目标约 44px、系统减少动画、加载失败与空状态都需要人工检查。跳过导航链接可直接进入正文。不得新增 UI 单元测试、Playwright 或 computer-use 验收；完整清单见 [docs/acceptance.md](docs/acceptance.md)。
