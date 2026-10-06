@@ -62,12 +62,16 @@ describe('后台规则任务的完整范围更新', () => {
         },
         rules,
       );
-      expect(first.filter((j) => j.kind === 'directory')).toHaveLength(25);
-      expect(second.filter((j) => j.kind === 'directory')).toHaveLength(25);
+      expect(first.filter((j) => j.kind === 'directory')).toHaveLength(29);
+      expect(second.filter((j) => j.kind === 'directory')).toHaveLength(29);
+      expect(first.some((j) => j.kind === 'directory' && j.bindingId === 'tsinghua-nodejs')).toBe(
+        true,
+      );
       expect(first.every((j) => j.ruleRevision === rules.revision)).toBe(true);
       expect(first.some((j) => j.kind === 'directory' && j.bindingId === 'pku-spark')).toBe(false);
       expect(s.fetchImpl).not.toHaveBeenCalled();
-      expect(listEcosystems(db).length).toBeGreaterThan(5);
+      // 身份登记不提前暴露零下载生态；这里只发布了Node.js。
+      expect(listEcosystems(db).map((ecosystem) => ecosystem.id)).toEqual(['nodejs']);
     } finally {
       db.close();
     }

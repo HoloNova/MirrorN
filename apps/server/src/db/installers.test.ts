@@ -142,6 +142,10 @@ describe('精简安装目录：安全更新与去重', () => {
     const db = indexFixture();
     try {
       expect(() => beginRun(db, 'ustc', 'nodejs', nodeDirectory, 1)).toThrow('未启用');
+      expect(() =>
+        beginRun(db, 'ustc', 'nodejs', 'https://mirrors.ustc.edu.cn/node/v24.1.0/', 1),
+      ).toThrow('未启用');
+      expect(() => beginRun(db, 'unverified', 'nodejs', nodeDirectory, 1)).toThrow('未启用');
       const run = beginRun(db, 'pku', 'nodejs', nodeDirectory, 1);
       expect(() =>
         stageDownloads(db, run, [

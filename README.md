@@ -2,7 +2,7 @@
 
 MirrorN 帮助初学者查找软件在 Windows、macOS、Linux 上的安装器／预编译包和系统安装镜像：搜索软件或生态，选择版本、系统和架构，从镜像站文件直链下载。教程当前占位。本站不下载安装包、不代理包体，不执行修改用户本机配置的命令。
 
-**当前开发版**仅启用北大，使用“通用目录模板＋软件特性＋站点绑定”采集安装器、运行包和系统 ISO，不整库采集发行版／语言依赖。规则随源码发布，不开放修改接口或热更新；版本、文件名和链接由后台动态发现。生态收录与是否已有下载分开，未知文件保留待核对样本。实现及发布证据见 [`docs/download-rule-system-design.md`](docs/download-rule-system-design.md)。**完整覆盖仍在推进，进度见 `PLAN.md`。**
+**当前开发版**沿用“通用目录模板＋软件特性＋站点绑定”采集安装器、运行包和系统 ISO，不整库采集发行版／语言依赖。北大JSON与清华HTML目录共用采集链路；清华首批仅Node.js、Miniconda、Anaconda、Ubuntu安装镜像，中科大因本轮直接GET403不启用，见 [`docs/multisite-catalog-design.md`](docs/multisite-catalog-design.md)。规则随源码发布，不开放修改接口或热更新；版本、文件名和链接由后台动态发现。生态收录与是否已有下载分开，未知文件保留待核对样本。基础规则见 [`docs/download-rule-system-design.md`](docs/download-rule-system-design.md)。**完整覆盖仍在推进，实际挂载与采集进度见 `PLAN.md`。**
 
 首页仅按需搜索生态／软件，同一软件合并不同站点。站点列表点击后每页10条、滚动续页；软件页自动选站，进入后直接展示并请求首批下载文件，历史版本单独按需查询。“节省代理流量”只保留已核实的中国大陆入口，不代表网页能关闭系统代理。设计与接口见 [`docs/lazy-catalog-design.md`](docs/lazy-catalog-design.md)。
 

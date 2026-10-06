@@ -11,9 +11,20 @@ const resources = SiteResourceListSchema.parse(
     readFileSync(new URL('../../../../data/site-resources/pku.json', import.meta.url), 'utf8'),
   ),
 );
+const tsinghuaResources = SiteResourceListSchema.parse(
+  JSON.parse(
+    readFileSync(new URL('../../../../data/site-resources/tsinghua.json', import.meta.url), 'utf8'),
+  ),
+);
 import { openInstallerDatabase } from './database.js';
 import { syncCatalog } from './catalog.js';
-import { beginRun, publishRun, stageDownloads, type Download } from './installers.js';
+import {
+  beginRun,
+  publishRun,
+  stageDownloads,
+  registerSoftwareSite,
+  type Download,
+} from './installers.js';
 
 export function indexFixture(path = ':memory:') {
   const db = openInstallerDatabase(path);
@@ -28,6 +39,14 @@ export function indexFixture(path = ':memory:') {
         sources: [],
       },
       {
+        id: 'tsinghua',
+        name: '清华',
+        kind: 'university',
+        homepageUrl: 'https://mirrors.tuna.tsinghua.edu.cn/',
+        aliases: ['TUNA'],
+        sources: [],
+      },
+      {
         id: 'ustc',
         name: '中科大',
         kind: 'university',
@@ -37,7 +56,7 @@ export function indexFixture(path = ':memory:') {
       },
     ],
     taxonomy,
-    siteResources: [resources],
+    siteResources: [resources, tsinghuaResources],
     tutorials: [],
   });
   return db;
@@ -61,6 +80,7 @@ export function fixtureRun(
   directory = nodeDirectory,
   software = 'nodejs',
 ) {
+  registerSoftwareSite(db, 'pku', software);
   const run = beginRun(db, 'pku', software, directory, epoch);
   stageDownloads(db, run, files);
   publishRun(db, run);

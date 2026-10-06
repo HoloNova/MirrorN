@@ -6,9 +6,11 @@ import {
   publishRun,
   stageDownloads,
   registerSoftware,
+  registerSoftwareSite,
   type Download,
 } from '../db/installers.js';
-import { PKU_ORIGIN, sourceUrl } from './policy.js';
+import { PKU_ORIGIN, resourceSite } from './policy.js';
+import { directoryEntries as entries } from './directory.js';
 import { SourceClient, SourceError } from './source.js';
 import { loadDownloadRules, type RuleSet } from './rules/load.js';
 import { classifyFile } from './rules/classify.js';
@@ -46,50 +48,14 @@ export function registerInstallers(db: DatabaseSync, set: RuleSet) {
         : 'installer',
     });
   }
+  for (const binding of set.bindings.values())
+    for (const software of set.rules.get(binding.ruleId)!.softwareIds)
+      registerSoftwareSite(db, binding.siteId, software);
 }
 export function installerTaskKey(job: InstallerJob): string {
   return createHash('sha256').update(JSON.stringify(job)).digest('hex');
 }
-export function directoryApi(directory: string) {
-  return `${PKU_ORIGIN}/files${sourceUrl(directory).pathname}`;
-}
-interface Entry {
-  name: string;
-  type: string;
-  size?: number;
-}
-function safeName(name: string) {
-  return (
-    name.length > 0 &&
-    name.length <= 512 &&
-    name !== '.' &&
-    name !== '..' &&
-    // 刻意拒绝文件名中的控制字符，避免目录元数据形成无效路径。
-    // eslint-disable-next-line no-control-regex
-    !/[/?#\\\u0000-\u001f\u007f]/.test(name) &&
-    !/%(?:2f|5c|2e)/i.test(name)
-  );
-}
-async function entries(source: SourceClient, directory: string): Promise<Entry[]> {
-  const raw: unknown = await source.json(directoryApi(directory));
-  if (!Array.isArray(raw)) throw new SourceError('软件目录不是完整JSON文件列表', false);
-  const seen = new Set<string>();
-  return raw.map((value: unknown) => {
-    if (!value || typeof value !== 'object') throw new SourceError('文件列表条目无效', false);
-    const row = value as Entry;
-    if (
-      typeof row.name !== 'string' ||
-      !safeName(row.name) ||
-      !['directory', 'file', 'other'].includes(row.type) ||
-      seen.has(row.name)
-    )
-      throw new SourceError('文件列表身份、类型或唯一性无效', false);
-    seen.add(row.name);
-    if (row.size != null && (!Number.isSafeInteger(row.size) || row.size < 0))
-      throw new SourceError('文件大小元数据无效', false);
-    return { name: row.name, type: row.type, ...(row.size == null ? {} : { size: row.size }) };
-  });
-}
+export { directoryApi } from './directory.js';
 /** 查询不调用这个执行器；所有源站请求只由后台任务执行。 */
 export async function executeInstallerJob(
   db: DatabaseSync,
@@ -110,7 +76,7 @@ export async function executeInstallerJob(
     const jobs: InstallerJob[] = set.active.map((binding) => ({
       kind: 'directory',
       bindingId: binding.id,
-      directory: `${PKU_ORIGIN}/${binding.rootPath}`,
+      directory: `${resourceSite(binding.siteId).origin}/${binding.rootPath}`,
       epoch,
       depth: 0,
       ruleRevision: set.revision,
@@ -130,7 +96,9 @@ export async function executeInstallerJob(
         entry.type === 'directory' &&
         !set.active.some(
           (binding) =>
-            binding.repoId === 'apache' && binding.rootPath.startsWith(`apache/${entry.name}/`),
+            binding.siteId === 'pku' &&
+            binding.repoId === 'apache' &&
+            binding.rootPath.startsWith(`apache/${entry.name}/`),
         )
       ) {
         pending++;
@@ -159,15 +127,15 @@ export async function executeInstallerJob(
       job.depth > 0 &&
       !db
         .prepare(
-          `SELECT 1 FROM catalog_scopes s JOIN catalog_software w ON w.id=s.software_id JOIN catalog_sites t ON t.id=s.site_id WHERE w.slug=? AND t.slug='pku' AND s.directory=? AND s.enabled=1 AND s.discovered_epoch=?`,
+          `SELECT 1 FROM catalog_scopes s JOIN catalog_software w ON w.id=s.software_id JOIN catalog_sites t ON t.id=s.site_id WHERE w.slug=? AND t.slug=? AND s.directory=? AND s.enabled=1 AND s.discovered_epoch=?`,
         )
-        .get(software, url.href, job.epoch)
+        .get(software, binding.siteId, url.href, job.epoch)
     )
       throw new SourceError('子目录未被当前有效父目录确认，不执行遗留待办', false);
   }
   const runs = rule.softwareIds.map((software) => ({
     software,
-    run: beginRun(db, 'pku', software, url.href, job.epoch, Date.now(), set.revision),
+    run: beginRun(db, binding.siteId, software, url.href, job.epoch, Date.now(), set.revision),
   }));
   const beforeRequests = source.requests,
     beforeBytes = source.bytes;
@@ -213,6 +181,9 @@ export async function executeInstallerJob(
           filename: entry.name,
           url: fileUrl,
           ...(entry.size === undefined ? {} : { size: entry.size }),
+          ...(entry.sizeEstimated
+            ? { metadata: { ...result.download.metadata, sizeEstimated: true } }
+            : {}),
         });
         files.set(result.software, downloads);
         stats.accepted++;

@@ -1,6 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite';
 import type { Mirror } from '@mirrorn/shared';
-import { sourceUrl } from '../indexing/policy.js';
+import { sourceUrl, resourceSite } from '../indexing/policy.js';
 
 /** 四类业务实体。批次只用于短暂暂存，不复制有效下载记录。 */
 export function installCatalog(db: DatabaseSync) {
@@ -144,10 +144,16 @@ export function registerSoftware(db: DatabaseSync, software: Software): number {
     db.prepare(
       'UPDATE catalog_software SET ecosystem_id=(SELECT id FROM catalog_ecosystems WHERE slug=?) WHERE id=?',
     ).run(software.ecosystemId, id);
-  db.prepare(
-    "INSERT INTO catalog_software_sites(site_id,software_id) SELECT id,? FROM catalog_sites WHERE slug='pku' ON CONFLICT DO NOTHING",
-  ).run(id);
   return id;
+}
+
+/** 身份共用，但来源只按审核过的站点绑定关联，不把每个软件挂到所有站。 */
+export function registerSoftwareSite(db: DatabaseSync, site: string, software: string) {
+  db.prepare(
+    `INSERT INTO catalog_software_sites(site_id,software_id)
+     SELECT s.id,w.id FROM catalog_sites s CROSS JOIN catalog_software w
+     WHERE s.slug=? AND w.slug=? ON CONFLICT DO NOTHING`,
+  ).run(site, software);
 }
 
 export function beginRun(
@@ -159,8 +165,13 @@ export function beginRun(
   now = Date.now(),
   ruleRevision = '',
 ): number {
-  if (site !== 'pku') throw new CatalogPublishError('禁止采集未启用站点');
-  const root = sourceUrl(directory);
+  let origin: string;
+  try {
+    origin = resourceSite(site).origin;
+  } catch {
+    throw new CatalogPublishError('禁止采集未启用站点');
+  }
+  const root = sourceUrl(directory, `${origin}/`);
   if (!root.pathname.endsWith('/') || root.search)
     throw new CatalogPublishError('采集范围必须为真实目录');
   const siteRow = db.prepare('SELECT id FROM catalog_sites WHERE slug=?').get(site) as
@@ -168,6 +179,12 @@ export function beginRun(
   const softwareRow = db.prepare('SELECT id FROM catalog_software WHERE slug=?').get(software) as
     { id: number } | undefined;
   if (!siteRow || !softwareRow) throw new CatalogPublishError('站点或软件未登记');
+  if (
+    !db
+      .prepare('SELECT 1 FROM catalog_software_sites WHERE site_id=? AND software_id=?')
+      .get(siteRow.id, softwareRow.id)
+  )
+    throw new CatalogPublishError('站点软件绑定未启用');
   db.prepare(
     `INSERT INTO catalog_scopes(site_id,software_id,directory) VALUES(?,?,?) ON CONFLICT DO NOTHING`,
   ).run(siteRow.id, softwareRow.id, root.href);

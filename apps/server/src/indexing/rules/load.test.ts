@@ -1,4 +1,4 @@
-import { mkdtempSync, cpSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, cpSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
@@ -10,8 +10,9 @@ import {
   type DownloadRule,
   type DownloadBinding,
   type SoftwareIdentity,
+  type SiteResourceList,
 } from '@mirrorn/shared';
-function edited<T>(path: string, mutate: (data: T) => void) {
+function edited<T>(path: string, mutate: (data: T, directory: string) => void) {
   const directory = mkdtempSync(join(tmpdir(), 'rule-contract-'));
   try {
     cpSync(join(defaultRuleDataDir, 'download-rules'), join(directory, 'download-rules'), {
@@ -19,14 +20,12 @@ function edited<T>(path: string, mutate: (data: T) => void) {
     });
     for (const file of ['software.json', 'ecosystem-taxonomy.json'])
       cpSync(join(defaultRuleDataDir, file), join(directory, file));
-    mkdirSync(join(directory, 'site-resources'));
-    cpSync(
-      join(defaultRuleDataDir, 'site-resources/pku.json'),
-      join(directory, 'site-resources/pku.json'),
-    );
+    cpSync(join(defaultRuleDataDir, 'site-resources'), join(directory, 'site-resources'), {
+      recursive: true,
+    });
     const file = join(directory, path);
     const value = JSON.parse(readFileSync(file, 'utf8')) as T;
-    mutate(value);
+    mutate(value, directory);
     writeFileSync(file, JSON.stringify(value));
     return loadDownloadRules(directory);
   } finally {
@@ -37,7 +36,14 @@ describe('发布时校验与一次性规则快照', () => {
   it('规则与站点绑定分离，全部真实身份引用，停用/draft不执行', () => {
     const set = loadDownloadRules();
     expect(set.identities.length).toBe(28);
-    expect(set.active.length).toBe(25);
+    expect(set.active.length).toBe(29);
+    expect(
+      set.active
+        .filter((b) => b.siteId === 'tsinghua')
+        .map((b) => b.ruleId)
+        .sort(),
+    ).toEqual(['anaconda', 'miniconda', 'nodejs', 'ubuntu']);
+    expect(set.active.some((b) => b.siteId === 'ustc')).toBe(false);
     expect(set.active.some((b) => b.ruleId === 'spark')).toBe(false);
     expect(Object.isFrozen(set.rules.get('nodejs'))).toBe(true);
     expect(set.revision).toBe(loadDownloadRules().revision);
@@ -57,10 +63,48 @@ describe('发布时校验与一次性规则快照', () => {
     expect(() =>
       DownloadBindingSchema.parse({
         ...loadDownloadRules().bindings.get('pku-nodejs'),
-        siteId: 'ustc',
+        siteId: 'unverified',
       }),
     ).toThrow();
     expect(() => DownloadTemplateSchema.parse({ id: 'plugin', maxDepth: 1 })).toThrow();
+  });
+  it('软件规范标识不要求与每站物理仓库路径相同', () => {
+    const set = edited<DownloadBinding[]>(
+      'download-rules/sites/tsinghua.json',
+      (rows, directory) => {
+        const binding = rows.find((b) => b.ruleId === 'nodejs')!;
+        binding.repoId = 'node';
+        binding.rootPath = 'node/';
+        const path = join(directory, 'site-resources/tsinghua.json');
+        const list = JSON.parse(readFileSync(path, 'utf8')) as SiteResourceList;
+        const repo = list.resources.find((r) => r.id === 'nodejs-release')!;
+        repo.id = 'node';
+        repo.downloadEntry = 'https://mirrors.tuna.tsinghua.edu.cn/node/';
+        writeFileSync(path, JSON.stringify(list));
+      },
+    );
+    expect(set.bindings.get('tsinghua-nodejs')?.repoId).toBe('node');
+    expect(set.identities.find((identity) => identity.slug === 'nodejs')?.resourceKey).toBe(
+      'nodejs-release',
+    );
+  });
+  it('站点文件不能假冒其它站，仓库与软件生态必须对应', () => {
+    expect(() =>
+      edited<DownloadBinding[]>('download-rules/sites/tsinghua.json', (rows) => {
+        rows[0].siteId = 'pku';
+      }),
+    ).toThrow('所属站点');
+    expect(() =>
+      edited<DownloadBinding[]>('download-rules/sites/tsinghua.json', (rows) => {
+        rows[0].repoId = 'ubuntu-releases';
+        rows[0].rootPath = 'ubuntu-releases/';
+      }),
+    ).toThrow('生态不一致');
+    expect(() =>
+      edited<{ bindings: string[] }>('download-rules/manifest.json', (manifest) => {
+        manifest.bindings.push('sites/tsinghua.json');
+      }),
+    ).toThrow('不能重复');
   });
   it('不存在的捕获、身份、模板以及静态版本根，在启动前拒绝', () => {
     expect(() =>

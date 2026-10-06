@@ -182,6 +182,7 @@ export function queryFiles(db: DatabaseSync, input: FileQuery, now = Date.now())
           release: metadata.purpose === 'system_image' ? row.version : '',
           component: '',
           ...(row.size === null ? {} : { size: row.size }),
+          ...(metadata.sizeEstimated === true ? { sizeEstimated: true } : {}),
           ...(row.checksum ? { checksum: JSON.parse(row.checksum) as unknown } : {}),
           compatibility: metadata.requirements ?? {},
           metadata,

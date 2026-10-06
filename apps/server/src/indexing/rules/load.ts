@@ -14,7 +14,7 @@ import {
   type DownloadBinding,
   type SoftwareIdentity,
 } from '@mirrorn/shared';
-import { sourceUrl, PKU_ORIGIN } from '../policy.js';
+import { sourceUrl, resourceSite } from '../policy.js';
 
 export interface RuleSet {
   readonly revision: string;
@@ -67,19 +67,30 @@ export function loadDownloadRules(dataDir = defaultRuleDataDir): RuleSet {
     (r) => r.id,
     '软件规则',
   );
-  const bindings = unique(
-    DownloadBindingSchema.array().parse(json(`download-rules/${manifest.bindings}`)),
-    (r) => r.id,
-    '站点绑定',
-  );
+  const sources = new Map<string, ReturnType<typeof SiteResourceListSchema.parse>>();
+  const bindingRows = manifest.bindings.flatMap((path) => {
+    const siteId = basename(path, '.json');
+    resourceSite(siteId);
+    const list = SiteResourceListSchema.parse(json(`site-resources/${siteId}.json`));
+    if (list.siteId !== siteId) throw new Error(`仓库清单所属站点不一致：${path}`);
+    unique(list.resources, (r) => r.id, `${siteId}仓库`);
+    sources.set(siteId, list);
+    const rows = DownloadBindingSchema.array().parse(json(`download-rules/${path}`));
+    if (rows.some((b) => b.siteId !== siteId || !b.id.startsWith(`${siteId}-`)))
+      throw new Error(`绑定所属站点不一致：${path}`);
+    return rows;
+  });
+  const bindings = unique(bindingRows, (r) => r.id, '站点绑定');
   const taxonomy = EcosystemTaxonomySchema.parse(json('ecosystem-taxonomy.json'));
   const ecos = new Set(taxonomy.map((r) => r.id));
-  const sources = SiteResourceListSchema.parse(json('site-resources/pku.json'));
-  const repos = new Map(sources.resources.map((r) => [r.id, r]));
   for (const identity of identities) {
     if (
       !ecos.has(identity.ecosystemId) ||
-      repos.get(identity.repo)?.ecosystemId !== identity.ecosystemId
+      ![...sources.values()].some((list) =>
+        list.resources.some(
+          (repo) => repo.id === identity.repo && repo.ecosystemId === identity.ecosystemId,
+        ),
+      )
     )
       throw new Error(`软件生态/仓库引用无效：${identity.slug}`);
   }
@@ -123,7 +134,8 @@ export function loadDownloadRules(dataDir = defaultRuleDataDir): RuleSet {
   }
   for (const binding of bindings.values()) {
     const rule = rules.get(binding.ruleId);
-    if (!rule || !repos.has(binding.repoId)) throw new Error(`绑定引用无效：${binding.id}`);
+    const repo = sources.get(binding.siteId)?.resources.find((r) => r.id === binding.repoId);
+    if (!rule || !repo) throw new Error(`绑定引用无效：${binding.id}`);
     if (
       !binding.rootPath.startsWith(`${binding.repoId}/`) ||
       !binding.rootPath.endsWith('/') ||
@@ -131,12 +143,13 @@ export function loadDownloadRules(dataDir = defaultRuleDataDir): RuleSet {
       /(?:^|\/)v?\d+\.\d+(?:\.\d+)*(?:\/|$)/.test(binding.rootPath)
     )
       throw new Error(`绑定必须为审核的动态发布根：${binding.id}`);
-    const url = sourceUrl(`${PKU_ORIGIN}/${binding.rootPath}`, `${PKU_ORIGIN}/${binding.repoId}/`);
+    const origin = resourceSite(binding.siteId).origin;
+    const url = sourceUrl(`${origin}/${binding.rootPath}`, `${origin}/${binding.repoId}/`);
     if (url.search || binding.steps.length > templates.get(rule.templateId)!.maxDepth)
       throw new Error(`目录深度异常：${binding.id}`);
     for (const id of rule.softwareIds)
-      if (identityMap.get(id)!.repo !== binding.repoId)
-        throw new Error(`软件与站点仓库不一致：${binding.id}`);
+      if (identityMap.get(id)!.ecosystemId !== repo.ecosystemId)
+        throw new Error(`软件与站点仓库生态不一致：${binding.id}`);
     new RegExp(binding.leaf);
     binding.steps.forEach((pattern) => new RegExp(pattern));
   }
@@ -151,6 +164,8 @@ export function loadDownloadRules(dataDir = defaultRuleDataDir): RuleSet {
         'pending',
         '../installers',
         '../source',
+        '../directory',
+        '../policy',
         '../versions',
         '../../db/installers',
       ].map((name) =>

@@ -18,9 +18,10 @@ import {
 import { SourceClient, SourceError } from './source.js';
 import { REFRESH_INTERVAL_MS } from './policy.js';
 import { loadDownloadRules, type RuleSet } from './rules/load.js';
+import { bindingDirectory } from './rules/templates.js';
 
-// 隔离旧的全仓库待办；升级不会重新执行APT/PyPI任务，旧队列由退役步骤显式清理。
-export const QUEUE_NAME = 'mirrorn-pku-download-rules-v3';
+// 多站任务隔离旧北大v3待办；有效下载保留，旧队列在新队列健康后显式退役。
+export const QUEUE_NAME = 'mirrorn-download-rules-v4';
 const JOB_OPTIONS: JobsOptions = {
   attempts: 3,
   backoff: { type: 'source' },
@@ -72,12 +73,20 @@ export function createIndexQueue(
     for (const job of jobs) {
       if (!['refresh', 'inventory', 'directory'].includes(job.kind))
         throw new SourceError('旧包仓库任务已退出', false);
-      if (job.kind === 'directory' && !job.directory.startsWith('https://mirrors.pku.edu.cn/'))
-        throw new SourceError('禁止入队其它站点', false);
+      if (job.kind === 'directory') {
+        const binding = rules.bindings.get(job.bindingId);
+        if (!binding || rules.rules.get(binding.ruleId)?.status !== 'active')
+          throw new SourceError('采集规则未启用，禁止入队', false);
+        try {
+          bindingDirectory(binding, job.directory);
+        } catch {
+          throw new SourceError('入队目录超出当前站点绑定范围', false);
+        }
+      }
     }
     for (let start = 0; start < jobs.length; start += 100)
       await queue.addBulk(
-        jobs.slice(start, start + 100).map((data) => ({
+        jobs.slice(start, start + 100).map((data, offset) => ({
           name: data.kind,
           data,
           opts: {
@@ -90,7 +99,10 @@ export function createIndexQueue(
                   ? 9
                   : data.depth === 0
                     ? 2
-                    : 5,
+                    : // 每个父目录已按版本排序；最新两项先跑，历史项仍保持有界采集。
+                      start + offset < 2
+                      ? 3
+                      : 5,
           },
         })),
       );
@@ -152,7 +164,7 @@ export function createIndexQueue(
       const interval = options.intervalMs ?? REFRESH_INTERVAL_MS;
       // BullMQ首次创建every定时器默认立即执行；启动刷新另有任务，不能再触发第二轮。
       await queue.upsertJobScheduler(
-        'pku-six-hour-rules',
+        'sites-six-hour-rules',
         { every: interval, startDate: Date.now() + interval },
         {
           name: 'refresh',

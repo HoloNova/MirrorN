@@ -72,7 +72,7 @@ export const DownloadTemplateSchema = z
 export const DownloadBindingSchema = z
   .object({
     id,
-    siteId: z.literal('pku'),
+    siteId: z.enum(['pku', 'tsinghua', 'ustc']),
     repoId: id,
     ruleId: id,
     rootPath: z.string().min(2).max(400),
@@ -84,10 +84,14 @@ export const DownloadBindingSchema = z
   .strict();
 export const DownloadManifestSchema = z
   .object({
-    schemaVersion: z.literal(1),
+    schemaVersion: z.literal(2),
     templates: z.literal('templates.json'),
     rules: z.literal('software/rules.json'),
-    bindings: z.literal('sites/pku.json'),
+    bindings: z
+      .array(z.string().regex(/^sites\/(?:pku|tsinghua|ustc)\.json$/))
+      .min(1)
+      .max(3)
+      .refine((paths) => new Set(paths).size === paths.length, '站点绑定文件不能重复'),
   })
   .strict();
 export type DownloadRule = z.infer<typeof DownloadRuleSchema>;

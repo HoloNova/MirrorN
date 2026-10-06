@@ -342,9 +342,12 @@ export function validateDataset(dataset: Dataset): DatasetValidationIssue[] {
       if (inventory !== undefined && !inventoryIds.has(resource.id)) {
         addIssue(issues, `${resourcePath}.id`, `官方目录里没有这条仓库：${resource.id}`);
       }
-      // PKU /files/ 目录适配器拼接相对路径，入口必须指向以 / 结尾的目录。
-      if (list.siteId === 'pku' && !resource.downloadEntry.endsWith('/')) {
-        addIssue(issues, `${resourcePath}.downloadEntry`, '北大文件目录入口必须以 / 结尾');
+      // JSON/HTML目录都拼接相对文件路径，已接入采集的入口必须是明确目录。
+      if (
+        ['pku', 'tsinghua', 'ustc'].includes(list.siteId) &&
+        !resource.downloadEntry.endsWith('/')
+      ) {
+        addIssue(issues, `${resourcePath}.downloadEntry`, '文件目录入口必须以 / 结尾');
       }
       // 下载入口必须是镜像站自己的地址：站内页面不能让用户不知不觉跳到第三方。
       for (const [field, value] of [

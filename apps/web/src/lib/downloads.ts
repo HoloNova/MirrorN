@@ -9,6 +9,7 @@ export interface Artifact {
   filename: string;
   url: string;
   size?: number;
+  sizeEstimated?: boolean;
   mtime?: string;
   platforms?: ArtifactPlatform[];
   role?: string;
@@ -213,6 +214,7 @@ function isArtifact(value: unknown, origin: string): value is Artifact {
     return false;
   }
   if (item.size !== undefined && typeof item.size !== 'number') return false;
+  if (item.sizeEstimated !== undefined && typeof item.sizeEstimated !== 'boolean') return false;
   if (item.mtime !== undefined && typeof item.mtime !== 'string') return false;
   if (
     item.platforms !== undefined &&

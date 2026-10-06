@@ -74,6 +74,7 @@ export function classifyFile(
   for (const other of set.active) {
     if (
       other.id === binding.id ||
+      other.siteId !== binding.siteId ||
       other.rootPath !== binding.rootPath ||
       !isFileLeaf(other, directory)
     )

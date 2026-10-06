@@ -1,0 +1,45 @@
+{
+  "siteId": "tsinghua",
+  "checkedAt": "2026-10-05",
+  "resources": [
+    {
+      "id": "nodejs-release",
+      "name": "Node.js 发布文件",
+      "ecosystemId": "nodejs",
+      "kind": "installer",
+      "downloadEntry": "https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/",
+      "versionsHint": "v版本号目录；目录内有 Windows MSI/ZIP、macOS PKG 和 Linux 预编译归档；当前实测最新为 v24.1.0",
+      "platforms": ["windows", "macos", "linux"],
+      "helpDocUrl": "https://mirrors.tuna.tsinghua.edu.cn/help/nodejs-release/",
+      "tutorialId": null,
+      "evidence": "官方 /static/tunasync.json 与 /help/nodejs-release/ 确认 Node.js 发布镜像；2026-10-05 GET /nodejs-release/v24.1.0/ 返回200 HTML。对 node-v24.1.0-linux-x64.tar.xz、node-v24.1.0-x64.msi、node-v24.1.0.pkg 做 Range 0-65535 GET，均206、终点仍为本站、每个读取65536字节，包头分别为XZ、CFB、XAR；仅部分读取，不声明整包校验。",
+      "uncertain": "同步作业状态success不代表版本新鲜；index.json最后修改为2025-05-21，实测只有v24.1.0及更旧内容，不称官方最新版。"
+    },
+    {
+      "id": "anaconda",
+      "name": "Anaconda 与 Miniconda 安装器",
+      "ecosystemId": "anaconda-installer",
+      "kind": "installer",
+      "downloadEntry": "https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/",
+      "versionsHint": "Anaconda位于archive/、Miniconda位于miniconda/，均为扁平HTML清单；Windows EXE、macOS PKG/SH、Linux SH，保留日期版本与latest别名",
+      "platforms": ["windows", "macos", "linux"],
+      "helpDocUrl": "https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/",
+      "tutorialId": null,
+      "evidence": "官方 /static/tunasync.json 与 /help/anaconda/ 确认镜像和archive/miniconda下载路径；2026-10-05两目录GET均200。对 Anaconda3-2026.07-1-Linux-x86_64.sh、Miniconda3-latest-Linux-x86_64.sh、Miniconda3-py314_26.7.1-1-Linux-x86_64.sh 做 Range 0-65535 GET，均206、读取65536字节、终点仍为本站，包头为#!/bin/sh；仅部分读取。",
+      "uncertain": null
+    },
+    {
+      "id": "ubuntu-releases",
+      "name": "Ubuntu 安装镜像",
+      "ecosystemId": "ubuntu",
+      "kind": "iso",
+      "downloadEntry": "https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/",
+      "versionsHint": "数字发布目录与发行代号目录并存，本轮仅按数字发布目录识别desktop/live-server ISO；26.04.1/与24.04.5.1/实际有文件，不进入APT仓库或netboot依赖目录",
+      "platforms": ["linux"],
+      "helpDocUrl": "https://mirrors.tuna.tsinghua.edu.cn/help/ubuntu/",
+      "tutorialId": null,
+      "evidence": "官方 /static/tunasync.json 与 /static/status/isoinfo.json 确认ubuntu-releases；2026-10-05 GET发布目录返回200。对26.04.1/ubuntu-26.04.1-live-server-amd64.iso与24.04.5.1/ubuntu-24.04.5.1-desktop-amd64.iso做 Range 0-65535 GET，均206、读取65536字节、终点仍为本站，返回ISO启动结构；仅部分读取。",
+      "uncertain": "HTML清单里存在只有41字节、目标GET返回404的旧ISO软链接（如24.04/ubuntu-24.04.3-desktop-amd64.iso）；解析时不得作为完整ISO收录。人类可读大小为估算，不等于精确Content-Length。"
+    }
+  ]
+}

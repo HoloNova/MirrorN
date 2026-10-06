@@ -5,7 +5,7 @@ import { createIndexQueue, redisConnection, QUEUE_NAME } from './queue.js';
 import { indexFixture, fixtureRun, fixtureDownload, nodeDirectory } from '../db/indexFixture.js';
 import { queryFiles } from '../db/fileQueries.js';
 import { beginRun, publishRun } from '../db/installers.js';
-import type { InstallerJob } from './installers.js';
+import { installerTaskKey, type InstallerJob } from './installers.js';
 import { loadDownloadRules } from './rules/load.js';
 const rules = loadDownloadRules();
 const redisUrl = process.env.MIRRORN_TEST_REDIS_URL;
@@ -67,8 +67,100 @@ describe.runIf(Boolean(redisUrl))('真实Redis：安装软件队列', () => {
       expect(QUEUE_NAME).not.toBe('mirrorn-pku-index');
       await expect(
         queue.enqueue([{ ...task, directory: 'https://mirrors.ustc.edu.cn/nodejs/' }]),
-      ).rejects.toThrow('其它站点');
+      ).rejects.toThrow('当前站点绑定范围');
       expect(queryFiles(db, { resource: 'pku:nodejs-release' }).items).toHaveLength(1);
+    } finally {
+      await clean(queue);
+      await events.close();
+      db.close();
+    }
+  }, 30000);
+  it('双站任务真实并存并各自发布；第101个子目录不冒充最新优先项', async () => {
+    const db = indexFixture();
+    const epoch = Date.now() + 1;
+    const pku = {
+      ...task,
+      epoch,
+      depth: 0,
+      directory: 'https://mirrors.pku.edu.cn/nodejs-release/',
+    };
+    const tuna = {
+      ...pku,
+      bindingId: 'tsinghua-nodejs',
+      directory: 'https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/',
+    };
+    const fetchImpl: typeof fetch = async (input) => {
+      const url = new URL(String(input));
+      if (url.hostname === 'mirrors.pku.edu.cn')
+        return Response.json(
+          url.pathname === '/files/nodejs-release/'
+            ? [{ name: 'v24.1.0', type: 'directory' }]
+            : [{ name: fixtureDownload().filename, type: 'other', size: 100 }],
+        );
+      const href = url.pathname === '/nodejs-release/' ? 'v24.1.0/' : fixtureDownload().filename;
+      return new Response(
+        `<html><title>Index of ${url.pathname}</title><table><tr><td><a href="${href}">${href}</a></td><td class="size">${href.endsWith('/') ? '-' : '30.5 MiB'}</td></tr></table></html>`,
+        { headers: { 'content-type': 'text/html' } },
+      );
+    };
+    const events = new QueueEvents(QUEUE_NAME, { connection: redisConnection(redisUrl!) });
+    await events.waitUntilReady();
+    const queue = createIndexQueue(db, redisUrl!, () => {}, { fetchImpl, jobIntervalMs: 10 });
+    try {
+      await queue.worker.pause();
+      await queue.enqueue([pku, tuna]);
+      const roots = await queue.queue.getJobs(['prioritized']);
+      expect(roots.map((j) => j.id).sort()).toEqual(
+        [installerTaskKey(pku), installerTaskKey(tuna)].sort(),
+      );
+      const history = Array.from({ length: 102 }, (_, index) => ({
+        ...pku,
+        depth: 1,
+        directory: `${pku.directory}v99.${index}.0/`,
+      }));
+      await queue.enqueue(history);
+      expect((await queue.queue.getJob(installerTaskKey(history[0]!)))?.priority).toBe(3);
+      expect((await queue.queue.getJob(installerTaskKey(history[100]!)))?.priority).toBe(5);
+      for (const job of history) await queue.queue.remove(installerTaskKey(job));
+      // 正式策略立即删除已完成任务；先订阅父/子完成事件，不能消费后再查句柄。
+      const remaining = new Set(
+        [pku, tuna].flatMap((root) => [
+          installerTaskKey(root),
+          installerTaskKey({ ...root, depth: 1, directory: `${root.directory}v24.1.0/` }),
+        ]),
+      );
+      let timer: ReturnType<typeof setTimeout>;
+      let completed: (data: { jobId: string }) => void;
+      let failed: (data: { jobId: string; failedReason: string }) => void;
+      const finished = new Promise<void>((resolve, reject) => {
+        timer = setTimeout(() => reject(new Error('双站父子任务未在10秒内全部发布')), 10000);
+        completed = ({ jobId }) => {
+          remaining.delete(jobId);
+          if (remaining.size === 0) resolve();
+        };
+        failed = ({ jobId, failedReason }) => {
+          if (remaining.has(jobId)) reject(new Error(`双站任务失败：${failedReason}`));
+        };
+        events.on('completed', completed);
+        events.on('failed', failed);
+      });
+      try {
+        queue.worker.resume();
+        await finished;
+      } finally {
+        clearTimeout(timer!);
+        events.off('completed', completed!);
+        events.off('failed', failed!);
+      }
+      const a = queryFiles(db, { resource: 'pku:nodejs-release' }).items;
+      const b = queryFiles(db, { resource: 'tsinghua:nodejs-release' }).items;
+      expect(a).toHaveLength(1);
+      expect(b).toHaveLength(1);
+      expect(a[0]?.url).toBe(fixtureDownload().url);
+      expect(b[0]?.url).toBe(
+        fixtureDownload().url.replace('mirrors.pku.edu.cn', 'mirrors.tuna.tsinghua.edu.cn'),
+      );
+      expect(b[0]?.sizeEstimated).toBe(true);
     } finally {
       await clean(queue);
       await events.close();

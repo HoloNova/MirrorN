@@ -10,9 +10,9 @@ export class SourceError extends Error {
     super(message);
   }
 }
-/** 软件目录JSON只在后台读取，限速/限额；不取包体、不落盘保留原始索引。 */
+/** 后台只读取软件目录元数据；JSON/HTML共用限制配置、按站点限速，不取包体。 */
 export class SourceClient {
-  private readonly limiter = new PQueue({ concurrency: 1, intervalCap: 1, interval: 1000 });
+  private readonly limiters = new Map<string, PQueue>();
   requests = 0;
   bytes = 0;
   constructor(
@@ -22,8 +22,26 @@ export class SourceClient {
     private readonly maxDecoded = 8 * 1024 ** 2,
   ) {}
   async json(value: string): Promise<unknown> {
-    const url = sourceUrl(value).href;
-    return this.limiter.add(async () => {
+    const text = await this.read(value, 'json');
+    try {
+      return JSON.parse(text) as unknown;
+    } catch (error) {
+      if (error instanceof SyntaxError) throw new SourceError('源目录不是有效JSON，未发布', false);
+      throw error;
+    }
+  }
+  html(value: string): Promise<string> {
+    return this.read(value, 'html');
+  }
+  private async read(value: string, kind: 'json' | 'html'): Promise<string> {
+    const target = sourceUrl(value);
+    const url = target.href;
+    let limiter = this.limiters.get(target.origin);
+    if (!limiter) {
+      limiter = new PQueue({ concurrency: 1, intervalCap: 1, interval: 1000 });
+      this.limiters.set(target.origin, limiter);
+    }
+    return limiter.add(async () => {
       const controller = new AbortController();
       let timer: ReturnType<typeof setTimeout> | undefined;
       const resetTimer = () => {
@@ -38,7 +56,7 @@ export class SourceClient {
           redirect: 'manual',
           headers: {
             'user-agent': 'MirrorN software installer indexer; https://mirror.campuslink.vip',
-            accept: 'application/json',
+            accept: kind === 'json' ? 'application/json' : 'text/html,application/xhtml+xml',
           },
         });
         if (!response.ok) {
@@ -55,6 +73,15 @@ export class SourceClient {
             Number.isFinite(delay) ? delay : 0,
           );
         }
+        if (
+          kind === 'html' &&
+          !/^(?:text\/html|application\/xhtml\+xml)(?:;|$)/i.test(
+            response.headers.get('content-type') ?? '',
+          )
+        ) {
+          await response.body?.cancel();
+          throw new SourceError('源目录不是HTML，未发布', false);
+        }
         if (!response.body) throw new SourceError('源目录正文为空', true);
         const reader = response.body.getReader(),
           decoder = new TextDecoder();
@@ -67,23 +94,21 @@ export class SourceClient {
             if (part.done) break;
             bytes += part.value.byteLength;
             this.bytes += part.value.byteLength;
-            if (bytes > Math.min(this.maxBytes, this.maxDecoded))
-              throw new SourceError('软件目录体积超过限额，未发布', false);
+            if (bytes > this.maxBytes) throw new SourceError('软件目录体积超过限额，未发布', false);
             text += decoder.decode(part.value, { stream: true });
+            if (text.length * 2 > this.maxDecoded)
+              throw new SourceError('软件目录解码体积超过限额，未发布', false);
           }
-          return JSON.parse(text + decoder.decode()) as unknown;
+          return text + decoder.decode();
         } finally {
           await reader.cancel().catch(() => {});
         }
       } catch (error) {
         controller.abort();
-        if (error instanceof SourceError) throw error;
-        if (error instanceof SyntaxError)
-          throw new SourceError('源目录不是有效JSON，未发布', false);
         throw error;
       } finally {
         clearTimeout(timer);
       }
-    });
+    }) as Promise<string>;
   }
 }

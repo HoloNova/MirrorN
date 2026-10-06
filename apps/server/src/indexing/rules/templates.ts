@@ -1,8 +1,8 @@
 import type { DownloadBinding } from '@mirrorn/shared';
-import { sourceUrl, PKU_ORIGIN } from '../policy.js';
+import { sourceUrl, resourceSite } from '../policy.js';
 
 export function bindingDirectory(binding: DownloadBinding, directory: string) {
-  const root = `${PKU_ORIGIN}/${binding.rootPath}`;
+  const root = `${resourceSite(binding.siteId).origin}/${binding.rootPath}`;
   const url = sourceUrl(directory, root);
   if (!url.pathname.endsWith('/') || url.search) throw new Error('规则目录范围无效');
   return { url, relative: decodeURIComponent(url.pathname.slice(new URL(root).pathname.length)) };

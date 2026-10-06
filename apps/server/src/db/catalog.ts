@@ -1,6 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import type { Mirror, SiteResourceList, Tutorial } from '@mirrorn/shared';
-import { registerSoftware, syncSites } from './installers.js';
+import { registerSoftware, registerSoftwareSite, syncSites } from './installers.js';
+import { resourceSite } from '../indexing/policy.js';
 import { loadDownloadRules, type RuleSet } from '../indexing/rules/load.js';
 import { compareRepoVersions } from '../indexing/versions.js';
 
@@ -49,12 +50,11 @@ export function syncCatalog(
     for (const row of input.taxonomy)
       eco.run(row.id, row.label, row.category, JSON.stringify(row.aliases));
     const source = db.prepare(
-      `INSERT INTO catalog_sources(site_id,repo,ecosystem_id,name,payload) SELECT s.id,?,e.id,?,? FROM catalog_sites s CROSS JOIN catalog_ecosystems e WHERE s.slug='pku' AND e.slug=? ON CONFLICT(site_id,repo) DO UPDATE SET ecosystem_id=excluded.ecosystem_id,name=excluded.name,payload=excluded.payload`,
+      `INSERT INTO catalog_sources(site_id,repo,ecosystem_id,name,payload) SELECT s.id,?,e.id,?,? FROM catalog_sites s CROSS JOIN catalog_ecosystems e WHERE s.slug=? AND e.slug=? ON CONFLICT(site_id,repo) DO UPDATE SET ecosystem_id=excluded.ecosystem_id,name=excluded.name,payload=excluded.payload`,
     );
     for (const list of input.siteResources)
-      if (list.siteId === 'pku')
-        for (const row of list.resources)
-          source.run(row.id, row.name, JSON.stringify(row), row.ecosystemId);
+      for (const row of list.resources)
+        source.run(row.id, row.name, JSON.stringify(row), list.siteId, row.ecosystemId);
     db.prepare(
       `UPDATE catalog_software SET ecosystem_id=(SELECT ecosystem_id FROM catalog_sources WHERE repo=catalog_software.repo LIMIT 1) WHERE ecosystem_id IS NULL`,
     ).run();
@@ -74,6 +74,9 @@ export function syncCatalog(
           : {}),
       });
     }
+    for (const binding of rules?.bindings.values() ?? [])
+      for (const software of rules!.rules.get(binding.ruleId)!.softwareIds)
+        registerSoftwareSite(db, binding.siteId, software);
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');
@@ -140,14 +143,14 @@ function toResource(db: DatabaseSync, raw: Raw): ResourceRow {
     id: `${raw.site_slug}:${raw.resource_key}`,
     siteId: raw.site_slug,
     siteName: raw.site_name,
-    repoId: raw.repo,
+    repoId: raw.entry ? new URL(raw.entry).pathname.split('/')[1]! : raw.repo,
     name: raw.name,
     softwareId: raw.slug,
     ecosystemId: raw.ecosystem_slug,
     ecosystemLabel: raw.ecosystem_label,
     ecosystemCategory: raw.ecosystem_category,
     kind: raw.kind,
-    downloadEntry: raw.entry ?? `https://mirrors.pku.edu.cn/${raw.repo}/`,
+    downloadEntry: raw.entry ?? `${resourceSite(raw.site_slug).origin}/${raw.repo}/`,
     versionsHint: '',
     crawlDepth: null,
     platforms: platforms.includes('any')
@@ -174,7 +177,7 @@ export interface SearchOptions {
 
 /** 生态搜索只查软件名字/别名及版本关系，不扫描全体文件名。 */
 export function searchResources(db: DatabaseSync, options: SearchOptions = {}): ResourceRow[] {
-  const where = ["s.slug='pku'"];
+  const where = ['1=1'];
   const params: (string | number)[] = [];
   if (options.ecosystemId) {
     where.push('e.slug=?');
@@ -220,7 +223,7 @@ export function searchResources(db: DatabaseSync, options: SearchOptions = {}): 
 }
 export function getResource(db: DatabaseSync, id: string): ResourceRow | undefined {
   const [site, ...parts] = id.split(':');
-  if (site !== 'pku') return undefined;
+  if (!site || !parts.length) return undefined;
   const raw = db
     .prepare(`${SELECT} WHERE s.slug=? AND w.resource_key=? GROUP BY s.id,w.id`)
     .get(site, parts.join(':')) as Raw | undefined;
@@ -243,7 +246,7 @@ export function listEcosystems(db: DatabaseSync): EcosystemSummary[] {
       FROM catalog_ecosystems e JOIN catalog_software w ON w.ecosystem_id=e.id
       JOIN catalog_software_sites ws ON ws.software_id=w.id JOIN catalog_sites s ON s.id=ws.site_id
       JOIN catalog_versions v ON v.software_id=w.id JOIN catalog_downloads d INDEXED BY download_version_site ON d.version_id=v.id AND d.site_id=s.id
-      WHERE s.slug='pku' GROUP BY e.id ORDER BY e.category,e.label`,
+      GROUP BY e.id ORDER BY e.category,e.label`,
     )
     .all() as unknown as EcosystemSummary[];
 }
@@ -275,12 +278,13 @@ export function latestCrawl(
 export function listSites(db: DatabaseSync) {
   const rows = db
     .prepare(
-      `SELECT s.slug,s.name,s.payload,(SELECT COUNT(*) FROM catalog_software_sites ws WHERE ws.site_id=s.id AND s.slug='pku'
+      `SELECT s.slug,s.name,s.payload,(SELECT COUNT(*) FROM catalog_software_sites ws WHERE ws.site_id=s.id
        AND EXISTS(SELECT 1 FROM catalog_versions v JOIN catalog_downloads d INDEXED BY download_version_site ON d.version_id=v.id
-       WHERE v.software_id=ws.software_id AND d.site_id=ws.site_id)) count
+       WHERE v.software_id=ws.software_id AND d.site_id=ws.site_id)) count,
+    EXISTS(SELECT 1 FROM catalog_software_sites ws WHERE ws.site_id=s.id) enabled
     FROM catalog_sites s ORDER BY s.name`,
     )
-    .all() as { slug: string; name: string; payload: string; count: number }[];
+    .all() as { slug: string; name: string; payload: string; count: number; enabled: number }[];
   return rows.map((row) => {
     const mirror = JSON.parse(row.payload) as Mirror;
     return {
@@ -290,7 +294,7 @@ export function listSites(db: DatabaseSync) {
       homepageUrl: mirror.homepageUrl,
       aliases: mirror.aliases,
       ...(mirror.probe ? { probe: mirror.probe } : {}),
-      enabled: row.slug === 'pku',
+      enabled: Boolean(row.enabled),
       resourceCount: row.count,
     };
   });

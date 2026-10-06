@@ -1,0 +1,50 @@
+[
+  {
+    "id": "tsinghua-nodejs",
+    "siteId": "tsinghua",
+    "repoId": "nodejs-release",
+    "ruleId": "nodejs",
+    "rootPath": "nodejs-release/",
+    "steps": ["^v\\d+\\.\\d+\\.\\d+(?:-[\\w.-]+)?$"],
+    "leaf": "^v\\d[^/]*/$",
+    "ignoreDirectories": [
+      "^(?:npm|patch|contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "tsinghua-miniconda",
+    "siteId": "tsinghua",
+    "repoId": "anaconda",
+    "ruleId": "miniconda",
+    "rootPath": "anaconda/miniconda/",
+    "steps": [],
+    "leaf": "^$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "tsinghua-anaconda",
+    "siteId": "tsinghua",
+    "repoId": "anaconda",
+    "ruleId": "anaconda",
+    "rootPath": "anaconda/archive/",
+    "steps": [],
+    "leaf": "^$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+)$"
+    ]
+  },
+  {
+    "id": "tsinghua-ubuntu",
+    "siteId": "tsinghua",
+    "repoId": "ubuntu-releases",
+    "ruleId": "ubuntu",
+    "rootPath": "ubuntu-releases/",
+    "steps": ["^\\d+\\.\\d+(?:\\.\\d+)*$"],
+    "leaf": "^\\d+\\.\\d+(?:\\.\\d+)*/$",
+    "ignoreDirectories": [
+      "^(?:contrib|src|source|sources|docs?|debug|symbols|pool|dists|packages|archive|tlpkg|snapshots?|snapshot-[\\w.-]+|netboot|streams|cdicons|include|releases)$"
+    ]
+  }
+]

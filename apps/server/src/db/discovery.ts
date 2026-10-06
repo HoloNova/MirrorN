@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { DatabaseSync } from 'node:sqlite';
 import { FileQueryError } from './fileQueries.js';
+import { RESOURCE_SITES, siteForUrl } from '../indexing/policy.js';
 
 export interface CatalogItem {
   id: string;
@@ -302,7 +303,8 @@ export function siteCatalog(db: DatabaseSync, options: PageOptions, now = Date.n
 }
 // 来源位置按实际下载主机核实，不把 official/university 等性质当作地理位置。
 export function downloadRegion(entry: string): 'CN' | 'unknown' {
-  return new URL(entry).hostname === 'mirrors.pku.edu.cn' ? 'CN' : 'unknown';
+  const id = siteForUrl(entry);
+  return id ? RESOURCE_SITES[id as keyof typeof RESOURCE_SITES].region : 'unknown';
 }
 export function softwareCatalog(db: DatabaseSync, softwareId: string) {
   const rows = snapshot(db).identities.filter((row) => row.softwareId === softwareId);

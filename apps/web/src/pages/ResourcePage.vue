@@ -385,7 +385,10 @@ onUnmounted(() => {
                     <span class="download-arch">{{
                       file.arch === 'unknown' ? '未标注' : file.arch
                     }}</span>
-                    <span class="download-size">{{ humanSize(file.size) || '大小未知' }}</span>
+                    <span class="download-size"
+                      >{{ file.sizeEstimated ? '约 ' : ''
+                      }}{{ humanSize(file.size) || '大小未知' }}</span
+                    >
                     <a
                       class="btn btn-primary"
                       :href="file.url"

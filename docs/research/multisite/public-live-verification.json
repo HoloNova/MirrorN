@@ -1,0 +1,97 @@
+{
+  "checkedAt": "2026-10-05T16:51:50.001Z",
+  "base": "https://mirror.campuslink.vip",
+  "health": {
+    "status": "ok",
+    "service": "mirrorn-server",
+    "dataSchemaVersion": 1
+  },
+  "assets": ["/assets/index-DabJXEKw.js", "/assets/index-BFc9jHtb.css"],
+  "software": [
+    {
+      "id": "anaconda-distribution",
+      "artifactCount": 553,
+      "samples": [
+        {
+          "site": "pku",
+          "version": "2026.07-1",
+          "items": 2,
+          "firstUrl": "https://mirrors.pku.edu.cn/anaconda/archive/Anaconda3-2026.07-1-Linux-aarch64.sh"
+        },
+        {
+          "site": "tsinghua",
+          "version": "2026.07-1",
+          "items": 2,
+          "firstUrl": "https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-2026.07-1-Linux-aarch64.sh",
+          "sizeEstimated": true
+        }
+      ]
+    },
+    {
+      "id": "anaconda-installer",
+      "artifactCount": 1605,
+      "samples": [
+        {
+          "site": "pku",
+          "version": "26.7.1-1",
+          "items": 10,
+          "firstUrl": "https://mirrors.pku.edu.cn/anaconda/miniconda/Miniconda3-py310_26.7.1-1-Linux-aarch64.sh"
+        },
+        {
+          "site": "tsinghua",
+          "version": "26.7.1-1",
+          "items": 10,
+          "firstUrl": "https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-py310_26.7.1-1-Linux-aarch64.sh",
+          "sizeEstimated": true
+        }
+      ]
+    },
+    {
+      "id": "nodejs",
+      "artifactCount": 38,
+      "samples": [
+        {
+          "site": "pku",
+          "version": "24.1.0",
+          "items": 8,
+          "firstUrl": "https://mirrors.pku.edu.cn/nodejs-release/v24.1.0/node-v24.1.0-linux-arm64.tar.gz"
+        },
+        {
+          "site": "tsinghua",
+          "version": "24.1.0",
+          "items": 8,
+          "firstUrl": "https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/v24.1.0/node-v24.1.0-linux-arm64.tar.gz",
+          "sizeEstimated": true
+        }
+      ]
+    },
+    {
+      "id": "ubuntu",
+      "artifactCount": 4,
+      "samples": [
+        {
+          "site": "pku",
+          "version": "26.04.1",
+          "items": 4,
+          "firstUrl": "https://mirrors.pku.edu.cn/ubuntu-releases/26.04.1/ubuntu-26.04.1-desktop-amd64.iso"
+        },
+        {
+          "site": "tsinghua",
+          "version": "26.04.1",
+          "items": 2,
+          "firstUrl": "https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/26.04.1/ubuntu-26.04.1-desktop-amd64.iso",
+          "sizeEstimated": true
+        }
+      ]
+    }
+  ],
+  "pku": {
+    "software": 82,
+    "pages": 9
+  },
+  "nodeSearch": 1,
+  "ustc": {
+    "enabled": false,
+    "resourceCount": 0
+  }
+}
