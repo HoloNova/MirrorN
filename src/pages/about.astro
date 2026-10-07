@@ -1,6 +1,11 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
+import { fileURLToPath } from 'node:url';
+import { root } from 'astro:config/server';
+import { loadResourceRegistry } from '../content/registry/load';
 import { siteConfig } from '../../config/site';
+const registry = await loadResourceRegistry(fileURLToPath(root), { siteUrl: siteConfig.siteUrl });
+const contributionPage = registry.get('mirrorn-contributing');
 ---
 
 <SiteLayout title="关于本站" description="MirrorN 的定位、贡献方式与当前状态。">
@@ -22,6 +27,8 @@ import { siteConfig } from '../../config/site';
     )
   }
 
+  {contributionPage && <p><a href={`/resources/${contributionPage.metadata.id}/`}>阅读贡献指南</a></p>}
+
   <h2>本站不做什么</h2>
   <ul>
     <li>不托管全部资源：页面只指向维护者核实过的来源，不承诺第三方下载地址长期可用。</li>
@@ -31,6 +38,6 @@ import { siteConfig } from '../../config/site';
 
   <h2>当前状态</h2>
   <p>
-    新站工程骨架刚建立：页面结构、主题与构建命令可用，内容处理链、资源组件和检索仍在开发中，因此现在还没有已收录资源。
+    当前公开收录 {registry.resources.length} 个资源。内容校验、资源组件、文档阅读与下载入口可用，可从<a href="/resources/">已收录目录</a>浏览。首页搜索仍在后续阶段开发。
   </p>
 </SiteLayout>

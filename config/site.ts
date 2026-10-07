@@ -19,7 +19,7 @@ export interface SiteConfig {
   readonly siteUrl: string | null;
   /** 贡献仓库地址（PR 入口）；未配置时为 null。 */
   readonly repositoryUrl: string | null;
-  /** 仓库默认分支，将来生成编辑链接时使用；仓库未配置时为 null。 */
+  /** 仓库默认分支，用于生成编辑链接；仓库未配置时为 null。 */
   readonly defaultBranch: string | null;
 }
 
@@ -118,12 +118,12 @@ export function describeUnconfiguredSiteConfig(config: SiteConfig): string[] {
   return warnings;
 }
 
-/** 当前生效的配置：正式地址与仓库尚未确定，保持 null 而不是填占位域名。 */
+/** 仓库与默认分支已通过 origin 和远端 HEAD 核对；正式域名仍未确定。 */
 export const siteConfig: SiteConfig = validateSiteConfig({
   siteName: 'MirrorN',
   siteUrl: null,
-  repositoryUrl: null,
-  defaultBranch: null,
+  repositoryUrl: 'https://github.com/HoloNova/MirrorN',
+  defaultBranch: 'main',
 });
 
 export const siteConfigWarnings: string[] = describeUnconfiguredSiteConfig(siteConfig);

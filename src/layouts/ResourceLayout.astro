@@ -1,33 +1,44 @@
 ---
 import SiteLayout from './SiteLayout.astro';
+import PageToc from '../components/site/PageToc.astro';
+import type { DocumentHeading } from '../content/parse/document-types';
 import '../styles/prose.css';
 
 interface Props {
-  /** 资源名称，作为页面唯一 h1。 */
+  /** 页面唯一 h1；正文标题与 TOC 沿用 Registry 的锚点。 */
   title: string;
-  /** 资源简介，正文之前的说明文字。 */
   summary?: string;
+  headings?: readonly DocumentHeading[];
 }
-
-const { title, summary } = Astro.props;
+const { title, summary, headings = [] } = Astro.props;
+const hasToc = headings.length >= 2;
 ---
-
 <SiteLayout title={title} description={summary}>
-  <article class="resource">
-    <header class="resource__header">
-      <h1>{title}</h1>
-      {summary && <p class="resource__summary">{summary}</p>}
-    </header>
-    <div class="prose">
-      <slot />
-    </div>
-  </article>
+  <div class:list={['resource-frame', { 'resource-frame--with-toc': hasToc }]}>
+    {hasToc && <PageToc headings={headings} />}
+    <article class="resource" data-resource-article>
+      <header class="resource__header">
+        <h1>{title}</h1>
+        {summary && <p class="resource__summary">{summary}</p>}
+        <slot name="metadata" />
+      </header>
+      <div class="prose"><slot /></div>
+      <slot name="footer" />
+    </article>
+  </div>
 </SiteLayout>
-
 <style>
-  /* 阅读宽度由 .prose 与简介共同限制，宽屏也不把正文拉成整屏长行。 */
-  .resource__summary {
-    max-inline-size: var(--layout-reading-width);
-    color: var(--color-text-muted);
+  .resource-frame { max-inline-size: var(--layout-reading-width); margin-inline: auto; }
+  .resource { min-inline-size: 0; overflow-wrap: anywhere; }
+  .resource__header { margin-block-end: var(--space-5); }
+  .resource__summary { max-inline-size: var(--layout-reading-width); color: var(--color-text-muted); }
+  @media (min-width: 1200px) {
+    .resource-frame--with-toc {
+      display: grid;
+      grid-template-columns: 14rem minmax(0, var(--layout-reading-width));
+      gap: var(--space-6);
+      align-items: start;
+      max-inline-size: calc(14rem + var(--space-6) + var(--layout-reading-width));
+    }
   }
 </style>

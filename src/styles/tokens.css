@@ -67,6 +67,9 @@
   --layout-max-width: 1440px;
   --layout-gutter: clamp(16px, 4vw, 32px);
   --layout-header-height: 64px;
+  /* 无 JS 的高度基线；启用脚本后由实际顶栏测量覆盖。 */
+  --site-header-offset: var(--layout-header-height);
+  --anchor-offset: calc(var(--site-header-offset) + var(--space-4));
   --layout-reading-width: 48rem;
 
   /* 触摸目标下限（DESIGN.md 第 6 节） */

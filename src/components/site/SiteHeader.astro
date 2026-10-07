@@ -16,7 +16,7 @@ function isCurrentPage(href: string): boolean {
 }
 ---
 
-<header class="site-header">
+<header class="site-header" data-site-header>
   <div class="page-container site-header__inner">
     <a class="site-header__brand" href="/">{siteConfig.siteName}</a>
 
@@ -55,6 +55,7 @@ function isCurrentPage(href: string): boolean {
 </header>
 
 <script>
+  import '../../scripts/site-header';
   // 换页与缩放后让当前 Tab 保持在导航滚动区内；只滚动导航，不移动整页。
   const nav = document.querySelector<HTMLElement>('[data-site-nav]');
   const currentLink = nav?.querySelector<HTMLElement>('[aria-current="page"]');
@@ -74,6 +75,9 @@ function isCurrentPage(href: string): boolean {
 
 <style>
   .site-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 20;
     border-block-end: 1px solid var(--color-border);
     background-color: var(--color-page);
   }

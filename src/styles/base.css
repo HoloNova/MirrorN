@@ -79,6 +79,11 @@ svg {
   block-size: auto;
 }
 
+/* 目录、正文和直接进入的片段锚点都避开真实吸顶区域。 */
+[id] {
+  scroll-margin-block-start: var(--anchor-offset);
+}
+
 /* 页面容器：桌面留白最多 32px，内容不超过设计稿的最大宽度。 */
 .page-container {
   inline-size: 100%;
@@ -99,10 +104,10 @@ svg {
 
 /* 跳到正文：默认移出视口但仍可被键盘聚焦，聚焦时出现在左上角。 */
 .skip-link {
-  position: absolute;
+  position: fixed;
   inset-block-start: var(--space-2);
   inset-inline-start: var(--space-2);
-  z-index: 10;
+  z-index: 30;
   padding: var(--space-2) var(--space-3);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);

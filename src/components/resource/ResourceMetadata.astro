@@ -1,0 +1,21 @@
+---
+import type { PublishedResource } from '../../content/registry/types';
+import { categoryHref } from '../../content/navigation';
+interface Props { resource: PublishedResource; categoryName: string }
+const { resource, categoryName } = Astro.props;
+const metadata = resource.metadata;
+const statusLabels = { active: '正常维护', deprecated: '已废弃', archived: '仅存档' } as const;
+---
+<dl class="resource-metadata" aria-label="资源信息">
+  <div><dt>类别</dt><dd><a href={categoryHref(metadata.category)}>{categoryName}</a></dd></div>
+  <div><dt>维护状态</dt><dd>{statusLabels[metadata.status]}</dd></div>
+  <div><dt>作者／贡献者</dt><dd>{metadata.authors.join('、')}</dd></div>
+  <div><dt>发布</dt><dd><time datetime={metadata.publishedAt}>{metadata.publishedAt}</time></dd></div>
+  {metadata.updatedAt && <div><dt>更新</dt><dd><time datetime={metadata.updatedAt}>{metadata.updatedAt}</time></dd></div>}
+</dl>
+<style>
+  .resource-metadata { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); margin: 0 0 var(--space-5); font-size: var(--font-size-note); }
+  .resource-metadata > div { display: flex; flex-wrap: wrap; gap: var(--space-2); min-inline-size: 0; }
+  dt { color: var(--color-text-muted); }
+  dd { margin: 0; overflow-wrap: anywhere; }
+</style>

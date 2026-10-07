@@ -5,6 +5,7 @@ import { root } from 'astro:config/server';
 import { siteConfig } from '../../../config/site.ts';
 import { contentCategories } from '../../content/categories';
 import { loadResourceRegistry } from '../../content/registry/load.ts';
+import { categoryAnchor } from '../../content/navigation';
 
 // 公开文档已有内容，目录必须反映 Registry，不能继续显示写死的零。
 const registry = await loadResourceRegistry(fileURLToPath(root), { siteUrl: siteConfig.siteUrl });
@@ -26,7 +27,7 @@ const categories = contentCategories.map((category) => ({
   <div class="category-list">
     {
       categories.map((category) => (
-        <details class="category">
+        <details class="category" id={categoryAnchor(category.id)} data-category>
           <summary class="category__summary">
             <span class="category__name">{category.name}</span>
             <span class="category__count">{category.resources.length} 项</span>
@@ -40,7 +41,12 @@ const categories = contentCategories.map((category) => ({
   </div>
 </SiteLayout>
 
+<script>
+  import '../../scripts/category-navigation';
+</script>
+
 <style>
+  .category:target { border-color: var(--color-link); }
   .category-list {
     display: grid;
     gap: var(--space-2);

@@ -1,6 +1,6 @@
 # 新站技术架构与模块地图
 
-> 本文区分目标架构与已实现模块；P1 工程、P2 内容处理链与 P3 资源渲染模块已落地，其余阶段以 [PLAN.md](../PLAN.md) 为准。
+> 本文区分目标架构与已实现模块；P1 工程、P2 内容处理链、P3 资源渲染及 P4 导航与阅读模块已落地，其余阶段以 [PLAN.md](../PLAN.md) 为准。
 
 ## 1. 技术决策
 
@@ -59,12 +59,13 @@ P2 默认输出公开 Registry；`content:check --include-drafts` 显式选择�
 ```text
 src/
   pages/                 # 基础页面、P3 公开资源文档与摘要附件静态端点
-  layouts/               # SiteLayout、ResourceLayout（P1 已建：阅读宽度与标题插槽）
+  layouts/               # SiteLayout、ResourceLayout（P4：左目录／正文及元信息／操作插槽）
   components/
-    site/                # 顶部导航、主题、目录等站点组件（P1 只建导航与主题）
-    resource/            # 八资源组件、CopyBlock、SourceEntry、受限 AST 渲染器（P3 已建）
+    site/                # 顶部吸顶导航、主题与本页目录（P1／P4 已建）
+    resource/            # 八资源组件、CopyBlock、SourceEntry、受限 AST、资源元信息（P3／P4 已建）
   content/
     categories.ts        # 八个主分类常量（P1 已建）
+    navigation.ts        # 分类锚点与 GitHub 编辑链接（P4 已建）
     schema/              # Front Matter、来源、产物、指令参数（P2 已建）
     parse/               # 文件读取、YAML/JSON、AST 限制（P2 已建）
     validate/            # 跨资源引用、公开性、附件、锚点（P2 已建）
@@ -73,7 +74,7 @@ src/
     render/              # 摘要附件实际读取和再核对（P3 已建；AST 渲染见 components/resource）
     resolve/             # 来源行为、附件地址与下载候选模型（P3 已建）
     search/              # 索引生成、排序与检索配置（待 P5）
-  scripts/               # P3 复制／下载选择渐进增强，不读取服务器路径；搜索待 P5
+  scripts/               # P3 复制／下载选择；P4 顶栏测量／章节追踪／分类定位；搜索待 P5
   styles/                # tokens、base、prose（P1）；resource-components（P3）
 content/resources/       # 唯一资源内容根（已收录两篇正式站内指南）
 public/                  # 站点级受控静态文件，不放资源草稿附件（待实现）
@@ -83,7 +84,7 @@ config/                  # 站点名、域名、贡献仓库等非机密配置�
 archive/legacy/          # 历史资料，不是 workspace
 ```
 
-P1 在根目录另外新增：`package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`（pnpm 记录构建脚本白名单与发布年龄例外）、`astro.config.ts`、`tsconfig.json`。P2 已创建内容 Schema、Parser、Validator、Registry、Astro 校验集成与正式 CLI。P3 已创建受限渲染器、Resolver、复制与选择器增强、资源文档和摘要附件静态端点。完整浏览体验、搜索和新 CI 尚未实现。
+P1 在根目录另外新增：`package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`（pnpm 记录构建脚本白名单与发布年龄例外）、`astro.config.ts`、`tsconfig.json`。P2 已创建内容 Schema、Parser、Validator、Registry、Astro 校验集成与正式 CLI。P3 已创建受限渲染器、Resolver、复制与选择器增强、资源文档和摘要附件静态端点。P4 浏览闭环已接通；搜索和新 CI 尚未实现。
 
 ### P2 实际接口
 
@@ -91,7 +92,7 @@ P1 在根目录另外新增：`package.json`、`pnpm-lock.yaml`、`pnpm-workspac
 
 公开对象包含 `metadata`、`data`（来源文件包）、受限 `document`／`headings`、实际引用的 `files` 和 `resourceReferences`；递归复制冻结，无原始文档代码、磁盘绝对路径或文件字节。`get(id)` 和 `referencesTo(id)` 只查询当前选定集合。每个文件记录相对路径、实际字节数、SHA256／SHA512 和格式；P3 已将附件解析为摘要 URL 并生成静态文件，不能把 path 直接当服务器 URL。
 
-CLI 使用 Node 24 原生 TypeScript，不额外引入脚本 runner。Astro 在 dev／build 配置阶段调用相同 Registry 加载器；dev 监听内容根，串行合并变更、重新校验并刷新模块，出错报告明确位置。P3 的资源文档和附件端点已消费公开 Registry；当前已生成两篇正式站内指南及两个附件，目录也已消费公开 Registry 计数和名称卡片。P4 继续补全浏览体验。
+CLI 使用 Node 24 原生 TypeScript，不额外引入脚本 runner。Astro 在 dev／build 配置阶段调用相同 Registry 加载器；dev 监听内容根，串行合并变更、重新校验并刷新模块，出错报告明确位置。P3 的资源文档和附件端点已消费公开 Registry；当前已生成两篇正式站内指南及两个附件，目录也已消费公开 Registry 计数和名称卡片。P4 已补上目录、元信息和浏览闭环，待人工验收。
 
 ### P3 实际接口
 
@@ -104,6 +105,16 @@ CLI 使用 Node 24 原生 TypeScript，不额外引入脚本 runner。Astro 在 
 原生选择器只重建筛选项和所选下载链接，不请求服务器或自动打开链接。筛选后有多个文件必须重新选择；无可用来源时不改选其他 artifact。完整来源 details 在无 JS 时展开，有 JS 后仍能打开；复制控件仅脚本成功初始化后显示。
 
 P3 已收录编写／贡献指南两篇正式站内文档，不生成临时样本；静态构建已处理八组件，用户已确认本轮功能验收。未覆盖状态仍须后续真实内容验收，UI／UX／样式优化后置；状态和人工清单见 PLAN／acceptance。
+
+### P4 页面与贡献入口（已实现，待人工验收）
+
+`ResourceLayout` 消费公开 Registry 的 `document.headings`，少于两项不生成空侧栏；`PageToc.astro` 使用同一组编码后的正文锚点。`page-toc.ts` 以 requestAnimationFrame 合并更新，读取当前标题位置与真实 scroll-margin，处理向上／向下滚动、页面末尾、hashchange、尺寸变化与历史恢复。仅更新 aria-current 和目录自身滚动，不改 URL 或正文焦点。宽屏左目录 sticky，窄屏原生 details；无 JS 时保留目录锚点与展开能力。
+
+顶栏原生 sticky；`site-header.ts` 用 ResizeObserver 更新实际高度变量 `--site-header-offset`，全站 `[id]` 的 scroll-margin 与目录位置共用 `--anchor-offset`。已按用户反馈取消与顶部 Tab 重复的层级面包屑，移除 Breadcrumbs 组件与布局插槽，不预留恢复入口。`ResourceMetadata` 展示类别与作者／日期／维护状态；分类锚点由 `navigation.ts` 共用，`category-navigation.ts` 仅匹配真实分类并展开，未知片段不处理。
+
+已确认的编辑入口使用 `repositoryUrl`、`defaultBranch` 和资源的仓库相对路径，跳转 Git 托管平台对应文件的编辑器；未配真实仓库时不输出假链接。编辑、保存与提 PR 由贡献者在平台或自己的工作分支主动完成，避免每次保存创建新 PR；同一资源的关联文件作为一项变更提交，同一任务继续更新已有 PR。此机制已确认并实现，不引入站内登录、仓库写入 Token、在线编辑服务或自动提 PR 后端。
+
+当前支持 GitHub 仓库，地址已按 origin 核实为 `HoloNova/MirrorN`，默认分支按远端 HEAD 核实为 `main`。`resourceEditUrl` 对其他平台或缺配置返回 null，不伪造编辑地址。核实时远端尚无新文档，编辑功能生成不等于远端文件已可编辑；后续推送文件后才验收 GitHub 操作。本轮未推送。
 
 ## 4. 模块边界
 
