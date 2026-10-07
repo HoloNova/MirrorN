@@ -202,4 +202,5 @@ svg {
   :focus-visible { outline-color: Highlight; }
   .site-nav__link[aria-current='page'] { border-block-end: 3px solid Highlight; }
   .search-result[aria-selected='true'] { outline: 2px solid Highlight; outline-offset: -2px; }
+  .page-toc a[aria-current='location'] { border-inline-start-color: Highlight; }
 }

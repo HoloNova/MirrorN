@@ -19,6 +19,7 @@ function validateOne(node: ResourceDirective, context: DirectiveContext): readon
   const problem = (field: string, message: string) => [issueAt(attributeLocation(node, field), 'E_REFERENCE', message)];
   switch (node.name) {
     case 'download': {
+      if (node.props.source === undefined) return [];
       const source = index.sources.get(node.props.source);
       if (!source) return problem('source', `来源不存在：${node.props.source}`);
       return isFileSource(source) ? [] : problem('source', 'Download 只接受文件入口，网页和命令使用其他指令');
@@ -52,6 +53,9 @@ function validateOne(node: ResourceDirective, context: DirectiveContext): readon
       if (target.metadata.id === input.metadata.id) return problem('resource', 'ResourceCard 引用另一个资源，不引用自己');
       return !input.metadata.draft && target.metadata.draft ? problem('resource', '公开资源不能引用草稿资源') : [];
     }
+    case 'choice': case 'steps': return [];
+    case 'option': return !input.metadata.draft && !node.children.length ? problem('label', '公开 option 必须包含内容') : [];
+    case 'details': return !input.metadata.draft && !node.children.length ? problem('title', '公开折叠块必须包含内容') : [];
     case 'notice': return !input.metadata.draft && !node.children.length ? problem('type', '公开 Notice 必须包含 Markdown 正文') : [];
   }
 }

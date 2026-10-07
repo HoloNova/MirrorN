@@ -71,15 +71,94 @@ pnpm build
 
 ::compatibility-table{table="reference-support"}
 
+## 只想放一个链接
+
+只需要一个入口、不需要版本筛选或校验值时，可以不进 `sources.json`，直接在正文写链接。`label` 必须写清按钮的真实行为；`target` 为 `file`（默认）是文件下载，为 `page` 是访问网页，二者不能混用。
+
+```markdown
+::download{url="https://github.com/HoloNova/MirrorN" target="page" label="打开项目仓库"}
+::download{url="https://example.com/tool.zip" label="下载 tool.zip" status="available" checked="2026-10-07"}
+```
+
+下面是实际渲染效果，状态未填写，所以显示“未验证”：
+
+::download{url="https://github.com/HoloNova/MirrorN" target="page" label="打开项目仓库"}
+
+状态由维护者手写，不是实时检测：`status` 可填 `available`（必须同时写核查日期 `checked`）、`broken`（必须在 `note` 说明原因）或省略为未验证。徽章旁边始终显示核查日期。需要多个来源、版本筛选或校验值时，仍然使用 `sources.json`。
+
+:::notice{type="note" title="灰色备注"}
+`type="note"` 是中性的补充说明；`info`、`warning`、`danger`、`success` 各自带不同图标，不只靠颜色区分。
+:::
+
+## 选项、步骤、折叠与脚注
+
+**选项切换**用于“同一件事有几种做法”，例如不同系统的安装方式。外层多写一个冒号：
+
+```markdown
+::::choice{label="选择获取方式"}
+:::option{label="下载文件"}
+::download{source="reference-markdown"}
+:::
+:::option{label="复制命令"}
+::install-command{source="project-dependencies"}
+:::
+::::
+```
+
+下面是实际效果。它与上文的下载选择器不同：下载选择器按 `sources.json` 的版本、平台筛选文件，选项切换则由作者决定每个选项里放什么。
+
+::::choice{label="选择获取方式"}
+:::option{label="下载文件"}
+::download{source="reference-markdown"}
+:::
+:::option{label="复制命令"}
+::install-command{source="project-dependencies"}
+:::
+::::
+
+选项里可以放普通 Markdown、下载、命令、提示块和步骤，但不能再嵌套选项或折叠块，也不能放标题（标题放在选项外面，右侧目录才指得到）。至少两个选项，标签不能重复。关闭 JavaScript 时所有选项会依次展开，内容不会丢。
+
+**步骤**把一个有序列表显示成带编号的时间轴：
+
+```markdown
+:::steps
+1. 安装依赖。
+2. 运行内容检查。
+:::
+```
+
+:::steps
+1. 安装项目依赖：`pnpm install`。
+2. 检查内容：`pnpm content:check`，修正它指出的行列问题。
+3. 在本地阅读实际页面，再提交 PR。
+:::
+
+**折叠块**收起次要内容，如长日志或常见问题：
+
+:::details{title="为什么选项里不能写标题？"}
+折叠或隐藏的内容里如果有标题，右侧“本页目录”就会指向看不见的位置。所以标题只能写在选项、折叠块和脚注的外面。
+:::
+
+**脚注**用 GFM 原生写法：正文写 `[^名称]`，在任意位置另起一行写 `[^名称]: 说明`。编号按正文里出现的先后自动生成，说明统一列在文末并可返回。引用和定义必须成对，缺一个都会报错。
+
+脚注示例：本站使用受限的 Markdown 子集[^subset]，不执行文档里的代码。
+
+[^subset]: 解析使用 remark，指令白名单与字段校验见内容规范；原始 HTML、JSX 和脚本都会被拒绝。
+
 ## 指令速查
 
 | 功能 | 写法 | 引用对象 |
 | --- | --- | --- |
 | 单个下载 | `::download{source="reference-markdown"}` | 文件来源 |
+| 行内链接 | `::download{url="https://…" label="…"}` | 无，直接写在正文 |
 | 选择下载 | `::download-select{group="reference-files"}` | 文件来源分组 |
 | 来源列表 | `::source-list{group="reading-and-tools"}` | 文件、网页或命令来源 |
 | 安装命令 | `::install-command{source="project-dependencies"}` | 包管理器来源 |
-| 提示块 | `:::notice{type="info"}`，正文后用 `:::` 结束 | Markdown 正文 |
+| 选项切换 | `::::choice{label="…"}` 内放若干 `:::option{label="…"}`，各自用 `:::` 结束，最后 `::::` 结束 | Markdown 与叶子指令 |
+| 步骤 | `:::steps` 内一个有序列表 | 有序列表 |
+| 折叠块 | `:::details{title="…"}`，用 `:::` 结束 | Markdown 与叶子指令 |
+| 脚注 | 正文 `[^名称]`，另起一行 `[^名称]: 说明` | 同一文档内 |
+| 提示块 | `:::notice{type="info"}`，正文后用 `:::` 结束；类型 info／warning／danger／success／note | Markdown 正文 |
 | 校验值 | `::checksum{artifact="reference-markdown-v1"}` | 具体产物 |
 | 兼容说明 | `::compatibility-table{table="reference-support"}` | 说明表 |
 | 关联文档 | `::resource-card{resource="mirrorn-contributing"}` | 另一个公开资源 |
@@ -95,7 +174,7 @@ pnpm build
 ::source-list{group="reading-and-tools"}
 
 :::notice{type="success" title="所有功能使用站点统一实现"}
-八种指令共用注册表、字段校验和组件实现。修改组件内部样式不会要求作者逐篇修改文档。
+所有指令共用注册表、字段校验和组件实现。修改组件内部样式不会要求作者逐篇修改文档。
 :::
 
 ## 继续贡献

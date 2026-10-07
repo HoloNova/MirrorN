@@ -1,8 +1,10 @@
 import { siteConfig } from '../../config/site.ts';
 import { releaseSiteUrl } from '../../config/deployment.ts';
-import { contentCategories } from './categories.ts';
+import { contentCategories, type ContentCategoryId } from './categories.ts';
+import type { PublishedResource } from './registry/types.ts';
 import { categoryHref, resourceEditUrl } from './navigation.ts';
 import { loadResourceRegistry } from './registry/load.ts';
+import { highlightResource } from './render/highlight.server.ts';
 import { resolveDocumentUrl } from './resolve/assets.ts';
 import { createSearchSnapshot } from './search/snapshot.ts';
 
@@ -28,10 +30,16 @@ export async function loadSiteData(request: Request) {
     contributionId: registry.get('mirrorn-contributing')?.metadata.id ?? null,
   };
 }
+/** 卡片图片：icon 为 assets 图片时给摘要地址；为分类 ID 或省略时用对应分类线稿，保证每张卡片右侧都有图位。 */
+function cardImage(resource: PublishedResource): { readonly src: string } | { readonly category: ContentCategoryId } {
+  const { icon, category } = resource.metadata;
+  if (icon?.startsWith('assets/')) return { src: resolveDocumentUrl(resource, icon) };
+  return { category: (icon ?? category) as ContentCategoryId };
+}
 export async function loadDirectoryData() {
   const registry = await siteRegistry();
   const collator = new Intl.Collator('zh-Hans-CN', { numeric: true, sensitivity: 'base' });
-  return contentCategories.map((category) => ({ ...category, resources: registry.resources.filter((resource) => resource.metadata.category === category.id).toSorted((left, right) => collator.compare(left.metadata.sortKey ?? left.metadata.name, right.metadata.sortKey ?? right.metadata.name) || collator.compare(left.metadata.id, right.metadata.id)).map((resource) => ({ id: resource.metadata.id, name: resource.metadata.name })) }));
+  return contentCategories.map((category) => ({ ...category, resources: registry.resources.filter((resource) => resource.metadata.category === category.id).toSorted((left, right) => collator.compare(left.metadata.sortKey ?? left.metadata.name, right.metadata.sortKey ?? right.metadata.name) || collator.compare(left.metadata.id, right.metadata.id)).map((resource) => ({ id: resource.metadata.id, name: resource.metadata.name, summary: resource.metadata.summary, image: cardImage(resource) })) }));
 }
 export async function loadResourceData(id: string) {
   const registry = await siteRegistry();
@@ -39,5 +47,5 @@ export async function loadResourceData(id: string) {
   if (!resource) throw new Response('Not found', { status: 404 });
   const category = contentCategories.find((entry) => entry.id === resource.metadata.category)!;
   const references = resource.resourceReferences.map((reference) => { const target = registry.get(reference); if (!target) throw new Error(`资源引用未公开：${reference}`); return { id: target.metadata.id, name: target.metadata.name }; });
-  return { resource, references, categoryName: category.name, returnHref: categoryHref(category.id), editUrl: resourceEditUrl(siteConfig, resource.metadata.id), contributionId: registry.get('mirrorn-contributing')?.metadata.id ?? null };
+  return { resource, references, highlights: await highlightResource(resource), categoryName: category.name, returnHref: categoryHref(category.id), editUrl: resourceEditUrl(siteConfig, resource.metadata.id), contributionId: registry.get('mirrorn-contributing')?.metadata.id ?? null };
 }

@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-interface Props { value: string; label: string; wrap?: boolean; disabled?: boolean }
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import type { HighlightedCode } from '../../content/schema/code-blocks.ts';
+interface Props { value: string; label: string; title?: string; mac?: boolean; tokens?: HighlightedCode; wrap?: boolean; disabled?: boolean }
 
-export default function CopyBlock({ value, label, wrap = false, disabled = false }: Props) {
+export default function CopyBlock({ value, label, title, mac = false, tokens, wrap = false, disabled = false }: Props) {
   const [ready, setReady] = useState(false);
   const [feedback, setFeedback] = useState('');
   const mounted = useRef(false);
@@ -21,8 +22,8 @@ export default function CopyBlock({ value, label, wrap = false, disabled = false
     }
   };
   return <div className={`copy-block${wrap ? ' copy-block--wrap' : ''}`}>
-    <div className="copy-block__toolbar"><span>{label}</span><button type="button" hidden={!ready} disabled={disabled} aria-label={`复制${label}`} onClick={() => { void copy(); }}>复制</button></div>
-    <pre tabIndex={0} aria-label={`${label}内容`}><code>{value}</code></pre>
+    <div className="copy-block__toolbar">{mac && <span className="copy-block__dots" aria-hidden="true"><i /><i /><i /></span>}<span className="copy-block__title">{title ?? label}</span>{title && <span className="copy-block__lang">{label}</span>}<button type="button" hidden={!ready} disabled={disabled} aria-label={`复制${label}`} onClick={() => { void copy(); }}>复制</button></div>
+    <pre tabIndex={0} aria-label={`${title ?? label}内容`}><code>{tokens ? tokens.map((line, row) => <span key={row}>{row > 0 && '\n'}{line.map((token, index) => <span key={index} className="hl" style={{ '--l': token.l, '--d': token.d } as CSSProperties}>{token.c}</span>)}</span>) : value}</code></pre>
     <span className="copy-block__feedback" aria-live="polite">{feedback}</span>
   </div>;
 }

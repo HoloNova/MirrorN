@@ -53,7 +53,8 @@ export function useResourceSearch(indexUrl: string, count: number) {
     const direction = event.key === 'ArrowDown' ? 1 : -1;
     setActive(active < 0 ? direction > 0 ? 0 : results.length - 1 : (active + direction + results.length) % results.length);
   };
-  const status = !ready ? '搜索尚未启用，可以直接浏览已收录目录。' : phase === 'failed' ? '搜索暂时不可用。请重试；模块仍不可用时刷新页面，或从已收录目录浏览资源。' : composing ? '输入完成后开始搜索。' : dismissed ? '已收起结果，查询仍保留；再次输入或按方向键可继续搜索。' : phase === 'loading' && normalizeQuery(query) ? '正在加载搜索索引…' : query !== processed ? '正在检索…' : !normalizeQuery(query) ? count === 0 ? '当前暂无公开资源，可以查看已收录目录。' : '输入资源名称、别名、简介、标签或显式拼音；↑↓ 选择，Enter 打开，Esc 收起结果。' : !hits.length ? `没有找到“${query}”。试试别名或标签，也可以浏览分类目录。` : `显示 ${hits.length} 个匹配结果（最多 ${searchLimits.resultCount} 个）。↑↓ 选择，Enter 打开。`;
+  // 首页只留搜索框：空闲、输入中和检索间隙不出提示，只在需要用户知道时说话。
+  const status = !ready || composing ? '' : phase === 'failed' ? '搜索暂时不可用，可以重试或刷新页面。' : dismissed ? '结果已收起。' : phase === 'loading' && normalizeQuery(query) ? '正在加载搜索索引…' : query !== processed ? '' : !normalizeQuery(query) ? count === 0 ? '当前暂无公开资源。' : '' : !hits.length ? `没有找到“${query}”，换个别名或标签试试。` : `${hits.length} 个结果${hits.length === searchLimits.resultCount ? '（仅显示前 ' + searchLimits.resultCount + ' 个）' : ''}`;
   return { ready, query, hits, active, status, phase, open: !dismissed && hits.length > 0, change, onKey,
     focus: () => { setDismissed(false); load(); }, retry: () => load(true),
     reload: () => { persistQuery(queryRef.current); window.location.reload(); },

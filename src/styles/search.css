@@ -1,7 +1,6 @@
 /* 固定搜索框尺寸，结果留在文档流中；不遮盖正文，不逐项播放动画。 */
 .resource-search { margin-block: var(--space-7); min-inline-size: 0; }
 .resource-search [hidden] { display: none !important; }
-.resource-search label { display: block; margin-block-end: var(--space-3); font-weight: var(--font-weight-heading); }
 .resource-search__controls { position: relative; }
 .resource-search__icon {
   position: absolute;
@@ -24,9 +23,13 @@
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
-  transition: border-color var(--motion-fast), background-color var(--motion-fast);
+  font-size: 1.125rem;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-text) 8%, transparent);
+  transition: border-color var(--motion-fast), box-shadow var(--motion-fast);
 }
-.resource-search input:focus { border-color: var(--color-link); background: var(--color-accent-soft); }
+/* 聚焦用强调色边框加柔和外圈，不整块变色；键盘焦点环仍由全局 :focus-visible 提供。 */
+.resource-search input:focus { border-color: var(--color-link); box-shadow: 0 0 0 4px var(--color-accent-soft); }
+.resource-search input:disabled { cursor: progress; }
 .resource-search input::placeholder { color: var(--color-text-muted); }
 /* 已有独立、有名称的清空按钮，不叠加 WebKit 无名称的取消控件。 */
 .resource-search input::-webkit-search-cancel-button { display: none; }
@@ -60,16 +63,16 @@
 .resource-search .resource-search__clear:hover { background: var(--color-surface-muted); }
 .resource-search__status { margin-block: var(--space-3); min-block-size: 1.5em; font-size: var(--font-size-note); color: var(--color-text-muted); overflow-wrap: anywhere; }
 .resource-search > button { margin-block: var(--space-2); margin-inline-end: var(--space-2); }
-.resource-search ol { list-style: none; margin-block: var(--space-5); padding: 0; border-block-start: 1px solid var(--color-border); }
-.search-result { margin: 0; border-block-end: 1px solid var(--color-border); border-inline-start: 3px solid transparent; overflow-wrap: anywhere; }
-.search-result a { display: block; padding: var(--space-4); color: var(--color-text); text-decoration: none; }
-.search-result strong { display: block; color: var(--color-link); font-weight: var(--font-weight-heading); }
-.search-result__category { display: block; margin-block-start: var(--space-1); font-size: var(--font-size-note); color: var(--color-text-muted); }
-.search-result p { margin-block: var(--space-2) 0; font-size: var(--font-size-ui); }
+.resource-search ol { list-style: none; margin-block: var(--space-3); padding: 0; border: 1px solid var(--color-border); border-radius: var(--radius-surface); overflow: hidden; }
+.search-result { margin: 0; border-block-start: 1px solid var(--color-border); border-inline-start: 3px solid transparent; overflow-wrap: anywhere; }
+.search-result:first-child { border-block-start: 0; }
+/* 名称与分类同一行，简介单独一行；分类靠右，长名称优先换行。 */
+.search-result a { display: grid; grid-template-columns: minmax(0, 1fr) max-content; gap: var(--space-1) var(--space-3); padding: var(--space-3) var(--space-4); color: var(--color-text); text-decoration: none; }
+.search-result strong { color: var(--color-link); font-weight: var(--font-weight-heading); }
+.search-result__category { align-self: center; font-size: var(--font-size-note); color: var(--color-text-muted); }
+.search-result p { grid-column: 1 / -1; margin: 0; color: var(--color-text-muted); font-size: var(--font-size-ui); }
 .search-result[aria-selected='true'] { border-inline-start-color: var(--color-link); background: var(--color-accent-soft); }
 .search-result:hover { background: var(--color-surface-muted); }
-.resource-search__fallback { margin-block-start: var(--space-5); }
-.resource-search__fallback a { display: inline-flex; align-items: center; min-block-size: var(--target-min-size); }
 @media (max-width: 767px) { .resource-search { margin-block: var(--space-6); } }
 
 .resource-search:has([data-search-retry]:not([hidden])) .resource-search__status {

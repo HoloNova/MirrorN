@@ -36,7 +36,7 @@ content/resources/<id>/
 | status | `active / deprecated / archived` | 必填，与 draft 独立 |
 | statusReason | 1–1000 字符 | 非 active 必填 |
 | official | 不含用户名／密码的 HTTP(S) URL | 可选，无官方站不伪造 |
-| icon | 已登记的八个分类 ID，或资源 assets 内图片路径 | 可选，图标展示待后续 UI 阶段，不接受任意 HTML/SVG 脚本 |
+| icon | 已登记的八个分类 ID，或资源 assets 内图片路径 | 可选，用作已收录卡片右侧图片；省略时显示所属分类图标；不接受任意 HTML/SVG 脚本 |
 | defaultVersion | 字符串，与产物中的 version 精确匹配 | 可选，不自动推断最新版本 |
 | seo | 对象：可选 title、description、image | 可选，缺省取 name、summary |
 
@@ -132,7 +132,7 @@ DownloadSelect 使用产物的版本／平台／架构生成候选项，再列�
 
 作者使用普通 `.md` 文件，加上站点定义的声明式指令。组件实现、导入与交互逻辑只存在于站点源码，文档不写 JSX，不逐篇实现组件，也不需要了解 Astro／React／Vue。
 
-支持标题、段落、强调、列表、引用、链接、图片、围栏代码、行内代码、GFM 表格和分隔线。代码块中的字符原样展示；表格和代码在窄屏内滚动，不撑开整页。标题使用 github-slugger 生成稳定唯一锚点，同名标题加确定性后缀；`main-content` 为布局预留，同名正文标题会追加后缀。v1 不接受脚注等未登记节点；Markdown 嵌套最多 32 层、最多 50000 个节点。
+支持标题、段落、强调、列表、引用、链接、图片、围栏代码、行内代码、GFM 表格和分隔线。围栏代码的语言名必须在白名单内（见 `src/content/schema/code-blocks.ts`：text、bash、powershell、cmd、json、jsonc、yaml、toml、ini、python、javascript、typescript、tsx、jsx、java、go、rust、c、cpp、csharp、sql、html、xml、css、dockerfile、nginx、diff、markdown，以及 sh／ps1／yml／py／js／ts 等常见别名），省略语言按纯文本；写错语言名是内容校验错误。围栏信息只接受 `title="文件名"`，如 ```` ```bash title="install.sh" ````，其它内容报错。代码块中的字符原样展示；表格和代码在窄屏内滚动，不撑开整页。标题使用 github-slugger 生成稳定唯一锚点，同名标题加确定性后缀；`main-content` 为布局预留，同名正文标题会追加后缀。v1 不接受脚注等未登记节点；Markdown 嵌套最多 32 层、最多 50000 个节点。
 
 ### 指令写法
 
@@ -156,7 +156,7 @@ DownloadSelect 使用产物的版本／平台／架构生成候选项，再列�
 :::
 ```
 
-指令名为下表定义的小写 kebab-case，参数值统一写双引号字符串。v1 不支持行内指令、方括号 label、class/id 简写、任意样式属性或未知参数；Notice 之外的指令不接收正文，Notice 内不嵌套资源指令。数组和对象放 sources.json，不在 Markdown 中表达 JavaScript。
+指令名为下表定义的小写 kebab-case，参数值统一写双引号字符串。v1 不支持行内指令、方括号 label、class/id 简写、任意样式属性或未知参数；只有容器指令（notice、choice、option、details、steps）接收正文，其余为独占一行的叶子指令。容器用至少三个冒号开始，并用同样数量的冒号单独一行结束；外层比内层多写冒号（如 `::::choice` 包 `:::option`）。嵌套规则：notice 内不嵌套任何资源指令；choice 内只能直接放 ≥2 个标签不重复的 option；option 与 details 内可放 Markdown、叶子指令、notice 和 steps，不能放 choice／option／details；steps 内必须恰好是一个有序列表，列表项可用叶子指令；option、details 和脚注内不能写标题，否则右侧目录会指向被隐藏的章节。数组和对象放 sources.json，不在 Markdown 中表达 JavaScript。
 
 不接受原始 HTML／JSX 标签作为功能语法，`<Download />` 和 `options={[...]}` 不属于 v1。普通文本中的花括号不是可执行表达式；代码块中的 HTML／JS／JSX 示例仅按文字展示。导入、表达式、脚本或命令均不会因出现在文档中被执行。
 
@@ -168,20 +168,24 @@ DownloadSelect 使用产物的版本／平台／架构生成候选项，再列�
 
 ## 5. 自定义语法与可复用组件契约
 
-以下八种功能属于完整首发目标。左侧语法是贡献者接口，右侧组件名是站点内部实现名，作者不写组件标签。每项通过统一注册表声明指令名、允许参数、校验和组件映射；改组件内部实现不要求重写所有文档。
+以下八种功能属于完整首发目标；表后补充的四个容器指令和脚注是用户细化阶段（2026-10-07）加入的作者体验功能。左侧语法是贡献者接口，右侧组件名是站点内部实现名，作者不写组件标签。每项通过统一注册表声明指令名、允许参数、校验和组件映射；改组件内部实现不要求重写所有文档。
 
 | Markdown 指令 | 内部组件 | 参数 | 输出与限制 |
 | --- | --- | --- | --- |
-| `::download` | Download | `source` 必填，`label` 可选 | 单个文件入口；仅接受 file/archive/local 类型目标，网页与命令应使用其他指令 |
+| `::download` | Download | `source`（引用 sources.json）与 `url`（行内链接）二选一；`label` 在 url 写法必填；url 写法另有 `target`（file／page，默认 file）、`status`（unknown／available／broken）、`checked`、`note` | source 写法：单个文件入口，仅接受 file/archive/local 类型目标。url 写法：只在正文放一个链接，规则同来源——available 必须有 checked，broken 必须有 note，checked 仅与 available 同用；target=page 显示“访问页面”，不冒充文件下载 |
 | `::download-select` | DownloadSelect | `group` 必填 | 在组内选择版本、平台、架构、同产物来源，再显式下载；组内必须都是文件入口 |
 | `::source-list` | SourceList | `group` 必填 | 展示入口和真实类型；可混合文件、网页与命令，不伪装为等价下载 |
 | `::install-command` | InstallCommand | `source` 必填 | 仅接受 package-manager；显示工具、终端、命令与复制反馈 |
-| `:::notice` | Notice | `type` 必填，`title` 可选 | type 为 info/warning/danger/success；接收 Markdown 正文，不嵌套资源指令 |
+| `:::notice` | Notice | `type` 必填，`title` 可选 | type 为 info/warning/danger/success/note（note 为中性灰补充说明）；接收 Markdown 正文，不嵌套资源指令 |
 | `::checksum` | Checksum | `artifact` 必填 | 读取校验算法和值并支持复制；缺少 checksum 阻止发布而不是显示空框 |
 | `::compatibility-table` | CompatibilityTable | `table` 必填 | 引用本资源 compatibility 的表 ID |
 | `::resource-card` | ResourceCard | `resource` 必填 | 引用另一公开资源，显示其名称并链接；无递归文档嵌入 |
+| `::::choice`（外层冒号数多于内层 option） | Choice | `label` 必填 | 作者手写的选项切换；仅含 ≥2 个 `:::option`（`label` 必填、同一 choice 内不重复）。有 JS 时下拉选择、只显示所选项；无 JS 时所有选项依次展开。与按 sources.json 筛选的 download-select 并存，不替代它 |
+| `:::details` | Details | `title` 必填 | 原生折叠块，默认收起；内容规则同 option |
+| `:::steps` | Steps | 无 | 内容为一个有序列表，显示为带编号的步骤时间轴 |
+| 脚注 `[^名称]` | footnote | 无（GFM 原生语法） | 编号按正文首次引用顺序；定义 `[^名称]: 说明` 可写在任意位置，统一显示在文末并可返回；引用与定义必须成对，缺一报错；脚注内不能嵌套指令、标题或脚注引用 |
 
-同一参数在不同指令中保持含义稳定。来源 URL、文件路径、校验值、命令不在指令中再复制一份。resource-card 的目标为草稿／不存在时阻止发布；删除被引用资源前先修改引用。资源间互链允许，不递归渲染。
+同一参数在不同指令中保持含义稳定。来源 URL、文件路径、校验值、命令不在指令中再复制一份；唯一例外是 `::download` 的 url 写法——它不引用 sources.json，是该入口唯一的一份数据，不能同时写 source。有版本筛选、校验值或多来源需求时必须使用 sources.json。resource-card 的目标为草稿／不存在时阻止发布；删除被引用资源前先修改引用。资源间互链允许，不递归渲染。
 
 ## 6. 完整最小示例
 

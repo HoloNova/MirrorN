@@ -12,7 +12,7 @@ draft: true
 
 ## 获取与使用
 
-在 sources.json 中维护真实来源。完成来源数据后，以 `::download{source="来源ID"}`、`::source-list{group="组ID"}` 或 `::install-command{source="包管理来源ID"}` 引用，不在正文手写组件或服务器路径。纯文档不强制提供下载文件。
+在 sources.json 中维护真实来源。完成来源数据后，以 `::download{source="来源ID"}`、`::source-list{group="组ID"}` 或 `::install-command{source="包管理来源ID"}` 引用（只需一个链接时也可直接写 `::download{url="…" label="…"}`），不在正文手写组件或服务器路径。纯文档不强制提供下载文件。
 
 ## 来源依据与维护说明
 
