@@ -1,6 +1,7 @@
 import { defineConfig } from 'astro/config';
 import type { AstroIntegration } from 'astro';
 import { siteConfig, siteConfigWarnings } from './config/site';
+import { contentIntegration } from './src/content/integration.ts';
 
 /**
  * 为什么有站点配置提示：正式域名和贡献仓库属于发布前才确定的值，P1 允许它们为空。
@@ -22,7 +23,7 @@ export default defineConfig({
   output: 'static',
   // 只有配置了正式地址才输出 canonical 等绝对地址；未配置时保持 undefined，不伪造域名。
   site: siteConfig.siteUrl ?? undefined,
-  integrations: [siteConfigHints],
+  integrations: [siteConfigHints, contentIntegration()],
   vite: {
     server: {
       watch: {

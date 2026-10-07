@@ -1,19 +1,21 @@
 # 构建、发布与持续维护
 
-> 本文是目标交付契约。P1 已实现 `dev`／`typecheck`／`build`／`preview` 四个命令；`content:check`、`lint`、`test:content`、`check:dist` 与新 CI 仍未实现，不能把下表当作当前全部可执行命令。安装与运行说明已写入根 README。
+> 本文是完整目标交付契约。当前已实现 `dev`／`content:check`／`typecheck`／`build`／`preview`；`lint`、`test:content`、`check:dist` 与新 CI 尚未实现。P2 本轮按用户要求不创建过渡测试，下表不等于所有命令和后续页面／附件／索引输出均已落地。
 
 ## 1. 命令职责
 
 | 目标命令 | 建成后的职责 |
 | --- | --- |
 | pnpm dev | 本地预览新站，默认不公开草稿；显式本地预览选项才能查看草稿 |
-| pnpm content:check | 解析和校验资源、引用、附件及站内链接，不访问外网 |
+| pnpm content:check | 已实现：校验全量资源结构、引用、附件与锚点；默认交付公开 Registry，不访问外网 |
 | pnpm typecheck | 检查新站 Astro／TypeScript 与契约类型 |
 | pnpm lint | 检查新源码，不扫描归档与生成文件 |
 | pnpm test:content | 解析器、引用、来源解析和索引的定向逻辑验证，无 UI 单元测试 |
-| pnpm build | 先校验，再一次性生成公开静态页面、附件、索引、SEO 与站点地图 |
+| pnpm build | 已接入同一内容门禁；当前仍生成四个基础页面，资源组件／附件输出、内容页面、搜索和 sitemap 随 P3–P7 落地 |
 | pnpm check:dist | 检查本次产物内链、资源引用、草稿泄漏和归档污染 |
 | pnpm preview | 本地预览实际生产产物，不重新引入草稿 |
+
+`content:check --json` 输出摘要或结构化错误，不导出正文；`content:check --include-drafts` 只显式选择本地 preview 注册表，production 环境拒绝。dev 的资源文件变化会重新校验并刷新；正式 build 始终选择 public 模式。草稿页面 UI 尚未实现，`pnpm preview` 仍只展示已构建产物。
 
 这些命令不能调用 archive 中的脚本。P1 已锁定：Node ≥ 24、pnpm 12.8.1（`packageManager`）、dev 与 preview 默认端口 4321；不沿用旧双进程 dev.mjs。
 

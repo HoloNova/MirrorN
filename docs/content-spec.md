@@ -1,6 +1,6 @@
 # 资源文档与组件契约 v1
 
-> 规范状态：已确定的实现目标，尚未实现解析器、Schema 或组件。变更本契约需要同步实现、示例与迁移说明，不得静默改变旧字段含义。
+> 规范状态：P2 已实现 v1 Schema、受限 AST、指令注册／引用／文件校验与 Registry；组件渲染和摘要附件输出留到 P3，页面接入留到 P4。变更本契约需要同步实现、示例与迁移说明，不得静默改变旧字段含义。
 
 ## 1. 资源文件包
 
@@ -17,7 +17,7 @@ content/resources/<id>/
 
 ## 2. Front Matter
 
-YAML 仅接受普通数据，拒绝重复键、自定义标签和额外未知字段；大小与嵌套受限，不执行变量或模板。必填指发布要求，草稿可缺发布字段，但必须有有效身份、类别、语法和引用。
+文件必须是有效 UTF-8。YAML 只接受 core 普通数据，拒绝重复键、自定义标签、锚点／别名、非有限数值和额外未知字段；YAML／JSON 数据嵌套最多 32 层，不执行变量或模板。JSON 不接受注释、尾逗号或重复键。必填指发布要求，草稿可缺发布字段，但必须有有效身份、类别、语法和引用。
 
 | 字段 | 类型／约束 | 发布要求 |
 | --- | --- | --- |
@@ -36,7 +36,7 @@ YAML 仅接受普通数据，拒绝重复键、自定义标签和额外未知字
 | status | `active / deprecated / archived` | 必填，与 draft 独立 |
 | statusReason | 1–1000 字符 | 非 active 必填 |
 | official | 不含用户名／密码的 HTTP(S) URL | 可选，无官方站不伪造 |
-| icon | 本站注册图标 ID 或资源 assets 内图片路径 | 可选，不接受任意 HTML/SVG 脚本 |
+| icon | 已登记的八个分类 ID，或资源 assets 内图片路径 | 可选，图标展示待后续 UI 阶段，不接受任意 HTML/SVG 脚本 |
 | defaultVersion | 字符串，与产物中的 version 精确匹配 | 可选，不自动推断最新版本 |
 | seo | 对象：可选 title、description、image | 可选，缺省取 name、summary |
 
@@ -96,9 +96,9 @@ SHA256 为 64 位十六进制、SHA512 为 128 位。不知道大小／校验值
 | local | assetId、artifactId | 下载本站静态附件 |
 | external-storage | url、target；target=file 时另需 artifactId | 下载外部文件或访问存储页面 |
 
-`target` 仅在表中允许的类型出现；release、mirror、external-storage 为 `file / page`，repository 为 `archive / page`。其他类型禁止无意义字段，避免 local 同时填写 url 和 assetId 等冲突。
+`target` 仅在表中允许的类型出现；release、mirror、external-storage 为 `file / page`，repository 为 `archive / page`。网页 target=page 不填写 artifactId，因为它不是该产物的字节入口。其他类型禁止无意义字段，避免 local 同时填写 url 和 assetId 等冲突。
 
-所有外部 url 仅允许 HTTP(S)，不得包含用户名／密码或需要保密的访问凭据。package-manager 可选 url 指向包页面；packageManager 是工具名，shell 为 `bash / powershell / cmd / sh`。installCommand 作为不透明文本展示、复制，不解析执行，不自动拼接用户输入。多终端命令用多个 Source 表达。
+所有外部 url 仅允许 HTTP(S)，不得包含用户名／密码或需要保密的访问凭据。package-manager 可选 url 指向包页面；packageManager 是工具名，shell 为 `bash / powershell / cmd / sh`。installCommand 作为不透明文本保留，包括合法的首尾空白和换行；不 trim、不解析执行、不自动拼接用户输入。多终端命令用多个 Source 表达。
 
 broken 来源在列表中保留说明但不作为默认下载、不自动跳转。若所有来源均 broken，资源正文仍可阅读，组件给出无可用入口提示；不会把整个资源自动改为 deprecated。
 
@@ -114,9 +114,9 @@ DownloadSelect 使用产物的版本／平台／架构生成候选项，再列�
 
 字段为 `id`、`path`（相对资源目录、必须位于 assets 内）、`downloadName`、可选 `mediaType`。发布时确认文件存在，计算实际大小与 SHA256；关联 artifact 的已填大小／SHA256 如不一致则报错，已填 SHA512 也必须核对。
 
-下载产物输出为包含内容摘要的静态路径，文档只引用 assetId；图片通过 Markdown 相对路径引用，由构建解析。只复制公开资源实际引用的图片／附件，草稿文件不能被整个 public 目录打包带出。
+下载产物输出为包含内容摘要的静态路径，文档下载指令只引用 sourceId，再由 local Source 引用 assetId；不直接写下载文件的路径。图片及查看原图链接可用 `assets/` 或 `./assets/` 相对路径，其他本地下载使用 Source 和下载指令。只复制公开资源实际引用的图片／附件，草稿文件不能被整个 public 目录打包带出。
 
-初始工程预算：单附件不超过 5 MiB，一个资源引用的本地附件总计不超过 20 MiB；Markdown 和 JSON 各不超过 1 MiB。这是明确的维护预算，不是现有实现事实。超出预算优先外链，确有需要再调整规范。常规图片使用 PNG/JPEG/WebP/AVIF；不接收能在同源直接执行的 HTML/JS/SVG 上传内容。其他小文件按下载附件处理。
+初始工程预算：单附件不超过 5 MiB，一个资源引用的本地附件总计不超过 20 MiB；Markdown 和 JSON 各不超过 1 MiB。P2 已按实际字节数执行这些预算，对声明或正文引用的同一路径去重；磁盘上未声明且未引用的文件不扫描、不输出。超出预算优先外链，确有需要再调整规范。常规本地图片使用 PNG/JPEG/WebP/AVIF，并核对文件头与扩展格式（不声称完成解码验证）；不接收同源 HTML/JS/SVG/CSS 文件扩展名或主动内容 MIME。所有读取路径要求大小写精确、普通文件，并拒绝符号链接／junction。其他小文件按下载附件处理。
 
 ### 3.5 Compatibility：兼容性表
 
@@ -126,7 +126,7 @@ DownloadSelect 使用产物的版本／平台／架构生成候选项，再列�
 
 作者使用普通 `.md` 文件，加上站点定义的声明式指令。组件实现、导入与交互逻辑只存在于站点源码，文档不写 JSX，不逐篇实现组件，也不需要了解 Astro／React／Vue。
 
-支持标题、段落、强调、列表、引用、链接、图片、围栏代码、行内代码、GFM 表格和分隔线。代码块中的字符原样展示；表格和代码在窄屏内滚动，不撑开整页。标题生成稳定唯一锚点，同名标题加确定性后缀。
+支持标题、段落、强调、列表、引用、链接、图片、围栏代码、行内代码、GFM 表格和分隔线。代码块中的字符原样展示；表格和代码在窄屏内滚动，不撑开整页。标题使用 github-slugger 生成稳定唯一锚点，同名标题加确定性后缀；`main-content` 为布局预留，同名正文标题会追加后缀。v1 不接受脚注等未登记节点；Markdown 嵌套最多 32 层、最多 50000 个节点。
 
 ### 指令写法
 
@@ -158,7 +158,7 @@ DownloadSelect 使用产物的版本／平台／架构生成候选项，再列�
 
 校验未知名称、参数、节点类型、上下文和引用；对意图写成指令却格式不完整的独立行给出语法错误，不能因解析器回落成普通段落而静默发布。需要按解析器 token／源码位置补充格式检查，代码块和普通文字示例不误判。
 
-错误报告包含资源 ID、文件、行／列和字段路径。解析、预览、构建和 CI 使用同一套校验实现。Markdown 链接同样限制协议；站内资源和锚点必须能解析，不能只校验指令引用。
+错误报告包含资源 ID、相对文件、行／列和字段路径；缺失字段定位到最近父节点。正式 CLI 与 Astro dev／build 已使用同一处理链；页面预览 UI 与 CI 落地时复用该实现。Markdown 链接同样限制协议；站内资源和锚点必须能解析，不能只校验指令引用。
 
 ## 5. 自定义语法与可复用组件契约
 

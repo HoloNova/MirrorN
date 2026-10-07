@@ -1,6 +1,9 @@
 {
   "extends": "astro/tsconfigs/strict",
-  // 只包含新站源码与新站配置：归档、本地数据、agent 状态和内容根都不进入类型检查范围。
-  "include": [".astro/types.d.ts", "src/**/*", "config/**/*", "astro.config.ts"],
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  // 只检查新站源码、配置和正式工具脚本；资源数据由内容处理链校验。
+  "include": [".astro/types.d.ts", "src/**/*", "config/**/*", "scripts/**/*.ts", "astro.config.ts"],
   "exclude": ["dist", "node_modules", "archive", ".local", ".pi", "content"]
 }

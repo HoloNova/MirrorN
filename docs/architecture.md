@@ -1,6 +1,6 @@
 # 新站技术架构与模块地图
 
-> 本文描述确定的目标架构，不代表目录或依赖已经创建。实际状态以 [PLAN.md](../PLAN.md) 为准。
+> 本文区分目标架构与已实现模块；P1 工程和 P2 内容处理链已落地，其余阶段以 [PLAN.md](../PLAN.md) 为准。
 
 ## 1. 技术决策
 
@@ -15,7 +15,7 @@
 | 搜索 | 构建生成 JSON 索引＋Fuse.js | 人工策划规模下只搜索结构化字段，浏览器按需加载，无数据库或服务接口 |
 | 样式 | 语义 CSS Tokens＋组件样式 | 精确落实 MDN 参考，不继承旧 CSS，不引入额外 UI 框架 |
 | 工具链 | Node.js 24 LTS＋pnpm 单包工程 | 当前工作站具备 Node 工具链；无需为一个静态站继续 monorepo |
-| 单元验证 | 定向纯函数测试 | 只验证解析、契约、引用、索引和文件解析等逻辑，不写 UI 单元测试 |
+| 验证 | 正式内容校验、类型与构建门禁 | 本次 P2 按用户要求不做过渡测试；没有 UI 单元测试或自动浏览器 |
 
 依赖具体版本在新工程阶段查询实际兼容版本并锁入新 lockfile；不复用归档 lockfile，也不在尚未安装时编造版本。Astro 自身能生成静态路由已经过官方文档核对；自定义指令由 remark-directive 解析，作者接口是 Markdown，组件实现只在站点源码中定义，不引入 MDX 编译执行链。
 
@@ -27,7 +27,7 @@ P1 实际锁定（写入 `pnpm-lock.yaml`）：Astro 7.3.6、TypeScript 6.0.3、
 - [remark-directive](https://github.com/remarkjs/remark-directive)
 - [Markdown 指令语法](https://github.com/micromark/micromark-extension-directive#syntax)
 
-P0 选型依据为官方文档的 Context7 检索结果；P1 已安装并运行上述锁定工具链，实际配置 API 另经 npm registry 元数据与已安装包的类型声明核对。其余内容解析与搜索依赖仍待相应阶段安装。
+P0 选型依据为官方文档的 Context7 检索结果；P1 已安装并运行上述锁定工具链，实际配置 API 另经 npm registry 元数据与已安装包的类型声明核对。P2 已锁定 unified 11.0.5、remark-parse 11.0.0、remark-gfm 4.0.1、remark-directive 4.0.0、remark-frontmatter 5.0.0、yaml 2.9.1、Zod 4.6.5、jsonc-parser 3.3.1、github-slugger 2.0.0、micromark-util-normalize-identifier 2.0.1 与 mdast-util-to-string 4.0.0。官方解析、GFM、源位置、标题文本和唯一锚点工具均复用成熟实现；Fuse.js 留到 P5。
 
 ## 2. 数据流
 
@@ -52,7 +52,7 @@ Schema → 自定义指令注册与参数检查 → 引用检查 → 附件检�
 
 开发预览和正式构建共用处理链。开发时文件变化会刷新注册表；生产不扫描磁盘、不修改内容。内容错误阻止新的构建，已部署版本不受影响。
 
-草稿可在显式开启的本地预览模式中查看，但生产构建不允许开启该模式，也不输出草稿索引、附件或社交分享元数据。预览标识必须可见，不能把“预览地址隐蔽”当成不公开的保证。
+P2 默认输出公开 Registry；`content:check --include-drafts` 显式选择本地 preview 集合，production 环境拒绝此模式，正式构建集成固定选择 public。草稿页面 UI、索引、附件输出与社交元数据尚待对应阶段实现；以后页面预览须可见标识，不把“预览地址隐蔽”当成不公开保证。
 
 ## 3. 目标目录
 
@@ -65,24 +65,33 @@ src/
     resource/            # 八个资源组件的共享展示实现（待 P3）
   content/
     categories.ts        # 八个主分类常量（P1 已建）
-    schema/              # Front Matter、来源、产物、指令参数（待 P2）
-    parse/               # 文件读取、YAML/JSON、AST 限制（待 P2）
-    validate/            # 跨资源引用、公开性、附件、锚点（待 P2）
-    registry/            # 将验证结果转成公开资源注册表（待 P2）
-    render/              # 指令统一注册表与受限 AST 到共享组件的映射（待 P3）
+    schema/              # Front Matter、来源、产物、指令参数（P2 已建）
+    parse/               # 文件读取、YAML/JSON、AST 限制（P2 已建）
+    validate/            # 跨资源引用、公开性、附件、锚点（P2 已建）
+    registry/            # 不可变 public／显式 preview 注册表（P2 已建）
+    integration.ts       # CLI 同链构建门禁、dev 内容监听（P2 已建）
+    render/              # 受限 AST 与统一组件映射的实际渲染（待 P3）
     resolve/             # sourceId/assetId 到真实行为与地址（待 P3）
     search/              # 索引生成、排序与检索配置（待 P5）
   scripts/               # 浏览器渐进增强，不读取服务器路径（P1 的导航与主题脚本在组件内，模块化拆分待 P3/P5）
   styles/                # tokens、base、prose（P1 已建）
 content/resources/       # 唯一资源内容根（P1 已建，当前为空）
 public/                  # 站点级受控静态文件，不放资源草稿附件（待实现）
-scripts/                 # 内容验证、构建编排、产物检查（待 P2/P7）
+scripts/                 # check-content.ts（P2 已建）；产物检查待 P7
 config/                  # 站点名、域名、贡献仓库等非机密配置（P1 已建 site.ts）
 .github/workflows/       # 新项目 CI，尚未创建
 archive/legacy/          # 历史资料，不是 workspace
 ```
 
-P1 在根目录另外新增：`package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`（pnpm 记录构建脚本白名单与发布年龄例外）、`astro.config.ts`、`tsconfig.json`。`src/content/` 下的解析、校验、注册表、渲染与搜索模块，`src/scripts/`、根 `scripts/`、`public/` 和 CI 均尚未实现。
+P1 在根目录另外新增：`package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`（pnpm 记录构建脚本白名单与发布年龄例外）、`astro.config.ts`、`tsconfig.json`。P2 已创建内容 Schema、Parser、Validator、Registry、Astro 校验集成与正式 CLI。渲染、Resolver、搜索、浏览器增强模块、资源附件输出和新 CI 均尚未实现。
+
+### P2 实际接口
+
+`src/content/registry/load.ts` 的 `loadResourceRegistry(projectRoot, { siteUrl })` 默认返回 `ResourceRegistry<PublishedResource>`；显式 `{ mode: "preview" }` 才包含已校验草稿。方法每次读取并校验内容，不复用陈旧缓存。
+
+公开对象包含 `metadata`、`data`（来源文件包）、受限 `document`／`headings`、实际引用的 `files` 和 `resourceReferences`；递归复制冻结，无原始文档代码、磁盘绝对路径或文件字节。`get(id)` 和 `referencesTo(id)` 只查询当前选定集合。每个文件记录相对路径、实际字节数、SHA256／SHA512 和格式；附件 URL 与静态复制在 P3 实现，不能把 path 直接当服务器 URL。
+
+CLI 使用 Node 24 原生 TypeScript，不额外引入脚本 runner。Astro 在 dev／build 配置阶段调用相同 Registry 加载器；dev 监听内容根，串行合并变更、重新校验并刷新模块，出错报告明确位置。当前资源路由仍为空集合，P4 接入页面时只消费 Registry。
 
 ## 4. 模块边界
 
@@ -110,6 +119,6 @@ P1 在根目录另外新增：`package.json`、`pnpm-lock.yaml`、`pnpm-workspac
 
 ## 7. 独立性与扩展缝隙
 
-不引入 Hono、SQLite、Redis、BullMQ、旧共享包或旧 CSS。归档内容不能进入源码导入图、tsconfig include、资源发现、站点 sitemap 或构建产物。P1 已落实扫描边界：`tsconfig.json` 的 include 只覆盖 `src/`、`config/` 与 `astro.config.ts`，Vite 文件监听忽略 `archive/`、`.local/`、`.pi/`，构建产物 `dist/` 只有新站页面与样式。
+不引入 Hono、SQLite、Redis、BullMQ、旧共享包或旧 CSS。归档内容不能进入源码导入图、tsconfig include、资源发现、站点 sitemap 或构建产物。P1 已落实扫描边界：`tsconfig.json` 的 include 覆盖 `src/`、`config/`、正式 `scripts/` 与 `astro.config.ts`，Vite 文件监听忽略 `archive/`、`.local/`、`.pi/`，构建产物 `dist/` 只有新站页面与样式。
 
 未来对象存储由 Asset Resolver 扩展；文集导航由明确的文集数据扩展；搜索规模增长由 Search 模块替换。只有需求发生才启用对应扩展，不建立目前无人使用的服务接口。
