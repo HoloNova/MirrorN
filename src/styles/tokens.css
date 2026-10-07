@@ -1,0 +1,121 @@
+/**
+ * 设计 Tokens 的唯一来源（DESIGN.md 第 2–4 节）。
+ *
+ * 为什么单独一层：组件只引用语义变量，不自己发明灰度、不写主题判断；
+ * 换一处色值只改这里，也保证亮暗主题一一对应。
+ * 亮色值是 :root 默认值；暗色值出现在“系统偏好”和“用户显式选择”两处。
+ * CSS 无法共享规则块，两处必须保持一致，改动时同步。
+ */
+
+:root {
+  color-scheme: light;
+
+  /* 颜色 */
+  --color-page: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f0f0f2;
+  --color-text: #1b1b1b;
+  --color-text-muted: #5b5b66;
+  --color-border: #d1d1db;
+  --color-link: #0060df;
+  --color-focus: #0060df;
+  --color-info: #0060df;
+  --color-warning: #8a4b00;
+  --color-danger: #b42318;
+  --color-success: #176b3a;
+
+  /* 字体：先写目标字体，再给系统回退；没有下载到的字体不影响文本可读。 */
+  --font-sans: Inter, system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC',
+    'Hiragino Sans GB', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', monospace;
+
+  /* 字号 */
+  --font-size-h1: 2.5rem;
+  --font-size-h2: 1.9375rem;
+  --font-size-h3: 1.5rem;
+  --font-size-body: 1rem;
+  --font-size-ui: 0.9375rem;
+  --font-size-note: 0.875rem;
+  --font-size-mono: 0.875rem;
+
+  /* 行高与字重 */
+  --line-height-h1: 1.25;
+  --line-height-h2: 1.3;
+  --line-height-h3: 1.35;
+  --line-height-body: 1.75;
+  --line-height-ui: 1.5;
+  --line-height-mono: 1.6;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-heading: 600;
+
+  /* 间距尺度：4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* 圆角 */
+  --radius-control: 6px;
+  --radius-surface: 8px;
+
+  /* 布局 */
+  --layout-max-width: 1440px;
+  --layout-gutter: clamp(16px, 4vw, 32px);
+  --layout-header-height: 64px;
+  --layout-reading-width: 48rem;
+
+  /* 触摸目标下限（DESIGN.md 第 6 节） */
+  --target-min-size: 44px;
+}
+
+/* 移动端标题缩小；正文保持 16px，不因屏幕变窄而变小。 */
+@media (max-width: 767px) {
+  :root {
+    --font-size-h1: 1.875rem;
+    --font-size-h2: 1.625rem;
+    --font-size-h3: 1.375rem;
+  }
+}
+
+/* 暗色（系统偏好）：用户显式选择亮色时不生效。 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --color-page: #15141a;
+    --color-surface: #1c1b22;
+    --color-surface-muted: #2b2a33;
+    --color-text: #fbfbfe;
+    --color-text-muted: #cfcfd8;
+    --color-border: #3b3a42;
+    --color-link: #73bbf8;
+    --color-focus: #73bbf8;
+    --color-info: #73bbf8;
+    --color-warning: #ffc76b;
+    --color-danger: #ff9a90;
+    --color-success: #80d5a0;
+  }
+}
+
+/* 暗色（用户显式选择）。 */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-page: #15141a;
+  --color-surface: #1c1b22;
+  --color-surface-muted: #2b2a33;
+  --color-text: #fbfbfe;
+  --color-text-muted: #cfcfd8;
+  --color-border: #3b3a42;
+  --color-link: #73bbf8;
+  --color-focus: #73bbf8;
+  --color-info: #73bbf8;
+  --color-warning: #ffc76b;
+  --color-danger: #ff9a90;
+  --color-success: #80d5a0;
+}

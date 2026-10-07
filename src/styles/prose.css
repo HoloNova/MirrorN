@@ -1,0 +1,76 @@
+/**
+ * 资源文档正文样式（DESIGN.md 第 4、5 节的阅读部分）。
+ *
+ * 为什么是全局样式：正文由 Markdown 渲染成普通 HTML，不经过 Astro 组件作用域，
+ * 因此这里用 `.prose` 容器选择器统一控制阅读宽度与排版节奏。
+ * 资源组件的具体外观不属于 P1，后续由组件自己的样式定义。
+ */
+
+.prose {
+  max-inline-size: var(--layout-reading-width);
+}
+
+.prose :is(h2, h3, h4) {
+  margin-block: var(--space-6) var(--space-3);
+}
+
+.prose :is(h2, h3, h4):first-child {
+  margin-block-start: 0;
+}
+
+.prose :is(p, ul, ol, blockquote, pre, table) {
+  margin-block: 0 var(--space-4);
+}
+
+.prose li + li {
+  margin-block-start: var(--space-1);
+}
+
+.prose blockquote {
+  margin-inline: 0;
+  padding-inline-start: var(--space-4);
+  border-inline-start: 3px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.prose code {
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  background-color: var(--color-surface-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+}
+
+/* 代码块保留原始空白，容器内横向滚动，不换行破坏命令辨识。 */
+.prose pre {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background-color: var(--color-surface-muted);
+  overflow-x: auto;
+  line-height: var(--line-height-mono);
+}
+
+.prose pre code {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+
+/* 表格在窄屏内滚动而不是压成小字；单元格本身仍是表格语义。 */
+.prose table {
+  display: block;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.prose :is(th, td) {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  text-align: start;
+}
+
+.prose th {
+  background-color: var(--color-surface-muted);
+}

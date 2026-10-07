@@ -1,0 +1,33 @@
+---
+import SiteLayout from './SiteLayout.astro';
+import '../styles/prose.css';
+
+interface Props {
+  /** 资源名称，作为页面唯一 h1。 */
+  title: string;
+  /** 资源简介，正文之前的说明文字。 */
+  summary?: string;
+}
+
+const { title, summary } = Astro.props;
+---
+
+<SiteLayout title={title} description={summary}>
+  <article class="resource">
+    <header class="resource__header">
+      <h1>{title}</h1>
+      {summary && <p class="resource__summary">{summary}</p>}
+    </header>
+    <div class="prose">
+      <slot />
+    </div>
+  </article>
+</SiteLayout>
+
+<style>
+  /* 阅读宽度由 .prose 与简介共同限制，宽屏也不把正文拉成整屏长行。 */
+  .resource__summary {
+    max-inline-size: var(--layout-reading-width);
+    color: var(--color-text-muted);
+  }
+</style>

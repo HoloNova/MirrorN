@@ -1,0 +1,59 @@
+---
+import SiteHeader from '../components/site/SiteHeader.astro';
+import { siteConfig } from '../../config/site';
+import '../styles/tokens.css';
+import '../styles/base.css';
+
+interface Props {
+  /** 页面标题，与站点名拼成 <title>；省略时只用站点名。 */
+  title?: string;
+  /** 页面描述，用于 meta description；没有真实描述时不输出空标签。 */
+  description?: string;
+  /** 404 等非索引页面不输出 canonical，并显式禁止索引。 */
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+// 未确定正式地址的本地产物默认不索引，不能被误当成正式发布版本。
+const shouldNoindex = noindex || !Astro.site;
+const pageTitle = title ? `${title} · ${siteConfig.siteName}` : siteConfig.siteName;
+// site 未配置时 Astro.site 为 undefined，此时不输出 canonical，预览不会冒充正式域名。
+const canonicalUrl = Astro.site && !noindex ? new URL(Astro.url.pathname, Astro.site) : null;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    {description && <meta name="description" content={description} />}
+    {shouldNoindex && <meta name="robots" content="noindex" />}
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl.href} />}
+    <script is:inline>
+      // 首次绘制前决定主题，避免整页亮暗闪烁；存储不可用时退回系统偏好。
+      // 同时标记脚本可用，主题控件据此显示；主导航不依赖脚本即可访问。
+      (function () {
+        var root = document.documentElement;
+        root.classList.add('has-js');
+        try {
+          var stored = window.localStorage.getItem('mirrorn-theme');
+          if (stored === 'light' || stored === 'dark') {
+            root.dataset.theme = stored;
+          }
+        } catch (error) {
+          // 隐私模式或存储被禁用：保持跟随系统。
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <SiteHeader />
+    <main class="page-main" id="main-content" tabindex="-1">
+      <div class="page-container">
+        <slot />
+      </div>
+    </main>
+  </body>
+</html>

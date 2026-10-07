@@ -1,0 +1,191 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+import { siteConfig } from '../../../config/site';
+
+const navItems = [
+  { href: '/', label: '首页' },
+  { href: '/resources/', label: '已收录' },
+  { href: '/about/', label: '关于本站' },
+] as const;
+
+const currentPath = Astro.url.pathname;
+
+/** 当前页标记：首页只匹配根路径，其余按前缀匹配目录页与其下级页面。 */
+function isCurrentPage(href: string): boolean {
+  return href === '/' ? currentPath === '/' : currentPath === href || currentPath.startsWith(href);
+}
+---
+
+<header class="site-header">
+  <div class="page-container site-header__inner">
+    <a class="site-header__brand" href="/">{siteConfig.siteName}</a>
+
+    <nav class="site-nav" aria-label="主导航" data-site-nav>
+      <ul class="site-nav__list">
+        {
+          navItems.map((item) => (
+            <li>
+              <a
+                class="site-nav__link"
+                href={item.href}
+                aria-current={isCurrentPage(item.href) ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      {
+        siteConfig.repositoryUrl && (
+          <a class="site-header__repo" href={siteConfig.repositoryUrl} rel="noopener" title="项目仓库">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 7 4 12l5 5m6-10 5 5-5 5M13 5l-2 14" />
+            </svg>
+            <span class="site-header__repo-label">项目仓库</span>
+          </a>
+        )
+      }
+      <ThemeToggle />
+    </div>
+  </div>
+</header>
+
+<script>
+  // 换页与缩放后让当前 Tab 保持在导航滚动区内；只滚动导航，不移动整页。
+  const nav = document.querySelector<HTMLElement>('[data-site-nav]');
+  const currentLink = nav?.querySelector<HTMLElement>('[aria-current="page"]');
+
+  if (nav && currentLink) {
+    const revealCurrentLink = (): void => {
+      const navBounds = nav.getBoundingClientRect();
+      const linkBounds = currentLink.getBoundingClientRect();
+      nav.scrollLeft += linkBounds.left - navBounds.left - (nav.clientWidth - linkBounds.width) / 2;
+    };
+
+    revealCurrentLink();
+    const observer = new ResizeObserver(revealCurrentLink);
+    observer.observe(nav);
+  }
+</script>
+
+<style>
+  .site-header {
+    border-block-end: 1px solid var(--color-border);
+    background-color: var(--color-page);
+  }
+
+  .site-header__inner {
+    /* 桌面左右轨道等宽，中间导航占可用宽度的一半，而不是按文字收缩。 */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+    align-items: center;
+    column-gap: clamp(var(--space-1), 1.5vw, var(--space-4));
+    min-block-size: var(--layout-header-height);
+  }
+
+  .site-header__brand {
+    justify-self: start;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--color-text);
+    font-weight: var(--font-weight-heading);
+    text-decoration: none;
+  }
+
+  .site-nav {
+    min-inline-size: 0;
+    inline-size: 100%;
+    padding: var(--space-1);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+
+  .site-nav__list {
+    /* 能放下时均分；文字最小宽度不能压缩，放不下的部分由 nav 横向滚动。 */
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(max-content, 1fr);
+    inline-size: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-nav__link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 100%;
+    min-block-size: var(--target-min-size);
+    min-inline-size: var(--target-min-size);
+    padding-inline: clamp(var(--space-2), 1.2vw, var(--space-4));
+    white-space: nowrap;
+    color: var(--color-text);
+    font-size: var(--font-size-ui);
+    text-decoration: none;
+  }
+
+  .site-nav__link:hover {
+    color: var(--color-link);
+  }
+
+  .site-nav__link[aria-current='page'] {
+    color: var(--color-link);
+    font-weight: var(--font-weight-medium);
+    box-shadow: inset 0 -3px 0 var(--color-link);
+  }
+
+  .site-header__actions {
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: clamp(var(--space-1), 1vw, var(--space-3));
+  }
+
+  .site-header__repo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    min-block-size: var(--target-min-size);
+    min-inline-size: var(--target-min-size);
+    color: var(--color-text);
+    font-size: var(--font-size-ui);
+    text-decoration: none;
+  }
+
+  .site-header__repo svg {
+    inline-size: 20px;
+    block-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .site-header__repo:hover {
+    color: var(--color-link);
+  }
+
+  @media (max-width: 767px) {
+    /* 控件按实际宽度占位，剩余空间全部留给可横滑 Tab；不折叠、不换行。 */
+    .site-header__inner {
+      grid-template-columns: fit-content(25%) minmax(0, 1fr) max-content;
+    }
+
+    /* 仓库链接改为图标，完整名称仍提供给辅助技术。 */
+    .site-header__repo-label {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+</style>

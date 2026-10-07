@@ -1,0 +1,21 @@
+{
+  "name": "mirrorn",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=12.0.0"
+  },
+  "packageManager": "pnpm@12.8.1",
+  "scripts": {
+    "dev": "astro dev",
+    "typecheck": "astro check",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "astro": "^7.3.6",
+    "typescript": "^6.0.3"
+  }
+}

@@ -19,13 +19,15 @@
 
 依赖具体版本在新工程阶段查询实际兼容版本并锁入新 lockfile；不复用归档 lockfile，也不在尚未安装时编造版本。Astro 自身能生成静态路由已经过官方文档核对；自定义指令由 remark-directive 解析，作者接口是 Markdown，组件实现只在站点源码中定义，不引入 MDX 编译执行链。
 
+P1 实际锁定（写入 `pnpm-lock.yaml`）：Astro 7.3.6、TypeScript 6.0.3、@astrojs/check 0.9.10；工具链 Node 24.18.0、pnpm 12.8.1。`output: 'static'`、`astro/tsconfigs/strict` 与 dev／preview 默认端口 4321 按已安装版本的配置声明核对。
+
 参考资料：
 - [Astro 静态输出配置](https://docs.astro.build/en/reference/configuration-reference/#output)
 - [Astro 静态动态路由](https://docs.astro.build/en/guides/routing/#static-ssg-mode)
 - [remark-directive](https://github.com/remarkjs/remark-directive)
 - [Markdown 指令语法](https://github.com/micromark/micromark-extension-directive#syntax)
 
-资料核对使用官方文档的 Context7 检索结果，不宣称已安装或运行这些依赖。
+P0 选型依据为官方文档的 Context7 检索结果；P1 已安装并运行上述锁定工具链，实际配置 API 另经 npm registry 元数据与已安装包的类型声明核对。其余内容解析与搜索依赖仍待相应阶段安装。
 
 ## 2. 数据流
 
@@ -56,30 +58,31 @@ Schema → 自定义指令注册与参数检查 → 引用检查 → 附件检�
 
 ```text
 src/
-  pages/                 # 首页、已收录、关于、资源路由、404
-  layouts/               # SiteLayout、ResourceLayout
+  pages/                 # 首页、已收录、关于、资源路由、404（P1 已建：空集合与路由边界）
+  layouts/               # SiteLayout、ResourceLayout（P1 已建：阅读宽度与标题插槽）
   components/
-    site/                # 顶部导航、主题、目录等站点组件
-    resource/            # 八个资源组件的共享展示实现
+    site/                # 顶部导航、主题、目录等站点组件（P1 只建导航与主题）
+    resource/            # 八个资源组件的共享展示实现（待 P3）
   content/
-    schema/              # Front Matter、来源、产物、指令参数
-    parse/               # 文件读取、YAML/JSON、AST 限制
-    validate/            # 跨资源引用、公开性、附件、锚点
-    registry/            # 将验证结果转成公开资源注册表
-    render/              # 指令统一注册表与受限 AST 到共享组件的映射
-    resolve/             # sourceId/assetId 到真实行为与地址
-    search/              # 索引生成、排序与检索配置
-  scripts/               # 浏览器渐进增强，不读取服务器路径
-  styles/                # tokens、base、layout、prose、components
-content/resources/       # 唯一资源内容根
-public/                  # 站点级受控静态文件，不放资源草稿附件
-scripts/                 # 内容验证、构建编排、产物检查
-config/                  # 站点名、域名、贡献仓库等非机密配置
+    categories.ts        # 八个主分类常量（P1 已建）
+    schema/              # Front Matter、来源、产物、指令参数（待 P2）
+    parse/               # 文件读取、YAML/JSON、AST 限制（待 P2）
+    validate/            # 跨资源引用、公开性、附件、锚点（待 P2）
+    registry/            # 将验证结果转成公开资源注册表（待 P2）
+    render/              # 指令统一注册表与受限 AST 到共享组件的映射（待 P3）
+    resolve/             # sourceId/assetId 到真实行为与地址（待 P3）
+    search/              # 索引生成、排序与检索配置（待 P5）
+  scripts/               # 浏览器渐进增强，不读取服务器路径（P1 的导航与主题脚本在组件内，模块化拆分待 P3/P5）
+  styles/                # tokens、base、prose（P1 已建）
+content/resources/       # 唯一资源内容根（P1 已建，当前为空）
+public/                  # 站点级受控静态文件，不放资源草稿附件（待实现）
+scripts/                 # 内容验证、构建编排、产物检查（待 P2/P7）
+config/                  # 站点名、域名、贡献仓库等非机密配置（P1 已建 site.ts）
 .github/workflows/       # 新项目 CI，尚未创建
 archive/legacy/          # 历史资料，不是 workspace
 ```
 
-当前实际存在的是规范文档和 archive；上面各新业务目录都属于待实现。
+P1 在根目录另外新增：`package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`（pnpm 记录构建脚本白名单与发布年龄例外）、`astro.config.ts`、`tsconfig.json`。`src/content/` 下的解析、校验、注册表、渲染与搜索模块，`src/scripts/`、根 `scripts/`、`public/` 和 CI 均尚未实现。
 
 ## 4. 模块边界
 
@@ -107,6 +110,6 @@ archive/legacy/          # 历史资料，不是 workspace
 
 ## 7. 独立性与扩展缝隙
 
-不引入 Hono、SQLite、Redis、BullMQ、旧共享包或旧 CSS。归档内容不能进入源码导入图、tsconfig include、资源发现、站点 sitemap 或构建产物。
+不引入 Hono、SQLite、Redis、BullMQ、旧共享包或旧 CSS。归档内容不能进入源码导入图、tsconfig include、资源发现、站点 sitemap 或构建产物。P1 已落实扫描边界：`tsconfig.json` 的 include 只覆盖 `src/`、`config/` 与 `astro.config.ts`，Vite 文件监听忽略 `archive/`、`.local/`、`.pi/`，构建产物 `dist/` 只有新站页面与样式。
 
 未来对象存储由 Asset Resolver 扩展；文集导航由明确的文集数据扩展；搜索规模增长由 Search 模块替换。只有需求发生才启用对应扩展，不建立目前无人使用的服务接口。

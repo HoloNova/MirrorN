@@ -1,0 +1,36 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { siteConfig } from '../../config/site';
+---
+
+<SiteLayout title="关于本站" description="MirrorN 的定位、贡献方式与当前状态。">
+  <h1>关于本站</h1>
+  <p class="page-lede">
+    本站以人工收录资源、整理使用文档为目标。如果您愿意贡献自己整理的资源或改进现有文档，欢迎前往项目仓库提交 PR。感谢每一位贡献者的支持。
+  </p>
+
+  <h2>贡献入口</h2>
+  {
+    siteConfig.repositoryUrl ? (
+      <p>
+        <a href={siteConfig.repositoryUrl}>项目仓库</a>
+      </p>
+    ) : (
+      <p>
+        贡献仓库地址尚未配置，因此这里暂时没有仓库链接。正式发布前会在站点配置中填写真实地址，不使用占位域名。
+      </p>
+    )
+  }
+
+  <h2>本站不做什么</h2>
+  <ul>
+    <li>不托管全部资源：页面只指向维护者核实过的来源，不承诺第三方下载地址长期可用。</li>
+    <li>不代理第三方文件，不自动抓取发布清单，不测速，也不自动选择所谓最快来源。</li>
+    <li>没有账号系统、管理后台和数据库；资源文档与来源数据只通过 Git 提交和审核维护。</li>
+  </ul>
+
+  <h2>当前状态</h2>
+  <p>
+    新站工程骨架刚建立：页面结构、主题与构建命令可用，内容处理链、资源组件和检索仍在开发中，因此现在还没有已收录资源。
+  </p>
+</SiteLayout>

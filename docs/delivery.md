@@ -1,6 +1,6 @@
 # 构建、发布与持续维护
 
-> 本文是目标交付契约。新脚本与 CI 尚未实现，不把下表当作当前可执行命令。实际安装和运行说明会在工程阶段写入根 README。
+> 本文是目标交付契约。P1 已实现 `dev`／`typecheck`／`build`／`preview` 四个命令；`content:check`、`lint`、`test:content`、`check:dist` 与新 CI 仍未实现，不能把下表当作当前全部可执行命令。安装与运行说明已写入根 README。
 
 ## 1. 命令职责
 
@@ -15,13 +15,15 @@
 | pnpm check:dist | 检查本次产物内链、资源引用、草稿泄漏和归档污染 |
 | pnpm preview | 本地预览实际生产产物，不重新引入草稿 |
 
-这些命令不能调用 archive 中的脚本。版本锁定、跨平台命令和端口在 P1 实际配置后记录，不沿用旧双进程 dev.mjs。
+这些命令不能调用 archive 中的脚本。P1 已锁定：Node ≥ 24、pnpm 12.8.1（`packageManager`）、dev 与 preview 默认端口 4321；不沿用旧双进程 dev.mjs。
 
 ## 2. 一次发布的内容集合
 
 构建读取同一 Git 修订下的文档、JSON 和附件，生成一个完整不可变产物。产物含页面、搜索索引、下载附件、站点地图、404 与 build-info（提交标识／内容摘要），不含数据库、原始凭据、归档、测试样本或草稿文件。
 
 站点配置统一管理站名、正式 site URL、贡献仓库、默认分支和编辑路径。生产 canonical、OG URL、sitemap 需要真实 site URL；预览不能冒充正式站点，默认 noindex。
+
+P1 当前只支持站点根路径部署，`siteUrl` 不能包含 `/docs/` 等子路径；仓库地址的真实路径不受此限制。未配置 `siteUrl` 的本地产物默认 noindex，404 始终 noindex 且不输出 canonical。独立预览环境的发布标识与真实地址管理仍属于 P7，不把填写正式域名后的本地构建误称为专用预览产物。
 
 资源 URL 是 `/resources/<id>/`，由静态托管支持目录索引。不存在路径返回真实 404，不用 SPA fallback 把所有失效路径都返回首页 200。
 
