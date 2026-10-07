@@ -1,8 +1,0 @@
----
-import type { PublishedResource, ResourceRegistry } from '../../content/registry/types.ts';
-import DocumentNodes from './DocumentNodes.astro';
-import '../../styles/resource-components.css';
-interface Props { resource: PublishedResource; registry: ResourceRegistry }
-const { resource, registry } = Astro.props;
----
-<DocumentNodes nodes={resource.document.children} resource={resource} registry={registry} />

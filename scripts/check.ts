@@ -6,10 +6,11 @@ async function main(): Promise<void> {
   const commands = [
     ['scripts/check-docs.ts'],
     ['scripts/check-template.ts'],
-    [tools.eslint, 'src', 'config', 'scripts', 'astro.config.ts', 'eslint.config.js', '--max-warnings=0'],
+    [tools.eslint, 'src', 'config', 'scripts', 'vite.config.ts', 'react-router.config.ts', 'eslint.config.js', '--max-warnings=0'],
     ['scripts/check-content.ts'],
-    [tools.astro, 'check'],
-    [tools.astro, 'build'],
+    [tools.router, 'typegen'],
+    [tools.tsc, '--noEmit'],
+    [tools.router, 'build'],
     ['scripts/check-dist.ts'],
   ] as const;
   for (const command of commands) {

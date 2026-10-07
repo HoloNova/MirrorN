@@ -24,12 +24,15 @@ async function readIndexText(response: Response): Promise<string> {
 }
 
 /** 同源摘要路径、限时/限量读取；失败后由用户触发重试，不后台循环请求。 */
-export async function loadSearchEngine(path: string, revalidate = false): Promise<SearchEngine> {
+export async function loadSearchEngine(path: string, revalidate = false, signal?: AbortSignal): Promise<SearchEngine> {
   const url = new URL(path, window.location.origin);
   if (url.origin !== window.location.origin || !/^\/search-index\/[a-f0-9]{64}\.json$/.test(url.pathname) || url.search || url.hash) {
     throw new Error('搜索索引地址不符合静态摘要路径');
   }
   const controller = new AbortController();
+  const abort = () => controller.abort(signal?.reason);
+  if (signal?.aborted) throw signal.reason ?? new DOMException('Aborted', 'AbortError');
+  signal?.addEventListener('abort', abort, { once: true });
   let timer: number | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = window.setTimeout(() => { controller.abort(); reject(new Error('搜索加载超时')); }, searchLimits.loadTimeoutMs);
@@ -48,6 +51,7 @@ export async function loadSearchEngine(path: string, revalidate = false): Promis
     return module.createSearchEngine(JSON.parse(text) as unknown);
   } finally {
     window.clearTimeout(timer);
+    signal?.removeEventListener('abort', abort);
     controller.abort();
   }
 }

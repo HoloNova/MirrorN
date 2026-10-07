@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 export const projectRoot = fileURLToPath(new URL('../', import.meta.url));
-export const tools = Object.freeze({ astro: 'node_modules/astro/bin/astro.mjs', eslint: 'node_modules/eslint/bin/eslint.js' });
+export const tools = Object.freeze({ router: 'node_modules/@react-router/dev/bin.cjs', tsc: 'node_modules/typescript/bin/tsc', eslint: 'node_modules/eslint/bin/eslint.js' });
 
 /** 直接使用本机 Node，避免 Windows shell / pnpm shim 与 Unix 环境变量语法分叉。 */
 export async function runNode(args: readonly string[], env: Readonly<NodeJS.ProcessEnv> = process.env): Promise<void> {

@@ -1,8 +1,0 @@
----
-import type { ResourceRegistry } from '../../content/registry/types.ts';
-interface Props { registry: ResourceRegistry; resource: string }
-const { registry, resource: id } = Astro.props;
-const target = registry.get(id);
-if (!target) throw new Error(`ResourceCard 目标未公开：${id}`);
----
-<a class="resource-reference" href={`/resources/${target.metadata.id}/`}>{target.metadata.name}</a>

@@ -1,25 +1,47 @@
 import { isAbsolute, join, relative, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import type { AstroIntegration, HookParameters } from 'astro';
+import type { Plugin, ViteDevServer } from 'vite';
 import { siteConfig } from '../../config/site.ts';
+import { siteConfigWarnings } from '../../config/site.ts';
+import { readPublicStaticFile } from '../delivery/static-files.ts';
 import { loadResourceRegistry } from './registry/load.ts';
 
 const contentReloadDelayMs = 150;
-
-type ServerSetup = HookParameters<'astro:server:setup'>;
-
 function isContentPath(root: string, path: string): boolean {
-  const relativePath = relative(root, path);
-  return !isAbsolute(relativePath) && relativePath !== '..' && !relativePath.startsWith(`..${sep}`);
+  const value = relative(root, path);
+  return !isAbsolute(value) && value !== '..' && !value.startsWith(`..${sep}`);
 }
 
-/** 同一 CLI 处理链接入 Astro，内容错误在构建页面之前就阻断，不等到渲染器里降级为空态。 */
-async function checkContent(root: string, logger: ServerSetup['logger']): Promise<void> {
-  const registry = await loadResourceRegistry(root, { siteUrl: siteConfig.siteUrl });
-  logger.info(`内容校验通过：${registry.summary.publishedResources} 个公开资源，${registry.summary.draftResources} 个草稿。`);
+/** 内容校验接入 Vite；开发静态文件与正式输出共用字节读取，不建设运行时下载服务。 */
+export function contentIntegration(): Plugin {
+  let root = '';
+  return {
+    name: 'mirrorn-content',
+    configResolved(config) { root = config.root; },
+    async buildStart() { await loadResourceRegistry(root, { siteUrl: siteConfig.siteUrl }); },
+    configureServer(server) {
+      for (const message of siteConfigWarnings) server.config.logger.warn(message);
+      watchContent(root, server);
+      server.middlewares.use((request, response, next) => {
+        const path = new URL(request.url ?? '/', 'http://localhost').pathname;
+        if (!/^\/(?:search-index\/|resource-assets\/|licenses\/|robots\.txt$)/u.test(path)) { next(); return; }
+        if (request.method !== 'GET' && request.method !== 'HEAD') { response.statusCode = 405; response.end(); return; }
+        void loadResourceRegistry(root, { siteUrl: siteConfig.siteUrl }).then((registry) => readPublicStaticFile(root, registry, path)).then((file) => {
+          if (!file) { response.statusCode = 404; response.end('Not found'); return; }
+          response.setHeader('Content-Type', file.type);
+          response.setHeader('Content-Length', file.bytes.byteLength);
+          response.setHeader('X-Content-Type-Options', 'nosniff');
+          response.end(request.method === 'HEAD' ? undefined : file.bytes);
+        }).catch((error: unknown) => {
+          server.config.logger.error(error instanceof Error ? error.message : String(error));
+          response.statusCode = 500;
+          response.end('Content validation failed');
+        });
+      });
+    },
+  };
 }
 
-function watchContent(root: string, { server, logger }: ServerSetup): () => void {
+function watchContent(root: string, server: ViteDevServer): void {
   const contentRoot = join(root, 'content/resources');
   let timer: ReturnType<typeof setTimeout> | undefined;
   let dirty = false;
@@ -32,7 +54,7 @@ function watchContent(root: string, { server, logger }: ServerSetup): () => void
       while (dirty && !closed) {
         dirty = false;
         try {
-          await checkContent(root, logger);
+          await loadResourceRegistry(root, { siteUrl: siteConfig.siteUrl });
           if (!dirty && !closed) {
             server.moduleGraph.invalidateAll();
             server.ws.send({ type: 'full-reload', path: '*' });
@@ -40,7 +62,7 @@ function watchContent(root: string, { server, logger }: ServerSetup): () => void
         } catch (error) {
           if (!dirty && !closed) {
             const message = error instanceof Error ? error.message : String(error);
-            logger.error(message);
+            server.config.logger.error(message);
             server.ws.send({ type: 'error', err: { message, stack: '' } });
           }
         }
@@ -51,34 +73,14 @@ function watchContent(root: string, { server, logger }: ServerSetup): () => void
     if (closed || !isContentPath(contentRoot, path)) return;
     dirty = true;
     clearTimeout(timer);
-    timer = setTimeout(() => {
-      void refresh().catch((error: unknown) => logger.error(error instanceof Error ? error.message : String(error)));
-    }, contentReloadDelayMs);
+    timer = setTimeout(() => { void refresh().catch((error: unknown) => server.config.logger.error(String(error))); }, contentReloadDelayMs);
   };
+  const events = ['add', 'change', 'unlink', 'addDir', 'unlinkDir'] as const;
   server.watcher.add(contentRoot);
-  for (const event of ['add', 'change', 'unlink', 'addDir', 'unlinkDir'] as const) server.watcher.on(event, schedule);
-  return () => {
+  for (const event of events) server.watcher.on(event, schedule);
+  server.httpServer?.once('close', () => {
     closed = true;
     clearTimeout(timer);
-    for (const event of ['add', 'change', 'unlink', 'addDir', 'unlinkDir'] as const) server.watcher.off(event, schedule);
-  };
-}
-
-export function contentIntegration(): AstroIntegration {
-  let projectRoot: string | undefined;
-  let dispose: (() => void) | undefined;
-  return {
-    name: 'mirrorn-content',
-    hooks: {
-      'astro:config:setup': async ({ config, command, logger }) => {
-        if (command !== 'dev' && command !== 'build') return;
-        projectRoot = fileURLToPath(config.root);
-        await checkContent(projectRoot, logger);
-      },
-      'astro:server:setup': (options) => {
-        if (projectRoot) dispose = watchContent(projectRoot, options);
-      },
-      'astro:server:done': () => { dispose?.(); },
-    },
-  };
+    for (const event of events) server.watcher.off(event, schedule);
+  });
 }

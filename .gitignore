@@ -11,6 +11,7 @@ node_modules/
 dist/
 coverage/
 .astro/
+.react-router/
 .vite/
 *.tsbuildinfo
 *.log

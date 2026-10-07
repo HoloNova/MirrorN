@@ -9,7 +9,7 @@ async function main(): Promise<void> {
   requireReleaseSite(siteConfig.siteUrl);
   const revision = await sourceRevision(projectRoot);
   if (!revision.commit || revision.dirty !== false) throw new Error('正式构建需要已提交的干净 Git 修订。');
-  await runNode([tools.astro, 'build'], { ...process.env, MIRRORN_BUILD_MODE: 'release' });
+  await runNode([tools.router, 'build'], { ...process.env, MIRRORN_BUILD_MODE: 'release' });
   await runNode(['scripts/check-dist.ts']);
 }
 await main().catch(reportFailure);

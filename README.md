@@ -8,11 +8,13 @@ MirrorN 人工整理软件、运行时、软件包、数据集、模型、系统
 
 P1–P4 已获用户确认验收并提交，P4 为 `8490afd`，均未推送。P5 首页搜索和公开摘要索引、P6 的 MDN 风格视觉与可访问性完善均已获用户确认验收，74 文件类型检查与新站构建通过；P5／P6 已按授权合并提交 `c8eb513`，未推送。P7 平台无关贡献／CI／产物门禁已实现、通过本地检查并获用户确认验收；域名与托管后置，代码 MIT、原创文档 CC BY 4.0 已确定。状态见 PLAN。
 
-- 站点骨架已经可用：Astro 静态单包工程、顶部单行导航（首页／已收录／关于本站，窄屏横滑不折叠）、44px 图标切换亮／暗／跟随系统主题、首页、已收录目录、关于本站和真实 404 页面。
+- 站点骨架已经可用：React／TSX＋React Router 静态预渲染单包工程、顶部单行导航（首页／已收录／关于本站，窄屏横滑不折叠）、44px 图标切换亮／暗／跟随系统主题、首页、已收录目录、关于本站和真实 404 页面。
 - 已有 v1 Schema、Markdown 自定义指令解析、来源／跨资源／锚点／附件校验、不可变资源注册表与 `content:check`，dev／build 使用同一处理链。
 - 已实现纯函数 Resolver、八资源组件、受限 AST 渲染器、摘要附件静态输出与最小资源详情路由。已有 Markdown 编写指南与贡献指南两篇正式站内文档及两个离线附件；目录已接入真实计数与名称卡片。已接通左侧 TOC 与元信息，取消与顶部 Tab 重复的层级面包屑；首页已接通 Fuse.js 加权搜索、查询恢复、键盘选择与失败重试。
 - 根目录旧依赖缓存已在 P1 迁出（可迁移部分保留在 `.local/legacy-runtime/`，不进入 Git，也不参与构建），新依赖按新的 `package.json` 与 `pnpm-lock.yaml` 安装。
 - 后续阶段与当前状态见 [PLAN.md](PLAN.md)；首次公开发布前必须补全站点配置，见[交付门槛](docs/delivery.md#6-首次公开发布门槛)。
+
+当前已迁移全站 UI 到 React／TSX，删除活跃 Astro 配置、页面、组件和依赖；保留资源 Markdown 与原业务处理链。静态预渲染和产物检查已通过，交互与外观待人工验收，未提交／推送。依赖更新后先执行 pnpm install；原 P1–P7 的检查记录为历史证据，不代表迁移 UI 已验收。
 
 ## 本地开发
 
@@ -22,7 +24,7 @@ P1–P4 已获用户确认验收并提交，P4 为 `8490afd`，均未推送。P5
 pnpm install    # 按 package.json 与 pnpm-lock.yaml 安装依赖
 pnpm dev        # 本地开发服务器，默认 http://localhost:4321
 pnpm content:check # 检查所有资源，默认只交付公开注册表，不访问外网
-pnpm typecheck  # astro check：新站、内容处理链与正式脚本的类型检查
+pnpm typecheck  # React Router typegen＋tsc：新站、内容处理链与正式脚本的类型检查
 pnpm build      # 同一内容校验通过后，生成静态产物到 dist/
 pnpm preview    # 预览 dist/ 中的实际产物，默认 http://localhost:4321
 ```
@@ -51,7 +53,7 @@ pnpm content:check --json           # 仅输出摘要／已选资源 ID，不导
 
 本轮涉及全站字体／焦点／主题、首页搜索布局、目录分类、两篇资源页的正文／组件，以及关于和 404；不更改文档契约或 P5 检索行为。字体只自托管 Latin 子集，中文由系统字体显示；使用 `font-display: swap`，字体请求失败仍可读。可从关于页查看原始字体许可，本站代码 MIT、原创文档 CC BY 4.0 已按维护者授权确定，第三方字体仍按 OFL。
 
-手工清单见 [P6 验收](docs/acceptance.md#本轮-p6-受影响-ui-与手工-todo)，正式内容、74 文件 Astro check（零错误／警告／提示）和静态构建通过；静态门禁不代表视觉与辅助技术已经人工通过。
+手工清单见 [P6 验收](docs/acceptance.md#本轮-p6-受影响-ui-与手工-todo)，正式内容、原 P6 的 74 文件类型检查和静态构建通过；静态门禁不代表视觉与辅助技术已经人工通过。
 
 ## 站点配置
 
@@ -67,20 +69,23 @@ pnpm content:check --json           # 仅输出摘要／已选资源 ID，不导
 ## 目录结构
 
 ```text
-src/pages/          基础页面、公开资源文档、摘要附件／搜索索引静态端点
-src/layouts/        SiteLayout（站点外壳）、ResourceLayout（资源文档阅读布局）
+src/root.tsx        React HTML 外壳、全站样式与元信息
+src/routes/         首页、目录、关于、资源页与 404 的 TSX 页面
+src/layouts/        ResourceLayout（React 资源文档阅读布局）
 src/components/     顶部导航、主题、首页搜索、受限渲染器与八资源组件
-src/scripts/        原生复制／下载筛选、顶栏测量、章节追踪、分类定位与按需检索（渐进增强）
+src/hooks/          React 搜索交互状态
+src/scripts/search/ 按需索引与检索模块加载
 src/styles/         本地字体、设计 Tokens、基础／正文／资源组件／搜索样式
 public/font-licenses/ 字体上游版权与完整 OFL（随静态产物分发）
-src/content/        Schema、解析、校验、Registry、Resolver、附件读取、搜索索引／排序、Astro 校验集成
+src/content/        Schema、解析、校验、Registry、Resolver、附件读取、搜索索引／排序、Vite 校验集成
 src/delivery/       P7 产物摘要、HTML／CSS／ESM 与公开集合检查
 scripts/            正式校验／贡献草稿／发布产物 CLI
 templates/          长期贡献模板，非已收录内容
 .github/workflows/  只读校验与 noindex 产物 CI，不部署
 config/             站点级非机密配置
 content/resources/  唯一资源内容根（当前两篇正式站内指南）
-astro.config.ts     静态输出、站点地址与扫描边界
+react-router.config.ts 公开页面预渲染与静态交付
+vite.config.ts      插件、开发端口与扫描边界
 ```
 
 归档资料在 [archive/legacy](archive/legacy)，只是历史资料：不参与站点扫描、构建和类型检查。
@@ -113,7 +118,7 @@ astro.config.ts     静态输出、站点地址与扫描边界
 pnpm resource:new my-resource  # 主动创建工作草稿；不会覆盖已有资源
 pnpm template:check            # 校验长期贡献模板，不创建样本
 pnpm docs:check                # 仅工程文档及内链
-pnpm lint                      # 仅新源码、Astro 与正式工具
+pnpm lint                      # 仅新 React／TypeScript 源码与正式工具
 pnpm check                     # 全部正式门禁，只构建一次 noindex 预览
 pnpm check:dist                # 检查当前 dist 是否仍对应当前公开内容
 ```

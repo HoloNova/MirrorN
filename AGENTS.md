@@ -6,7 +6,7 @@
 - 开始工作先读 `MAIN.md`（产品边界）、`PLAN.md`（实际状态与不恢复区）、`docs/architecture.md`（目标结构）；内容／组件改动再读 `docs/content-spec.md`，UI 改动读 `DESIGN.md`。
 - 文档索引为 `docs/README.md`。产品、规格、实现、验收和上线状态必须分开，不能把规划当作已有能力。
 - 不恢复旧后台、数据库、采集、测速、旧 CI 或旧 CSS；新源码不能导入 archive，资源扫描和构建不能包含归档及 `.local/`。
-- 资源以 `index.md` 普通 Markdown＋自定义指令维护，站点统一解析成可复用组件，不要求作者手写 MDX／JSX 标签。资源由 Git PR 维护，不建设管理端或动态密钥登录。新站采用静态构建；数据库和在线后端不属于现行主线。
+- 资源以 `index.md` 普通 Markdown＋自定义指令维护，站点统一解析成可复用组件，不要求作者手写 MDX／JSX 标签。资源由 Git PR 维护，不建设管理端或动态密钥登录。新站采用 React／TSX＋React Router／Vite 静态预渲染，全站 UI 不使用 Astro，Markdown 仅是资源正文输入；数据库和在线后端不属于现行主线。
 
 
 ### Initiative and follow-through

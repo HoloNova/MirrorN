@@ -25,6 +25,6 @@
 
 提交原创代码意味着按 MIT 贡献，提交原创文档意味着按 CC BY 4.0 贡献；第三方材料须单独明确授权，不将来源不明的内容改标成本站原创。PR 模板要求贡献者确认有权提交，不建设额外授权后台。
 
-每次静态构建从仓库及已锁定依赖生成 `/licenses/mit.txt`、`/licenses/cc-by-4.0.txt`、`/licenses/fuse.txt`、`/licenses/zod.txt`，Fontsource 原始 OFL 位于 `/font-licenses/`。关于页及资源页可访问相应许可，产物检查核对完整原始字节；不是仅放一条外部链接。Fuse.js 与 Zod 是当前浏览器打包依赖，字体保持各自 OFL；开发工具不冒用本站许可。
+每次静态构建从仓库及已锁定依赖生成 `/licenses/mit.txt`、`/licenses/cc-by-4.0.txt`、`/licenses/fuse.txt`、`/licenses/zod.txt`、`/licenses/react.txt`、`/licenses/react-dom.txt`、`/licenses/react-router.txt`，Fontsource 原始 OFL 位于 `/font-licenses/`。关于页及资源页可访问相应许可，产物检查核对完整原始字节；不是仅放一条外部链接。Fuse.js、Zod、React、React DOM 和 React Router 是当前浏览器打包依赖，字体保持各自 OFL；开发工具不冒用本站许可。
 
-以后引入新的客户端依赖或第三方静态文件时，须同步公开原始版权／许可及必要 NOTICE，并扩展产物许可映射。不得以当前四份文本覆盖所有未来依赖。
+以后引入新的客户端依赖或第三方静态文件时，须同步公开原始版权／许可及必要 NOTICE，并扩展产物许可映射。不得以当前许可映射覆盖所有未来依赖。

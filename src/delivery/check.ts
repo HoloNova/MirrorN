@@ -12,12 +12,14 @@ import { fileRecord, manifestName, outputFiles, sha256, textFile } from './files
 import { checkOutputLinks, pageUrl } from './links.ts';
 import { contentDigest, manifestSchema, type BuildManifest } from './manifest.ts';
 import { attribute, elements, htmlDocument, text } from './markup.ts';
+import { pagePaths, routeDataPath } from './integration.ts';
 
 export const fixedPages = ['index.html', 'resources/index.html', 'about/index.html', '404.html'] as const;
 
 function expectedPaths(registry: ResourceRegistry, manifest: BuildManifest): ReadonlySet<string> {
   return new Set([
     ...fixedPages, 'robots.txt',
+    ...pagePaths(registry.resources.map((resource) => resource.metadata.id)).map(routeDataPath),
     ...registry.resources.map((resource) => `resources/${resource.metadata.id}/index.html`),
     ...registry.resources.flatMap((resource) => resource.files.map((file) => assetUrl(resource, file).slice(1))),
     createSearchSnapshot(registry).url.slice(1),
@@ -39,7 +41,7 @@ async function checkIdentity(root: string, out: string, registry: ResourceRegist
   const actual = new Set(paths);
   for (const path of expected) if (!actual.has(path)) throw new Error(`产物缺少 ${path}`);
   for (const path of paths) {
-    if (!expected.has(path) && !/^_astro\/[a-zA-Z0-9_.-]+\.(?:js|css|woff2)$/u.test(path)) {
+    if (!expected.has(path) && !/^assets\/[a-zA-Z0-9_.-]+\.(?:js|css|woff2)$/u.test(path)) {
       throw new Error(`产物含未登记文件（可能是草稿／源码／归档／旧版本残留）：${path}`);
     }
     const record = await fileRecord(out, path);

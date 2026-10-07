@@ -1,9 +1,19 @@
 {
-  "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
-    "types": ["node"]
+    "target": "ES2024",
+    "lib": ["DOM", "DOM.Iterable", "ES2024"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": true,
+    "types": ["node", "vite/client"],
+    "rootDirs": [".", "./.react-router/types"]
   },
-  // 只检查新站源码、配置和正式工具脚本；资源数据由内容处理链校验。
-  "include": [".astro/types.d.ts", "src/**/*", "config/**/*", "scripts/**/*.ts", "astro.config.ts"],
+  "include": ["src/**/*", "config/**/*", "scripts/**/*.ts", "vite.config.ts", "react-router.config.ts", ".react-router/types/**/*"],
   "exclude": ["dist", "node_modules", "archive", ".local", ".pi", "content"]
 }

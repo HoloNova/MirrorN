@@ -8,8 +8,8 @@
 | --- | --- |
 | pnpm dev | 本地预览新站，默认不公开草稿；显式本地预览选项才能查看草稿 |
 | pnpm content:check | 已实现：校验全量资源结构、引用、附件与锚点；默认交付公开 Registry，不访问外网 |
-| pnpm typecheck | 检查新站 Astro／TypeScript 与契约类型 |
-| pnpm lint | ESLint／TypeScript／Astro 检查新源码，不扫描归档与生成文件 |
+| pnpm typecheck | React Router typegen＋tsc 检查 React／TypeScript 与契约类型 |
+| pnpm lint | ESLint／TypeScript／TSX 检查新源码，不扫描归档与生成文件 |
 | pnpm docs:check | 活跃工程 Markdown 的 UTF-8、文件与章节引用，不探测外链 |
 | pnpm template:check | 直接校验长期模板，不创建临时资源 |
 | pnpm resource:new ID | 创建 draft=true 的新资源，已有目录拒绝覆盖 |
@@ -25,7 +25,7 @@
 
 ## 2. 一次发布的内容集合
 
-构建读取同一 Git 修订下的文档、JSON 和附件，生成一个完整不可变产物。产物含页面、搜索索引、下载附件、404、字体、完整许可、robots 与 build-info；只有正式模式包含官方 sitemap，不含数据库、原始凭据、归档、测试样本或草稿文件。
+构建读取同一 Git 修订下的文档、JSON 和附件，生成一个完整不可变产物。产物含页面、搜索索引、下载附件、404、字体、完整许可、robots 与 build-info；只有正式模式包含 sitemap，不含数据库、原始凭据、归档、测试样本或草稿文件。
 
 站点配置统一管理站名、正式 site URL、贡献仓库、默认分支和编辑路径。生产 canonical、OG URL、sitemap 需要真实 site URL；预览不能冒充正式站点，默认 noindex。
 
@@ -43,7 +43,7 @@ P1 当前只支持站点根路径部署，`siteUrl` 不能包含 `/docs/` 等子
 
 图片生成 `/resource-assets/<id>/<sha256>/image.<png|jpeg|webp|avif>`，其他附件生成同前缀下的 `file.bin`。更换字节会更换地址；只输出公开 Registry 实际引用的文件，不将整个 assets 或草稿目录复制到 public。实际读取发现大小／摘要变化会终止生成，须重新构建，不能冒充旧版本文件。
 
-Astro 静态端点在构建后是普通文件，部署不启用应用服务。端点的 Response 头只用于 dev／生成上下文，不保证自动成为托管商响应头。P7 指定实际主机后配置：图片按扩展名返回正确 MIME；`file.bin` 返回 application/octet-stream 和 Content-Disposition: attachment（不固定 filename，保留链接 download 指定的原始名称）；附件设置 nosniff 和摘要缓存。当前没有选择托管商，尚未生成这些主机配置。
+公开静态文件由交付层按 Registry 输出，开发读取与构建共用同一字节函数，部署不启用应用服务。开发中间件的响应头不保证自动成为托管商响应头。P7 指定实际主机后配置：图片按扩展名返回正确 MIME；`file.bin` 返回 application/octet-stream 和 Content-Disposition: attachment（不固定 filename，保留链接 download 指定的原始名称）；附件设置 nosniff 和摘要缓存。当前没有选择托管商，尚未生成这些主机配置。
 
 ### P5 搜索索引输出契约
 
@@ -104,9 +104,9 @@ HTML、目录索引和构建指针使用可及时再验证的缓存；带内容�
 
 ## 8. 平台无关产物门禁（P7）
 
-`src/delivery/` 在 Astro build:done 为完整输出生成 build-info.json。包含 schemaVersion、preview／release、正式地址或 null、Git commit／dirty、公开内容摘要、逐文件 path／size／SHA256 与 artifactHash；不写绝对路径、原始正文、凭据或时间戳。artifactHash 覆盖除自身之外的完整清单，避免自引用；同源修订与字节可复核。预览允许未提交工作区，必须显示 dirty=true；正式模式在构建前后检查干净修订，资源集合在构建过程中变化会阻断。Git 不可用时预览记录 null 并报告原因，不伪造提交号。
+`src/delivery/` 在 React Router buildEnd 为完整静态输出生成 build-info.json。临时构建在 .local/react-router-build，dist 不含服务端构建包、.vite 或 SPA fallback；404.html 从明确预渲染页面生成。HTML 与对应的 _.data／404.html.data 同版本部署，数据文件含公开页面 hydration 信息，不是在线查询接口；与 HTML 一样及时再验证，不使用长期不可变缓存。包含 schemaVersion、preview／release、正式地址或 null、Git commit／dirty、公开内容摘要、逐文件 path／size／SHA256 与 artifactHash；不写绝对路径、原始正文、凭据或时间戳。artifactHash 覆盖除自身之外的完整清单，避免自引用；同源修订与字节可复核。预览允许未提交工作区，必须显示 dirty=true；正式模式在构建前后检查干净修订，资源集合在构建过程中变化会阻断。Git 不可用时预览记录 null 并报告原因，不伪造提交号。
 
-`check:dist` 对照当前公开 Registry 检查文件集合、逐文件字节、内容摘要、JSON 索引与首页绑定、实际附件、正文标题锚点和完整许可；HTML／CSS 用 parse5／PostCSS，JS 模块用 es-module-lexer，核对静态引用闭包，不打开页面或执行产物 JS。只允许固定页面、公开资源／摘要附件／本次索引、已登记许可、字体和 Vite 构建文件；额外来源文件、草稿页面、旧索引／附件、归档或私有数据会失败。检查 noindex／canonical／robots 与正式 sitemap 集合，不访问任何外链。新增 srcset 或变量动态 import 须先扩展引用契约，不能漏检。
+`check:dist` 对照当前公开 Registry 检查文件集合、逐文件字节、内容摘要、JSON 索引与首页绑定、实际附件、正文标题锚点和完整许可；HTML／CSS 用 parse5／PostCSS，JS 模块用 es-module-lexer，核对静态引用闭包，不打开页面或执行产物 JS。只允许固定页面、公开资源／摘要附件／本次索引、已登记许可、字体和 Vite 构建文件；额外来源文件、草稿页面、旧索引／附件、归档或私有数据会失败。检查 noindex／canonical／robots 与正式 sitemap 集合，不访问任何外链。React Router 模块清单通过固定赋值后的 JSON 解析，核对模块／CSS／预加载文件，框架内部清单分派在限定范围内兼容，不执行清单 JS，不宣称静态证明所有动态路径。本站变量动态 import 和新增 srcset 仍须显式扩展契约。
 
 该门禁不代替人工检查外部链接、实际托管响应头、404 状态码或 UI 行为。摘要用于版本识别与字节复核，不是签名或信任来源证明。恢复旧产物时应核对旧清单和字节，不能用当前 Registry 强行验收旧内容。
 

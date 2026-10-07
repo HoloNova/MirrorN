@@ -52,7 +52,7 @@ MirrorN 的内容以 Git 为唯一事实来源。欢迎通过 PR 增加资源、
 
 ## 4. 文档与开发贡献
 
-页面交互以 MAIN 与 DESIGN 为准，组件 API 以内容规范为准。实现前查阅 [PLAN.md](PLAN.md) 当前阶段，避免把归档功能重新搬回。
+全站 UI 使用 React／TypeScript／TSX，包括资源正文展示组件；只有资源输入是 Markdown，自定义指令不变。页面在 src/routes，组件在 src/components，HTML 外壳在 src/root.tsx，不新增 Astro／MDX 层。页面交互以 MAIN 与 DESIGN 为准，组件 API 以内容规范为准。实现前查阅 [PLAN.md](PLAN.md) 当前阶段，避免把归档功能重新搬回。
 
 P6 统一字体、主题和正文／组件样式，作者不在资源文档写字体或 CSS，也不因视觉调整改指令参数。新增字体或第三方静态文件时，保留上游版权和分发许可；现有 Fontsource 许可位于 `public/font-licenses/`，与项目自身许可证区分。
 
