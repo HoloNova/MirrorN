@@ -8,7 +8,7 @@ tags:
   domain: [web, documentation]
   platform: [any]
   format: [text]
-aliases: [文档编写指南, Markdown 写作, 组件使用指南]
+aliases: [文档编写指南, Markdown 写作, 组件使用指南, wen dang bian xie zhi nan]
 authors: [MirrorN]
 publishedAt: 2026-10-07
 draft: false

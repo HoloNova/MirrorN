@@ -2,7 +2,6 @@
 import SiteLayout from './SiteLayout.astro';
 import PageToc from '../components/site/PageToc.astro';
 import type { DocumentHeading } from '../content/parse/document-types';
-import '../styles/prose.css';
 
 interface Props {
   /** 页面唯一 h1；正文标题与 TOC 沿用 Registry 的锚点。 */
@@ -30,8 +29,9 @@ const hasToc = headings.length >= 2;
 <style>
   .resource-frame { max-inline-size: var(--layout-reading-width); margin-inline: auto; }
   .resource { min-inline-size: 0; overflow-wrap: anywhere; }
-  .resource__header { margin-block-end: var(--space-5); }
-  .resource__summary { max-inline-size: var(--layout-reading-width); color: var(--color-text-muted); }
+  .resource__header { margin-block-end: var(--space-6); }
+  .resource__summary { max-inline-size: var(--layout-reading-width); color: var(--color-text-muted); font-size: var(--font-size-lede); }
+  h1 { text-wrap: balance; }
   @media (min-width: 1200px) {
     .resource-frame--with-toc {
       display: grid;

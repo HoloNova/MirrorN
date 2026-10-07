@@ -30,9 +30,9 @@ const contributionPage = registry.get('mirrorn-contributing');
   <ResourceDocument resource={resource} registry={registry} />
   <footer slot="footer" class="resource-footer">
     <nav aria-label="文章操作">
-      <a href={returnHref}>返回{category.name}</a>
-      {editUrl && <a href={editUrl} rel="noopener">编辑此页（GitHub）</a>}
-      {contributionPage && contributionPage.metadata.id !== metadata.id && <a href={`/resources/${contributionPage.metadata.id}/`}>贡献指南</a>}
+      <a class="page-action" href={returnHref}>返回{category.name}</a>
+      {editUrl && <a class="page-action" href={editUrl} rel="noopener">编辑此页（GitHub）</a>}
+      {contributionPage && contributionPage.metadata.id !== metadata.id && <a class="page-action" href={`/resources/${contributionPage.metadata.id}/`}>贡献指南</a>}
     </nav>
     {editUrl && <p>在 GitHub 完成修改后主动提交 PR；同一项修改继续更新同一个 PR。本站不会自动提 PR。</p>}
   </footer>

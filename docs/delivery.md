@@ -1,6 +1,6 @@
 # 构建、发布与持续维护
 
-> 本文是完整目标交付契约。当前已实现 `dev`／`content:check`／`typecheck`／`build`／`preview`；`lint`、`test:content`、`check:dist` 与新 CI 尚未实现。P2–P4 按用户要求不创建过渡测试；公开文档、附件和浏览闭环已接通，下表不等于索引输出或所有命令均已落地。
+> 本文是完整目标交付契约。当前已实现 `dev`／`content:check`／`typecheck`／`build`／`preview`；`lint`、`test:content`、`check:dist` 与新 CI 尚未实现。P2–P5 按用户要求不创建过渡测试；公开文档、附件、浏览闭环与 P5 摘要搜索索引已接通，下表不等于所有目标命令或站点地图均已落地。
 
 ## 1. 命令职责
 
@@ -11,7 +11,7 @@
 | pnpm typecheck | 检查新站 Astro／TypeScript 与契约类型 |
 | pnpm lint | 检查新源码，不扫描归档与生成文件 |
 | pnpm test:content | 解析器、引用、来源解析和索引的定向逻辑验证，无 UI 单元测试 |
-| pnpm build | 已接入同一内容门禁；P3 生成基础页面、公开资源文档和实际引用附件。内容根仍为空时只有四个基础页面；搜索和 sitemap 后续落地 |
+| pnpm build | 已接入同一内容门禁；P3 生成基础页面、公开资源文档和实际引用附件。P5 同次生成首页绑定的公开摘要 JSON 搜索索引；sitemap 尚待 P7 |
 | pnpm check:dist | 检查本次产物内链、资源引用、草稿泄漏和归档污染 |
 | pnpm preview | 本地预览实际生产产物，不重新引入草稿 |
 
@@ -40,6 +40,16 @@ P1 当前只支持站点根路径部署，`siteUrl` 不能包含 `/docs/` 等子
 图片生成 `/resource-assets/<id>/<sha256>/image.<png|jpeg|webp|avif>`，其他附件生成同前缀下的 `file.bin`。更换字节会更换地址；只输出公开 Registry 实际引用的文件，不将整个 assets 或草稿目录复制到 public。实际读取发现大小／摘要变化会终止生成，须重新构建，不能冒充旧版本文件。
 
 Astro 静态端点在构建后是普通文件，部署不启用应用服务。端点的 Response 头只用于 dev／生成上下文，不保证自动成为托管商响应头。P7 指定实际主机后配置：图片按扩展名返回正确 MIME；`file.bin` 返回 application/octet-stream 和 Content-Disposition: attachment（不固定 filename，保留链接 download 指定的原始名称）；附件设置 nosniff 和摘要缓存。当前没有选择托管商，尚未生成这些主机配置。
+
+### P5 搜索索引输出契约
+
+首页与 `search-index/<sha256>.json` 共用公开 Registry 的稳定最小投影，内容改变会改变地址，完整产物同时替换；不手动覆盖旧摘要 URL 的字节。浏览器按需请求索引，做格式／重复 ID 校验，在 SubtleCrypto 可用时核对 SHA256；模块或索引超时／无效时显示手动重试及分类入口，没有服务端查询 API。
+
+P7 必须在实际托管配置中落实 JSON 的 application/json; charset=utf-8、nosniff 与摘要长期缓存；端点 Response 头不代表静态主机已配置。HTML 及时再验证，不对 homepage/404 等文档使用不可变长期缓存。部署须保留同一版本的 HTML、动态 JS 块、索引及附件，禁止 SPA fallback 将缺失 JSON/模块返回首页 HTML。旧打开的页面在发布切换后可能请求旧摘要，按实际主机配置保留必要版本或明确失败引导重载；不能声称摘要地址消除了所有发布切换问题。
+
+### P6 本地字体
+
+两款 Fontsource 5.3.0 字体按 `styles/fonts.css` 引用的 Latin 子集打包为本地带摘要 WOFF2，CSS 与字体和 HTML 同一版本交付。字体使用 swap 和系统回退，不请求外部 CDN；实际静态主机在 P7 按扩展名返回 font/woff2 并采用摘要缓存。`public/font-licenses/inter.txt` 与 `jetbrains-mono.txt` 是包内原始版权和完整 OFL，随每次产物发布并从关于页可访问，不能只发布字体而漏掉许可。两份许可不替代维护者尚待明确的项目许可证。
 
 ## 3. CI 与审核
 

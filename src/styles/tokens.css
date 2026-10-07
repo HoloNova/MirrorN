@@ -24,16 +24,24 @@
   --color-danger: #b42318;
   --color-success: #176b3a;
 
-  /* 字体：先写目标字体，再给系统回退；没有下载到的字体不影响文本可读。 */
-  --font-sans: Inter, system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC',
+  /* 派生颜色不复制亮暗分支，随语义主色更新；输入边界比结构细线更清楚。 */
+  --color-control-border: color-mix(in srgb, var(--color-text) 50%, var(--color-page));
+  --color-accent-soft: color-mix(in srgb, var(--color-link) 6%, var(--color-surface));
+  --color-selection: color-mix(in srgb, var(--color-link) 20%, var(--color-page));
+  --motion-fast: 140ms;
+
+  /* 自托管 Latin 字体；中文及其他字符不等待外网，使用系统回退。 */
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC',
     'Hiragino Sans GB', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', monospace;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono',
+    'Microsoft YaHei', 'PingFang SC', monospace;
 
   /* 字号 */
   --font-size-h1: 2.5rem;
   --font-size-h2: 1.9375rem;
   --font-size-h3: 1.5rem;
   --font-size-body: 1rem;
+  --font-size-lede: 1.0625rem;
   --font-size-ui: 0.9375rem;
   --font-size-note: 0.875rem;
   --font-size-mono: 0.875rem;

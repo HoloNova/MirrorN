@@ -7,7 +7,7 @@ category: document
 tags:
   domain: [documentation]
   format: [text]
-aliases: [贡献流程, PR 指南]
+aliases: [贡献流程, PR 指南, gong xian zhi nan]
 authors: [MirrorN]
 publishedAt: 2026-10-07
 draft: false

@@ -6,11 +6,11 @@ MirrorN 人工整理软件、运行时、软件包、数据集、模型、系统
 
 ## 当前状态
 
-P1–P3 已获用户确认验收并提交。P4 的左侧章节目录／自动高亮、吸顶顶栏、元信息／分类返回与 GitHub 编辑入口已实现，内容校验、64 文件类型检查和静态构建通过，主体功能与重复层级面包屑去重均已获用户确认，并授权提交；UI／UX／样式优化后置，状态见 PLAN。
+P1–P4 已获用户确认验收并提交，P4 为 `8490afd`，均未推送。P5 首页搜索和公开摘要索引、P6 的 MDN 风格视觉与可访问性完善均已获用户确认验收，74 文件类型检查与新站构建通过；用户授权将 P5／P6 合并提交为前台功能基线，不推送。状态见 PLAN。
 
 - 站点骨架已经可用：Astro 静态单包工程、顶部单行导航（首页／已收录／关于本站，窄屏横滑不折叠）、44px 图标切换亮／暗／跟随系统主题、首页、已收录目录、关于本站和真实 404 页面。
 - 已有 v1 Schema、Markdown 自定义指令解析、来源／跨资源／锚点／附件校验、不可变资源注册表与 `content:check`，dev／build 使用同一处理链。
-- 已实现纯函数 Resolver、八资源组件、受限 AST 渲染器、摘要附件静态输出与最小资源详情路由。已有 Markdown 编写指南与贡献指南两篇正式站内文档及两个离线附件；目录已接入真实计数与名称卡片。已接通左侧 TOC 与元信息，取消与顶部 Tab 重复的层级面包屑；首页搜索仍待 P5。
+- 已实现纯函数 Resolver、八资源组件、受限 AST 渲染器、摘要附件静态输出与最小资源详情路由。已有 Markdown 编写指南与贡献指南两篇正式站内文档及两个离线附件；目录已接入真实计数与名称卡片。已接通左侧 TOC 与元信息，取消与顶部 Tab 重复的层级面包屑；首页已接通 Fuse.js 加权搜索、查询恢复、键盘选择与失败重试。
 - 根目录旧依赖缓存已在 P1 迁出（可迁移部分保留在 `.local/legacy-runtime/`，不进入 Git，也不参与构建），新依赖按新的 `package.json` 与 `pnpm-lock.yaml` 安装。
 - 后续阶段与当前状态见 [PLAN.md](PLAN.md)；首次公开发布前必须补全站点配置，见[交付门槛](docs/delivery.md#6-首次公开发布门槛)。
 
@@ -34,17 +34,24 @@ pnpm content:check --include-drafts # 显式本地 preview 注册表；productio
 pnpm content:check --json           # 仅输出摘要／已选资源 ID，不导出正文
 ```
 
-草稿注册表不是草稿页面预览 UI；资源页、目录与附件固定使用公开集合，搜索仍留 P5。`lint`、`test:content` 和 `check:dist` 尚未实现，不提供空命令。本次按用户要求未创建过渡测试或临时资源样本。
+草稿注册表不是草稿页面预览 UI；资源页、目录、附件与搜索索引固定使用公开集合。`lint`、`test:content` 和 `check:dist` 尚未实现，不提供空命令。本次按用户要求未创建过渡测试或临时资源样本。
 
 ### 当前可验收文档
 
-手动运行 `pnpm dev`，或用 `pnpm preview` 查看已构建产物（本次 6 页、2 个附件）：
+手动运行 `pnpm dev`，或用 `pnpm preview` 查看已构建产物（本次 6 页、2 个附件、1 个摘要搜索索引）：
 
+- `/`：首页搜索，可查询 `MirrorN`、`PR 指南`、`wen dang bian xie zhi nan`、`gong xian zhi nan`；`/?q=Markdown` 可分享并恢复查询。
 - `/resources/mirrorn-markdown/`：Markdown 编写指南，实际使用八组件，有 Markdown／TXT 离线速查和校验值。
 - `/resources/mirrorn-contributing/`：贡献指南，通过 ResourceCard 与编写指南互链。
 - `/resources/`：展开「文档／学习资源」可进入以上两篇，其他分类仍为空。
 
-两篇是长期维护的正式内容，不是临时测试资源。P3 本轮功能已获用户确认；新增导航与阅读清单见 [P4 验收](docs/acceptance.md#本轮-p4-受影响-ui-与手工-todo)。桌面左目录跟随阅读自动高亮，窄屏移至正文顶部可折叠，顶部 Tab 全程吸顶、不折叠。构建通过不替代浏览器验收。
+两篇是长期维护的正式内容，不是临时测试资源。P3、P4 本轮功能已获用户确认；导航与阅读清单见 [P4 验收](docs/acceptance.md#本轮-p4-受影响-ui-与手工-todo)。桌面左目录跟随阅读自动高亮，窄屏移至正文顶部可折叠，顶部 Tab 全程吸顶、不折叠。构建通过不替代浏览器验收。P5 已获用户确认，主要验收范围为首页搜索，名称／别名／拼音、方向键／中文输入法、返回恢复、无结果／加载失败重试和无 JS 目录入口见 [P5 清单](docs/acceptance.md#本轮-p5-受影响-ui-与手工-todo)。
+
+### P6 视觉验收
+
+本轮涉及全站字体／焦点／主题、首页搜索布局、目录分类、两篇资源页的正文／组件，以及关于和 404；不更改文档契约或 P5 检索行为。字体只自托管 Latin 子集，中文由系统字体显示；使用 `font-display: swap`，字体请求失败仍可读。可从关于页查看原始字体许可，本站代码和原创文档的许可证仍由维护者在 P7 明确。
+
+手工清单见 [P6 验收](docs/acceptance.md#本轮-p6-受影响-ui-与手工-todo)，正式内容、74 文件 Astro check（零错误／警告／提示）和静态构建通过；静态门禁不代表视觉与辅助技术已经人工通过。
 
 ## 站点配置
 
@@ -60,12 +67,13 @@ pnpm content:check --json           # 仅输出摘要／已选资源 ID，不导
 ## 目录结构
 
 ```text
-src/pages/          基础页面、公开资源文档、摘要附件静态端点
+src/pages/          基础页面、公开资源文档、摘要附件／搜索索引静态端点
 src/layouts/        SiteLayout（站点外壳）、ResourceLayout（资源文档阅读布局）
-src/components/     顶部导航、主题、受限渲染器与八资源组件
-src/scripts/        原生复制／下载筛选、顶栏测量、章节追踪与分类定位（渐进增强）
-src/styles/         设计 Tokens、基础／正文／资源组件样式
-src/content/        Schema、解析、校验、Registry、Resolver、附件读取、Astro 校验集成
+src/components/     顶部导航、主题、首页搜索、受限渲染器与八资源组件
+src/scripts/        原生复制／下载筛选、顶栏测量、章节追踪、分类定位与按需检索（渐进增强）
+src/styles/         本地字体、设计 Tokens、基础／正文／资源组件／搜索样式
+public/font-licenses/ 字体上游版权与完整 OFL（随静态产物分发）
+src/content/        Schema、解析、校验、Registry、Resolver、附件读取、搜索索引／排序、Astro 校验集成
 scripts/            正式内容校验 CLI
 config/             站点级非机密配置
 content/resources/  唯一资源内容根（当前两篇正式站内指南）

@@ -27,7 +27,7 @@ P1 实际锁定（写入 `pnpm-lock.yaml`）：Astro 7.3.6、TypeScript 6.0.3、
 - [remark-directive](https://github.com/remarkjs/remark-directive)
 - [Markdown 指令语法](https://github.com/micromark/micromark-extension-directive#syntax)
 
-P0 选型依据为官方文档的 Context7 检索结果；P1 已安装并运行上述锁定工具链，实际配置 API 另经 npm registry 元数据与已安装包的类型声明核对。P2 已锁定 unified 11.0.5、remark-parse 11.0.0、remark-gfm 4.0.1、remark-directive 4.0.0、remark-frontmatter 5.0.0、yaml 2.9.1、Zod 4.6.5、jsonc-parser 3.3.1、github-slugger 2.0.0、micromark-util-normalize-identifier 2.0.1 与 mdast-util-to-string 4.0.0。官方解析、GFM、源位置、标题文本和唯一锚点工具均复用成熟实现；Fuse.js 留到 P5。
+P0 选型依据为官方文档的 Context7 检索结果；P1 已安装并运行上述锁定工具链，实际配置 API 另经 npm registry 元数据与已安装包的类型声明核对。P2 已锁定 unified 11.0.5、remark-parse 11.0.0、remark-gfm 4.0.1、remark-directive 4.0.0、remark-frontmatter 5.0.0、yaml 2.9.1、Zod 4.6.5、jsonc-parser 3.3.1、github-slugger 2.0.0、micromark-util-normalize-identifier 2.0.1 与 mdast-util-to-string 4.0.0。官方解析、GFM、源位置、标题文本和唯一锚点工具均复用成熟实现；P5 已加入 Apache-2.0 的 Fuse.js 7.5.0，选型 API 经官方仓库文档与安装包类型声明核对。
 
 ## 2. 数据流
 
@@ -52,7 +52,7 @@ Schema → 自定义指令注册与参数检查 → 引用检查 → 附件检�
 
 开发预览和正式构建共用处理链。开发时文件变化会刷新注册表；生产不扫描磁盘、不修改内容。内容错误阻止新的构建，已部署版本不受影响。
 
-P2 默认输出公开 Registry；`content:check --include-drafts` 显式选择本地 preview 集合，production 环境拒绝此模式，正式构建集成固定选择 public。P3 公开附件已按 Registry 生成；草稿页面 UI、索引与社交元数据尚待对应阶段实现；以后页面预览须可见标识，不把“预览地址隐蔽”当成不公开保证。
+P2 默认输出公开 Registry；`content:check --include-drafts` 显式选择本地 preview 集合，production 环境拒绝此模式，正式构建集成固定选择 public。P3 公开附件已按 Registry 生成；草稿页面 UI 与社交元数据尚待对应阶段实现；P5 搜索索引仅包含公开集合；以后页面预览须可见标识，不把“预览地址隐蔽”当成不公开保证。
 
 ## 3. 目标目录
 
@@ -73,18 +73,18 @@ src/
     integration.ts       # CLI 同链构建门禁、dev 内容监听（P2 已建）
     render/              # 摘要附件实际读取和再核对（P3 已建；AST 渲染见 components/resource）
     resolve/             # 来源行为、附件地址与下载候选模型（P3 已建）
-    search/              # 索引生成、排序与检索配置（待 P5）
-  scripts/               # P3 复制／下载选择；P4 顶栏测量／章节追踪／分类定位；搜索待 P5
-  styles/                # tokens、base、prose（P1）；resource-components（P3）
+    search/              # 最小公开投影、摘要快照、共享 Schema、归一化与 Fuse 检索（P5 已建）
+  scripts/               # P3 复制／下载选择；P4 顶栏测量／章节追踪／分类定位；P5 按需索引加载／首页搜索
+  styles/                # tokens、base、prose（P1）；resource-components（P3）、search（P5）
 content/resources/       # 唯一资源内容根（已收录两篇正式站内指南）
-public/                  # 站点级受控静态文件，不放资源草稿附件（待实现）
+public/                  # font-licenses 原始许可（P6）；不放资源草稿附件
 scripts/                 # check-content.ts（P2 已建）；产物检查待 P7
 config/                  # 站点名、域名、贡献仓库等非机密配置（P1 已建 site.ts）
 .github/workflows/       # 新项目 CI，尚未创建
 archive/legacy/          # 历史资料，不是 workspace
 ```
 
-P1 在根目录另外新增：`package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`（pnpm 记录构建脚本白名单与发布年龄例外）、`astro.config.ts`、`tsconfig.json`。P2 已创建内容 Schema、Parser、Validator、Registry、Astro 校验集成与正式 CLI。P3 已创建受限渲染器、Resolver、复制与选择器增强、资源文档和摘要附件静态端点。P4 浏览闭环已接通；搜索和新 CI 尚未实现。
+P1 在根目录另外新增：`package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`（pnpm 记录构建脚本白名单与发布年龄例外）、`astro.config.ts`、`tsconfig.json`。P2 已创建内容 Schema、Parser、Validator、Registry、Astro 校验集成与正式 CLI。P3 已创建受限渲染器、Resolver、复制与选择器增强、资源文档和摘要附件静态端点。P4 浏览闭环已验收并提交；P5 首页搜索与静态索引已获用户确认验收；P6 完善视觉与可访问性，新 CI 尚未实现。
 
 ### P2 实际接口
 
@@ -92,7 +92,7 @@ P1 在根目录另外新增：`package.json`、`pnpm-lock.yaml`、`pnpm-workspac
 
 公开对象包含 `metadata`、`data`（来源文件包）、受限 `document`／`headings`、实际引用的 `files` 和 `resourceReferences`；递归复制冻结，无原始文档代码、磁盘绝对路径或文件字节。`get(id)` 和 `referencesTo(id)` 只查询当前选定集合。每个文件记录相对路径、实际字节数、SHA256／SHA512 和格式；P3 已将附件解析为摘要 URL 并生成静态文件，不能把 path 直接当服务器 URL。
 
-CLI 使用 Node 24 原生 TypeScript，不额外引入脚本 runner。Astro 在 dev／build 配置阶段调用相同 Registry 加载器；dev 监听内容根，串行合并变更、重新校验并刷新模块，出错报告明确位置。P3 的资源文档和附件端点已消费公开 Registry；当前已生成两篇正式站内指南及两个附件，目录也已消费公开 Registry 计数和名称卡片。P4 已补上目录、元信息和浏览闭环，待人工验收。
+CLI 使用 Node 24 原生 TypeScript，不额外引入脚本 runner。Astro 在 dev／build 配置阶段调用相同 Registry 加载器；dev 监听内容根，串行合并变更、重新校验并刷新模块，出错报告明确位置。P3 的资源文档和附件端点已消费公开 Registry；当前已生成两篇正式站内指南及两个附件，目录也已消费公开 Registry 计数和名称卡片。P4 目录、元信息和浏览闭环已获用户确认验收。
 
 ### P3 实际接口
 
@@ -106,7 +106,7 @@ CLI 使用 Node 24 原生 TypeScript，不额外引入脚本 runner。Astro 在 
 
 P3 已收录编写／贡献指南两篇正式站内文档，不生成临时样本；静态构建已处理八组件，用户已确认本轮功能验收。未覆盖状态仍须后续真实内容验收，UI／UX／样式优化后置；状态和人工清单见 PLAN／acceptance。
 
-### P4 页面与贡献入口（已实现，待人工验收）
+### P4 页面与贡献入口（已验收）
 
 `ResourceLayout` 消费公开 Registry 的 `document.headings`，少于两项不生成空侧栏；`PageToc.astro` 使用同一组编码后的正文锚点。`page-toc.ts` 以 requestAnimationFrame 合并更新，读取当前标题位置与真实 scroll-margin，处理向上／向下滚动、页面末尾、hashchange、尺寸变化与历史恢复。仅更新 aria-current 和目录自身滚动，不改 URL 或正文焦点。宽屏左目录 sticky，窄屏原生 details；无 JS 时保留目录锚点与展开能力。
 
@@ -126,7 +126,7 @@ P3 已收录编写／贡献指南两篇正式站内文档，不生成临时样�
 - 搜索与目录使用同一公开集合，但生成适合各自用途的最小字段；不把完整正文、所有来源或草稿发给首页。
 - 浏览器只负责交互状态，不能成为发布状态和来源数据的第二份存储。
 
-## 5. 搜索和排序
+## 5. 搜索和排序（P5 已验收）
 
 索引包含 id、name、summary、category、aliases、tags 和 sortKey，关联稳定资源 URL。名称精确匹配优先于模糊结果；固定权重、阈值和 tie-break，避免输入相同却因构建环境而改变结果。
 
@@ -134,11 +134,26 @@ P3 已收录编写／贡献指南两篇正式站内文档，不生成临时样�
 
 索引 URL 随构建内容产生摘要，HTML 不指向旧版固定索引缓存。大规模分片或全文检索仅在实际索引体积和延迟证明需要时引入，不预建后端搜索服务。
 
+实际入口：`createSearchSnapshot(publicRegistry)` 投影并通过 `searchIndexSchema` 校验，再按 ID 排序、序列化并计算 SHA256；首页与 `pages/search-index/[hash].json.ts` 共用该函数。索引只含上述字段，tags 是维度标签去重后的值，不含正文、作者信息、来源 URL、文件路径或附件字节；拒绝 preview Registry。生产输出一个普通静态 JSON 文件，不是查询 API。JSON 不接受 href，浏览器从合法 ID 生成 `/resources/<id>/`。
+
+`engine.ts` 使用名称／别名／sortKey／标签／简介权重 0.5／0.25／0.12／0.08／0.05，阈值 0.35、忽略匹配位置；精确名称、精确别名分别优先，然后按 Fuse 分数、归一化 sortKey/name、ID 排序，最后截取 20 条。匹配统一做 NFKC、大小写与空白归一化，不自动生成拼音；纯排序不依赖 locale。搜索引擎只暴露 count/search，不暴露增删索引的方法。
+
+小型 controller 默认加载，Fuse/Zod 检索块和 JSON 仅在首次聚焦、输入或恢复非空 `?q=` 时加载。150ms 合并输入，中文输入法确认期间不导航；↑↓ 选择、Enter 打开、Esc 收起（不清空查询），有清空按钮。输入不不断新增历史项，使用 replaceState 维护 q，pageshow/popstate 恢复。异步完成后读取最新查询，清空或收起后不重新弹出旧结果。
+
+`limits.ts` 是共享预算：240 字符查询、20 条结果、2 MiB JSON、10 秒加载。loader 同源且只接受摘要路径，拒绝重定向，流式累计检查大小，覆盖模块与 JSON 的加载超时；Schema 校验包含版本、字段与重复 ID，首次加载遵循普通缓存，手动重试重新验证缓存，失败不后台自动重试；若动态模块失败已被浏览器缓存，提供刷新整页入口，保留 q。HTTPS/localhost 的 SubtleCrypto 可用时核对实际文件摘要；非安全上下文保留版本路径和 Schema 校验，不声称已执行密码摘要校验。托管响应头仍需 P7 落实。UI 用 combobox/listbox 的 active-descendant 与文本节点，无 set:html/innerHTML。
+
+
 ## 6. 渐进增强
 
 正文、分类展开、普通链接在关闭 JavaScript 时仍可使用。下载选择器必须提供可读的默认／完整文件链接替代视图，安装命令即使无法复制仍可选择文字。需要 JS 的搜索给出转到已收录目录的说明，不显示一个失效的输入框。
 
 只给交互部分发送 JS；不把整个文档页包成客户端 SPA。禁止从用户文档加载远程脚本、动态执行 JSX 或执行安装命令。
+
+### P6 视觉层边界
+
+`styles/fonts.css` 只引用 Fontsource 5.3.0 的两个 Latin 可变 WOFF2，Vite 输出带摘要的本地字体；`font-display: swap`、中文系统回退、关于页和 `public/font-licenses/` 的两份原始 OFL 不依赖外部字体服务。资源文档不用维护字体或样式属性。
+
+`SiteLayout` 共用字体／Tokens／基础／prose；首页线稿与版式由页面负责，`search.css` 只改变搜索呈现，不重写 engine/controller。正文、来源、复制／下载组件仍用已有语义 HTML 与数据；代码与表格保留独立滚动区域。统一 `--anchor-offset`，去掉资源样式对固定顶栏高度的覆盖。主题控件由自身脚本完成初始化再显示，不再依赖页首全局 JS 标记。没有 UI 框架、动画运行时或新后端。
 
 ## 7. 独立性与扩展缝隙
 

@@ -1,76 +1,61 @@
-/**
- * 资源文档正文样式（DESIGN.md 第 4、5 节的阅读部分）。
- *
- * 为什么是全局样式：正文由 Markdown 渲染成普通 HTML，不经过 Astro 组件作用域，
- * 因此这里用 `.prose` 容器选择器统一控制阅读宽度与排版节奏。
- * P3 资源组件外观由 resource-components.css 统一定义并复用相同 Tokens。
- */
-
-.prose {
-  max-inline-size: var(--layout-reading-width);
+/* 正文由受限 AST 生成；排版只在 .prose 内作用，不干扰顶栏与交互区域。 */
+.prose { max-inline-size: var(--layout-reading-width); min-inline-size: 0; }
+.prose :is(h2, h3, h4, h5, h6) {
+  margin-block: var(--space-7) var(--space-4);
+  scroll-margin-block-start: var(--anchor-offset);
 }
-
-.prose :is(h2, h3, h4) {
-  margin-block: var(--space-6) var(--space-3);
-}
-
-.prose :is(h2, h3, h4):first-child {
-  margin-block-start: 0;
-}
-
-.prose :is(p, ul, ol, blockquote, pre, table) {
-  margin-block: 0 var(--space-4);
-}
-
-.prose li + li {
-  margin-block-start: var(--space-1);
-}
-
+.prose h2 { padding-block-end: var(--space-3); border-block-end: 1px solid var(--color-border); }
+.prose :is(h4, h5, h6) { font-size: 1.125rem; line-height: var(--line-height-h3); }
+.prose :is(h2, h3, h4, h5, h6):first-child { margin-block-start: 0; }
+.prose :is(p, ul, ol, blockquote, pre, table) { margin-block: 0 var(--space-5); }
+.prose p { overflow-wrap: anywhere; }
+.prose li + li { margin-block-start: var(--space-2); }
+.prose li > :last-child { margin-block-end: 0; }
+.prose li > input[type='checkbox'] { margin-inline-end: var(--space-2); accent-color: var(--color-link); }
 .prose blockquote {
   margin-inline: 0;
-  padding-inline-start: var(--space-4);
+  padding: var(--space-2) var(--space-5);
   border-inline-start: 3px solid var(--color-border);
   color: var(--color-text-muted);
 }
-
+.prose blockquote > :last-child { margin-block-end: 0; }
 .prose code {
-  padding: 0.1em 0.35em;
-  border-radius: 4px;
+  padding: 0.15em 0.35em;
+  border-radius: var(--radius-control);
   background-color: var(--color-surface-muted);
   font-family: var(--font-mono);
-  font-size: var(--font-size-mono);
+  font-size: 0.9em;
+  font-variant-ligatures: none;
+  overflow-wrap: anywhere;
 }
-
-/* 代码块保留原始空白，容器内横向滚动，不换行破坏命令辨识。 */
 .prose pre {
-  padding: var(--space-4);
+  max-inline-size: 100%;
+  padding: var(--space-4) var(--space-5);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-surface);
   background-color: var(--color-surface-muted);
   overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
   line-height: var(--line-height-mono);
+  white-space: pre;
+  overflow-wrap: normal;
+  overscroll-behavior-x: contain;
+  tab-size: 2;
 }
-
-.prose pre code {
-  padding: 0;
-  background: none;
-  font-size: inherit;
-}
-
-/* 表格在窄屏内滚动而不是压成小字；单元格本身仍是表格语义。 */
-.prose table {
-  display: block;
-  max-inline-size: 100%;
-  overflow-x: auto;
-  border-collapse: collapse;
-}
-
+.prose pre code { padding: 0; background: none; font-size: inherit; overflow-wrap: normal; }
+/* 不改表格的 display 语义；横向滚动和键盘焦点由带名称的外层区域提供。 */
+.prose table { inline-size: 100%; border-collapse: collapse; }
 .prose :is(th, td) {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--color-border);
   text-align: start;
+  vertical-align: top;
 }
-
-.prose th {
-  background-color: var(--color-surface-muted);
+.prose th { background-color: var(--color-surface-muted); font-weight: var(--font-weight-heading); white-space: nowrap; }
+.prose caption { padding-block: var(--space-3); color: var(--color-text-muted); text-align: start; font-size: var(--font-size-note); }
+.prose img { display: block; max-inline-size: 100%; block-size: auto; margin-block: var(--space-5); border-radius: var(--radius-control); }
+@media (max-width: 767px) {
+  .prose :is(th, td) { padding: var(--space-2) var(--space-3); }
+  .prose pre { padding: var(--space-4); }
 }

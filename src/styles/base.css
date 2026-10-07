@@ -11,7 +11,14 @@
   box-sizing: border-box;
 }
 
+html {
+  scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
+  min-block-size: 100svh;
   margin: 0;
   background-color: var(--color-page);
   color: var(--color-text);
@@ -24,9 +31,12 @@ body {
 h1,
 h2,
 h3,
-h4 {
+h4,
+h5,
+h6 {
   margin: 0 0 var(--space-4);
   font-weight: var(--font-weight-heading);
+  overflow-wrap: anywhere;
 }
 
 h1 {
@@ -58,13 +68,16 @@ ol {
 a {
   color: var(--color-link);
   text-decoration: underline;
-  text-underline-offset: 0.15em;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
 }
 
 /* 键盘焦点必须可见；鼠标点击不额外画框。 */
 :focus-visible {
   outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
+  outline-offset: 3px;
+  scroll-margin-block-start: var(--anchor-offset);
+  scroll-margin-block-end: var(--space-4);
 }
 
 hr {
@@ -93,12 +106,33 @@ svg {
 }
 
 .page-main {
-  padding-block: var(--space-6) var(--space-8);
+  min-inline-size: 0;
+  padding-block: clamp(var(--space-6), 5vh, var(--space-8)) var(--space-8);
 }
+
+.page-section { max-inline-size: 64rem; margin-inline: auto; }
+.reading-page { max-inline-size: var(--layout-reading-width); margin-inline: auto; }
+.page-actions { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3); }
+.page-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--target-min-size);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  color: var(--color-link);
+  background: var(--color-surface);
+  text-decoration: none;
+  transition: background-color var(--motion-fast);
+}
+.page-action:hover { background: var(--color-accent-soft); }
+::selection { color: var(--color-text); background: var(--color-selection); }
 
 /* 首段定位说明使用次要文字色，不放大字号。 */
 .page-lede {
   color: var(--color-text-muted);
+  font-size: var(--font-size-lede);
   max-inline-size: 40rem;
 }
 
@@ -108,6 +142,7 @@ svg {
   inset-block-start: var(--space-2);
   inset-inline-start: var(--space-2);
   z-index: 30;
+  min-block-size: var(--target-min-size);
   padding: var(--space-2) var(--space-3);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -160,4 +195,11 @@ svg {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* 系统高对比模式不依赖被禁用的 box-shadow 或自定义背景来表示选中。 */
+@media (forced-colors: active) {
+  :focus-visible { outline-color: Highlight; }
+  .site-nav__link[aria-current='page'] { border-block-end: 3px solid Highlight; }
+  .search-result[aria-selected='true'] { outline: 2px solid Highlight; outline-offset: -2px; }
 }

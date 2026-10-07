@@ -1,8 +1,10 @@
 ---
 import SiteHeader from '../components/site/SiteHeader.astro';
 import { siteConfig } from '../../config/site';
+import '../styles/fonts.css';
 import '../styles/tokens.css';
 import '../styles/base.css';
+import '../styles/prose.css';
 
 interface Props {
   /** 页面标题，与站点名拼成 <title>；省略时只用站点名。 */
@@ -32,10 +34,9 @@ const canonicalUrl = Astro.site && !noindex ? new URL(Astro.url.pathname, Astro.
     {canonicalUrl && <link rel="canonical" href={canonicalUrl.href} />}
     <script is:inline>
       // 首次绘制前决定主题，避免整页亮暗闪烁；存储不可用时退回系统偏好。
-      // 同时标记脚本可用，主题控件据此显示；主导航不依赖脚本即可访问。
+      // 主导航不依赖脚本；主题控件仅在自身脚本成功初始化后显示。
       (function () {
         var root = document.documentElement;
-        root.classList.add('has-js');
         try {
           var stored = window.localStorage.getItem('mirrorn-theme');
           if (stored === 'light' || stored === 'dark') {

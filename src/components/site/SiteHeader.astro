@@ -99,6 +99,10 @@ function isCurrentPage(href: string): boolean {
     white-space: nowrap;
     text-overflow: ellipsis;
     color: var(--color-text);
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--target-min-size);
+    font-size: 1.125rem;
     font-weight: var(--font-weight-heading);
     text-decoration: none;
   }
@@ -106,7 +110,8 @@ function isCurrentPage(href: string): boolean {
   .site-nav {
     min-inline-size: 0;
     inline-size: 100%;
-    padding: var(--space-1);
+    /* 留出焦点环空间，不能裁掉可横滑 Tab 的键盘焦点。 */
+    padding: calc(var(--space-1) + 2px);
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scrollbar-width: thin;
@@ -131,6 +136,7 @@ function isCurrentPage(href: string): boolean {
     min-block-size: var(--target-min-size);
     min-inline-size: var(--target-min-size);
     padding-inline: clamp(var(--space-2), 1.2vw, var(--space-4));
+    border-radius: var(--radius-control) var(--radius-control) 0 0;
     white-space: nowrap;
     color: var(--color-text);
     font-size: var(--font-size-ui);
@@ -139,6 +145,7 @@ function isCurrentPage(href: string): boolean {
 
   .site-nav__link:hover {
     color: var(--color-link);
+    background: var(--color-accent-soft);
   }
 
   .site-nav__link[aria-current='page'] {

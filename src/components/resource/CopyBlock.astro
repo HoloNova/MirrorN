@@ -12,7 +12,7 @@ const { value, label, wrap = false, disabled = false } = Astro.props;
     <span>{label}</span>
     <button type="button" data-copy-button hidden disabled={disabled} aria-label={`复制${label}`}>复制</button>
   </div>
-  <pre tabindex="0" data-copy-value><code>{value}</code></pre>
+  <pre tabindex="0" aria-label={`${label}内容`} data-copy-value><code>{value}</code></pre>
   <span class="copy-block__feedback" data-copy-feedback aria-live="polite"></span>
 </div>
 <script>

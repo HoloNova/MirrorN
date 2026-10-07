@@ -3,7 +3,7 @@
 // Holo 的主题开关提供了参考；本实现保留本站 Tokens 和原生脚本，不引入 React/动效运行时。
 ---
 
-<div class="theme-control">
+<div class="theme-control" hidden data-theme-control>
   <button
     class="theme-control__button"
     type="button"
@@ -33,9 +33,10 @@
   type Theme = (typeof themes)[number];
   const labels: Readonly<Record<Theme, string>> = { system: '跟随系统', light: '亮色', dark: '暗色' };
   const button = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+  const control = document.querySelector<HTMLElement>('[data-theme-control]');
   const status = document.querySelector<HTMLElement>('[data-theme-status]');
 
-  if (button) {
+  if (button && control) {
     const root = document.documentElement;
     const currentTheme = (): Theme =>
       root.dataset.theme === 'light' || root.dataset.theme === 'dark' ? root.dataset.theme : 'system';
@@ -64,6 +65,7 @@
         // 存储不可用时仍允许本次页面切换，只是不跨刷新保存。
       }
     });
+    control.hidden = false;
   }
 </script>
 
@@ -74,7 +76,7 @@
     inline-size: var(--target-min-size);
     block-size: var(--target-min-size);
     padding: 0;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-control-border);
     border-radius: var(--radius-control);
     background-color: var(--color-surface);
     color: var(--color-text);
@@ -98,8 +100,6 @@
     display: block;
   }
 
-  /* 无脚本时使用系统主题，不保留无法操作的按钮。 */
-  :global(html:not(.has-js)) .theme-control {
-    display: none;
-  }
+  /* 无脚本或本模块未加载时按系统／页首选择显示，隐藏不可操作控件。 */
+  .theme-control[hidden] { display: none; }
 </style>
