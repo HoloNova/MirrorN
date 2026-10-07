@@ -6,11 +6,11 @@ MirrorN 人工整理软件、运行时、软件包、数据集、模型、系统
 
 ## 当前状态
 
-P1（新工程与主题基础）与 P2（内容契约与受限文档处理链）均已获用户确认验收；P2 正式内容校验、类型检查与构建通过，尚未提交；状态见 PLAN。
+P1（新工程与主题基础）与 P2（内容契约与受限文档处理链）均已获用户确认验收并提交。P3 的来源组件、文档渲染与附件输出已实现，正式内容校验、58 文件类型检查与静态构建通过，已获用户确认功能验收并授权提交；UI／UX／样式优化后置，状态见 PLAN。
 
 - 站点骨架已经可用：Astro 静态单包工程、顶部单行导航（首页／已收录／关于本站，窄屏横滑不折叠）、44px 图标切换亮／暗／跟随系统主题、首页、已收录目录、关于本站和真实 404 页面。
 - 已有 v1 Schema、Markdown 自定义指令解析、来源／跨资源／锚点／附件校验、不可变资源注册表与 `content:check`，dev／build 使用同一处理链。
-- 资源组件渲染、页面与注册表接入、搜索尚未实现，也没有任何真实收录资源：首页与已收录页仍是明确空态，不是演示数据。
+- 已实现纯函数 Resolver、八资源组件、受限 AST 渲染器、摘要附件静态输出与最小资源详情路由。已有 Markdown 编写指南与贡献指南两篇正式站内文档及两个离线附件；目录已接入真实计数与名称卡片。TOC、面包屑与搜索仍待后续阶段。
 - 根目录旧依赖缓存已在 P1 迁出（可迁移部分保留在 `.local/legacy-runtime/`，不进入 Git，也不参与构建），新依赖按新的 `package.json` 与 `pnpm-lock.yaml` 安装。
 - 后续阶段与当前状态见 [PLAN.md](PLAN.md)；首次公开发布前必须补全站点配置，见[交付门槛](docs/delivery.md#6-首次公开发布门槛)。
 
@@ -34,7 +34,17 @@ pnpm content:check --include-drafts # 显式本地 preview 注册表；productio
 pnpm content:check --json           # 仅输出摘要／已选资源 ID，不导出正文
 ```
 
-草稿注册表不是草稿页面预览 UI；页面、附件静态输出和搜索接入分别留到 P3–P5。`lint`、`test:content` 和 `check:dist` 尚未实现，不提供空命令。本次按用户要求未创建过渡测试或临时资源样本。
+草稿注册表不是草稿页面预览 UI；P3 资源页和附件固定使用公开集合，完整浏览与搜索仍留 P4／P5。`lint`、`test:content` 和 `check:dist` 尚未实现，不提供空命令。本次按用户要求未创建过渡测试或临时资源样本。
+
+### 当前可验收文档
+
+手动运行 `pnpm dev`，或用 `pnpm preview` 查看已构建产物（本次 6 页、2 个附件）：
+
+- `/resources/mirrorn-markdown/`：Markdown 编写指南，实际使用八组件，有 Markdown／TXT 离线速查和校验值。
+- `/resources/mirrorn-contributing/`：贡献指南，通过 ResourceCard 与编写指南互链。
+- `/resources/`：展开「文档／学习资源」可进入以上两篇，其他分类仍为空。
+
+两篇是长期维护的正式内容，不是临时测试资源。手工清单见 [P3 验收](docs/acceptance.md#本轮-p3-受影响-ui-与手工-todo)；浏览器点击、复制、主题和窄屏仍由维护者验收，构建通过不替代这些结果。
 
 ## 站点配置
 
@@ -48,14 +58,15 @@ pnpm content:check --json           # 仅输出摘要／已选资源 ID，不导
 ## 目录结构
 
 ```text
-src/pages/          首页、已收录、资源路由边界、关于本站、404
+src/pages/          基础页面、公开资源文档、摘要附件静态端点
 src/layouts/        SiteLayout（站点外壳）、ResourceLayout（资源文档阅读布局）
-src/components/     站点组件（顶部导航、主题控制）
-src/styles/         设计 Tokens、基础样式、正文样式
-src/content/        Schema、文件／Markdown 解析、引用／附件校验、Registry、Astro 校验集成
+src/components/     顶部导航、主题、受限渲染器与八资源组件
+src/scripts/        原生复制与下载筛选（渐进增强）
+src/styles/         设计 Tokens、基础／正文／资源组件样式
+src/content/        Schema、解析、校验、Registry、Resolver、附件读取、Astro 校验集成
 scripts/            正式内容校验 CLI
 config/             站点级非机密配置
-content/resources/  唯一资源内容根（解析已实现，当前仍为空）
+content/resources/  唯一资源内容根（当前两篇正式站内指南）
 astro.config.ts     静态输出、站点地址与扫描边界
 ```
 

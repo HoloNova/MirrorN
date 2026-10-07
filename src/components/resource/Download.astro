@@ -1,0 +1,9 @@
+---
+import type { PublishedResource } from '../../content/registry/types.ts';
+import { resolveDownload } from '../../content/resolve/sources.ts';
+import SourceEntry from './SourceEntry.astro';
+interface Props { resource: PublishedResource; source: string; label?: string }
+const { resource, source, label } = Astro.props;
+const entry = resolveDownload(resource, source);
+---
+<SourceEntry entry={entry} label={label} />

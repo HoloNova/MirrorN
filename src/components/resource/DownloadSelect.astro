@@ -1,0 +1,53 @@
+---
+import type { PublishedResource } from '../../content/registry/types.ts';
+import { artifactDescription, dimensionKey, downloadChoices } from '../../content/resolve/selection.ts';
+import SourceEntry from './SourceEntry.astro';
+interface Props { resource: PublishedResource; group: string }
+const { resource, group } = Astro.props;
+const choices = downloadChoices(resource, group);
+const dimensions = [
+  { key: 'version', label: '版本', values: choices.versions, initial: choices.defaultVersion },
+  { key: 'platform', label: '平台', values: choices.platforms, initial: 'all' },
+  { key: 'arch', label: '架构', values: choices.architectures, initial: 'all' },
+];
+---
+<section class="resource-component download-selector" data-download-selector data-default-source={choices.group.defaultSourceId ?? ''} aria-label={choices.group.label}>
+  <p class="resource-component__title">{choices.group.label}</p>
+  {choices.entries.every((entry) => entry.health === 'broken') && <p class="resource-state resource-state--danger">本组当前没有可用入口，保留文件和来源说明。</p>}
+  <fieldset class="download-selector__controls" data-selector-controls hidden>
+    <legend class="resource-muted">选择文件后，再选择同一产物的来源</legend>
+    <div class="download-selector__grid">
+      {dimensions.map((dimension) => <label>{dimension.label}
+        <select data-dimension={dimension.key}>
+          <option value="all" selected={dimension.initial === 'all'}>全部</option>
+          {dimension.values.map((value) => <option value={dimensionKey(value)} selected={dimension.initial === dimensionKey(value)}>{value ?? '未注明'}</option>)}
+        </select>
+      </label>)}
+      <label>文件<select data-artifact-select>
+        <option value="">请选择文件</option>
+        {choices.artifacts.map((artifact) => <option value={artifact.id}
+          data-version={dimensionKey(artifact.version)} data-platform={dimensionKey(artifact.platform)} data-arch={dimensionKey(artifact.arch)}>
+          {[artifact.label, artifact.version ?? '版本未注明', artifact.platform ?? '平台未注明', artifact.arch ?? '架构未注明'].join(' / ')}
+        </option>)}
+      </select></label>
+      <label>来源<select data-source-select disabled>
+        <option value="">先选择文件</option>
+        {choices.entries.map((entry) => <option value={entry.id} data-artifact={entry.artifact.id}
+          data-href={entry.href} data-download-name={entry.downloadName ?? ''} disabled={entry.health === 'broken'}>
+          {entry.label}{entry.health === 'broken' ? '（失效）' : ''}
+        </option>)}
+      </select></label>
+    </div>
+    <p class="resource-state" data-selection-status aria-live="polite"></p>
+    <a class="resource-action" data-selected-download hidden>下载所选文件</a>
+  </fieldset>
+  <details data-selector-fallback open>
+    <summary>所有文件与来源</summary>
+    <ul class="source-list">
+      {choices.entries.map((entry) => <li aria-label={artifactDescription(entry)}><SourceEntry entry={entry} /></li>)}
+    </ul>
+  </details>
+</section>
+<script>
+  import '../../scripts/download-select';
+</script>

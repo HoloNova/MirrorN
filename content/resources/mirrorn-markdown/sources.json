@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "artifacts": [
+    {
+      "id": "reference-markdown-v1",
+      "label": "Markdown 离线速查",
+      "version": "1.0",
+      "platform": "any",
+      "arch": "any",
+      "fileName": "mirrorn-markdown-reference.md",
+      "fileType": "md",
+      "fileSize": 1393,
+      "checksum": {
+        "algorithm": "sha256",
+        "value": "72268c15c46871e17acb1bf95c82aac4e81af0c7359c3f11cb3192f270d9adfa"
+      }
+    },
+    {
+      "id": "reference-text-v1",
+      "label": "纯文本离线速查",
+      "version": "1.0",
+      "platform": "any",
+      "arch": "any",
+      "fileName": "mirrorn-markdown-reference.txt",
+      "fileType": "txt",
+      "fileSize": 1323,
+      "checksum": {
+        "algorithm": "sha256",
+        "value": "7c2f97b50b9aa94dc90135becdfe3c49aca9cc68420b710384bb1510f8033da5"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "reference-markdown",
+      "type": "local",
+      "label": "本站 Markdown 速查",
+      "assetId": "markdown-reference",
+      "artifactId": "reference-markdown-v1"
+    },
+    {
+      "id": "reference-text",
+      "type": "local",
+      "label": "本站纯文本速查",
+      "assetId": "text-reference",
+      "artifactId": "reference-text-v1"
+    },
+    {
+      "id": "project-dependencies",
+      "type": "package-manager",
+      "label": "安装项目依赖",
+      "packageManager": "pnpm",
+      "installCommand": "pnpm install",
+      "shell": "powershell",
+      "note": "在项目根目录运行。这里只提供复制，不会自动执行。"
+    },
+    {
+      "id": "astro-markdown-docs",
+      "type": "webpage",
+      "label": "Astro Markdown 官方文档",
+      "url": "https://docs.astro.build/en/guides/markdown-content/",
+      "note": "框架参考资料；MirrorN 自定义指令以本站的写作规范为准。"
+    },
+    {
+      "id": "astro-repository",
+      "type": "repository",
+      "target": "page",
+      "label": "Astro 源码仓库",
+      "url": "https://github.com/withastro/astro"
+    }
+  ],
+  "groups": [
+    {
+      "id": "reference-files",
+      "label": "选择离线速查格式",
+      "sourceIds": ["reference-markdown", "reference-text"]
+    },
+    {
+      "id": "reading-and-tools",
+      "label": "相关文档与工具",
+      "sourceIds": ["reference-markdown", "project-dependencies", "astro-markdown-docs", "astro-repository"]
+    }
+  ],
+  "assets": [
+    {
+      "id": "markdown-reference",
+      "path": "assets/markdown-reference.md",
+      "downloadName": "mirrorn-markdown-reference.md",
+      "mediaType": "text/markdown"
+    },
+    {
+      "id": "text-reference",
+      "path": "assets/markdown-reference.txt",
+      "downloadName": "mirrorn-markdown-reference.txt",
+      "mediaType": "text/plain"
+    }
+  ],
+  "compatibility": [
+    {
+      "id": "reference-support",
+      "rows": [
+        { "platform": "windows", "arch": "any", "support": "supported", "note": "使用文本编辑器打开；Markdown 也可使用 Markdown 阅读器。" },
+        { "platform": "linux", "arch": "any", "support": "supported", "note": "UTF-8 文本，不依赖特定 CPU 架构。" },
+        { "platform": "macos", "arch": "any", "support": "supported", "note": "UTF-8 文本，不依赖特定 CPU 架构。" },
+        { "platform": "android", "arch": "any", "support": "unknown", "note": "需有能够打开本地 UTF-8 文件的应用，未进行移动端文件处理实测。" }
+      ]
+    }
+  ]
+}

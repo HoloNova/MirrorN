@@ -1,0 +1,77 @@
+---
+import type { DocumentNode } from '../../content/parse/document-types.ts';
+import type { PublishedResource, ResourceRegistry } from '../../content/registry/types.ts';
+import { resolveDocumentUrl } from '../../content/resolve/assets.ts';
+import CopyBlock from './CopyBlock.astro';
+import Download from './Download.astro';
+import DownloadSelect from './DownloadSelect.astro';
+import SourceList from './SourceList.astro';
+import InstallCommand from './InstallCommand.astro';
+import Notice from './Notice.astro';
+import Checksum from './Checksum.astro';
+import CompatibilityTable from './CompatibilityTable.astro';
+import ResourceCard from './ResourceCard.astro';
+interface Props {
+  nodes: readonly DocumentNode[];
+  resource: PublishedResource;
+  registry: ResourceRegistry;
+  unwrapParagraphs?: boolean;
+  looseList?: boolean;
+  headerCells?: boolean;
+  alignments?: readonly ('left' | 'right' | 'center' | null)[];
+  alignment?: 'left' | 'right' | 'center' | null;
+}
+const { nodes, resource, registry, unwrapParagraphs = false, looseList = false, headerCells = false, alignments = [], alignment } = Astro.props;
+---
+{nodes.map((node) => {
+  switch (node.type) {
+    case 'text': return <Fragment>{node.value}</Fragment>;
+    case 'inlineCode': return <code>{node.value}</code>;
+    case 'code': return <CopyBlock value={node.value} label={node.language ?? '纯文本'} />;
+    case 'break': return <br />;
+    case 'thematicBreak': return <hr />;
+    case 'paragraph': return unwrapParagraphs
+      ? <Astro.self nodes={node.children} resource={resource} registry={registry} />
+      : <p><Astro.self nodes={node.children} resource={resource} registry={registry} /></p>;
+    case 'heading': {
+      const Heading = `h${node.depth}` as 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+      return <Heading id={node.id}><Astro.self nodes={node.children} resource={resource} registry={registry} /></Heading>;
+    }
+    case 'strong': return <strong><Astro.self nodes={node.children} resource={resource} registry={registry} /></strong>;
+    case 'emphasis': return <em><Astro.self nodes={node.children} resource={resource} registry={registry} /></em>;
+    case 'delete': return <del><Astro.self nodes={node.children} resource={resource} registry={registry} /></del>;
+    case 'blockquote': return <blockquote><Astro.self nodes={node.children} resource={resource} registry={registry} /></blockquote>;
+    case 'list': {
+      const List = node.ordered ? 'ol' : 'ul';
+      return <List start={node.ordered ? node.start ?? undefined : undefined}><Astro.self nodes={node.children} resource={resource} registry={registry} looseList={node.spread} /></List>;
+    }
+    case 'listItem': return <li>
+      {node.checked !== null && <input type="checkbox" disabled checked={node.checked} aria-label={node.checked ? '已完成' : '未完成'} />}
+      <Astro.self nodes={node.children} resource={resource} registry={registry} unwrapParagraphs={!looseList && !node.spread} />
+    </li>;
+    case 'table': return <div class="resource-table-scroll" role="region" aria-label="文档表格" tabindex="0"><table>
+      <thead><Astro.self nodes={node.children.slice(0, 1)} resource={resource} registry={registry} headerCells alignments={node.align} /></thead>
+      <tbody><Astro.self nodes={node.children.slice(1)} resource={resource} registry={registry} alignments={node.align} /></tbody>
+    </table></div>;
+    case 'tableRow': return <tr>{node.children.map((cell, index) => <Astro.self nodes={[cell]} resource={resource} registry={registry} headerCells={headerCells} alignment={alignments[index]} />)}</tr>;
+    case 'tableCell': {
+      const Cell = headerCells ? 'th' : 'td';
+      return <Cell scope={headerCells ? 'col' : undefined} style={`text-align: ${alignment ?? 'start'}`}><Astro.self nodes={node.children} resource={resource} registry={registry} /></Cell>;
+    }
+    case 'link': return <a href={resolveDocumentUrl(resource, node.url)} title={node.title ?? undefined}><Astro.self nodes={node.children} resource={resource} registry={registry} /></a>;
+    case 'image': return <img src={resolveDocumentUrl(resource, node.url)} alt={node.alt} title={node.title ?? undefined} loading="lazy" decoding="async" />;
+    case 'resourceDirective': {
+      // 仅从 P2 注册表产生的判别联合分派，固定导入；不展开原始 HTML 属性或执行文档。
+      switch (node.name) {
+        case 'download': return <Download resource={resource} source={node.props.source} label={node.props.label} />;
+        case 'download-select': return <DownloadSelect resource={resource} group={node.props.group} />;
+        case 'source-list': return <SourceList resource={resource} group={node.props.group} />;
+        case 'install-command': return <InstallCommand resource={resource} source={node.props.source} />;
+        case 'notice': return <Notice type={node.props.type} title={node.props.title}><Astro.self nodes={node.children} resource={resource} registry={registry} /></Notice>;
+        case 'checksum': return <Checksum resource={resource} artifact={node.props.artifact} />;
+        case 'compatibility-table': return <CompatibilityTable resource={resource} table={node.props.table} />;
+        case 'resource-card': return <ResourceCard registry={registry} resource={node.props.resource} />;
+      }
+    }
+  }
+})}

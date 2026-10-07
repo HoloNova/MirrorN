@@ -1,0 +1,15 @@
+---
+import type { PublishedResource } from '../../content/registry/types.ts';
+import { resolveGroup } from '../../content/resolve/sources.ts';
+import SourceEntry from './SourceEntry.astro';
+interface Props { resource: PublishedResource; group: string }
+const { resource, group: groupId } = Astro.props;
+const { group, entries } = resolveGroup(resource, groupId);
+---
+<section class="resource-component" aria-label={group.label}>
+  <p class="resource-component__title">{group.label}</p>
+  {entries.every((entry) => entry.health === 'broken') && <p class="resource-state resource-state--danger">当前没有可用入口，以下保留各来源说明。</p>}
+  <ul class="source-list">
+    {entries.map((entry) => <li><SourceEntry entry={entry} /></li>)}
+  </ul>
+</section>

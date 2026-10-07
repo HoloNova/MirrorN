@@ -3,7 +3,7 @@
  *
  * 为什么是全局样式：正文由 Markdown 渲染成普通 HTML，不经过 Astro 组件作用域，
  * 因此这里用 `.prose` 容器选择器统一控制阅读宽度与排版节奏。
- * 资源组件的具体外观不属于 P1，后续由组件自己的样式定义。
+ * P3 资源组件外观由 resource-components.css 统一定义并复用相同 Tokens。
  */
 
 .prose {

@@ -1,0 +1,17 @@
+---
+import type { PublishedResource } from '../../content/registry/types.ts';
+import { requireItem } from '../../content/resolve/sources.ts';
+import CopyBlock from './CopyBlock.astro';
+interface Props { resource: PublishedResource; artifact: string }
+const { resource, artifact: artifactId } = Astro.props;
+const artifact = requireItem(resource.data.artifacts, artifactId, '产物');
+const checksum = artifact.checksum;
+if (!checksum) throw new Error(`Checksum 的 ${artifactId} 缺少校验值`);
+const localSources = resource.data.sources.filter((source) => source.type === 'local' && source.artifactId === artifactId);
+const verified = localSources.length > 0;
+---
+<section class="resource-component" aria-label={`${artifact.label} 校验值`}>
+  <p class="resource-component__title">{artifact.label}</p>
+  <CopyBlock value={checksum.value} label={checksum.algorithm.toUpperCase()} wrap />
+  <p class="resource-muted">{verified ? '已与本站附件的实际字节核对。' : '由维护者提供；本站未下载核验远程文件。'}</p>
+</section>

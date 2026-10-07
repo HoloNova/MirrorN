@@ -1,0 +1,9 @@
+---
+interface Props { type: 'info' | 'warning' | 'danger' | 'success'; title?: string }
+const { type, title } = Astro.props;
+const labels = { info: '提示', warning: '注意', danger: '重要提醒', success: '说明' };
+---
+<aside class={`resource-notice resource-notice--${type}`} aria-label={title ?? labels[type]}>
+  <p class="resource-notice__title">{title ?? labels[type]}</p>
+  <slot />
+</aside>

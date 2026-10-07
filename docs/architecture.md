@@ -1,6 +1,6 @@
 # 新站技术架构与模块地图
 
-> 本文区分目标架构与已实现模块；P1 工程和 P2 内容处理链已落地，其余阶段以 [PLAN.md](../PLAN.md) 为准。
+> 本文区分目标架构与已实现模块；P1 工程、P2 内容处理链与 P3 资源渲染模块已落地，其余阶段以 [PLAN.md](../PLAN.md) 为准。
 
 ## 1. 技术决策
 
@@ -15,7 +15,7 @@
 | 搜索 | 构建生成 JSON 索引＋Fuse.js | 人工策划规模下只搜索结构化字段，浏览器按需加载，无数据库或服务接口 |
 | 样式 | 语义 CSS Tokens＋组件样式 | 精确落实 MDN 参考，不继承旧 CSS，不引入额外 UI 框架 |
 | 工具链 | Node.js 24 LTS＋pnpm 单包工程 | 当前工作站具备 Node 工具链；无需为一个静态站继续 monorepo |
-| 验证 | 正式内容校验、类型与构建门禁 | 本次 P2 按用户要求不做过渡测试；没有 UI 单元测试或自动浏览器 |
+| 验证 | 正式内容校验、类型与构建门禁 | P2／P3 按用户要求不做过渡测试；没有 UI 单元测试或自动浏览器 |
 
 依赖具体版本在新工程阶段查询实际兼容版本并锁入新 lockfile；不复用归档 lockfile，也不在尚未安装时编造版本。Astro 自身能生成静态路由已经过官方文档核对；自定义指令由 remark-directive 解析，作者接口是 Markdown，组件实现只在站点源码中定义，不引入 MDX 编译执行链。
 
@@ -52,17 +52,17 @@ Schema → 自定义指令注册与参数检查 → 引用检查 → 附件检�
 
 开发预览和正式构建共用处理链。开发时文件变化会刷新注册表；生产不扫描磁盘、不修改内容。内容错误阻止新的构建，已部署版本不受影响。
 
-P2 默认输出公开 Registry；`content:check --include-drafts` 显式选择本地 preview 集合，production 环境拒绝此模式，正式构建集成固定选择 public。草稿页面 UI、索引、附件输出与社交元数据尚待对应阶段实现；以后页面预览须可见标识，不把“预览地址隐蔽”当成不公开保证。
+P2 默认输出公开 Registry；`content:check --include-drafts` 显式选择本地 preview 集合，production 环境拒绝此模式，正式构建集成固定选择 public。P3 公开附件已按 Registry 生成；草稿页面 UI、索引与社交元数据尚待对应阶段实现；以后页面预览须可见标识，不把“预览地址隐蔽”当成不公开保证。
 
 ## 3. 目标目录
 
 ```text
 src/
-  pages/                 # 首页、已收录、关于、资源路由、404（P1 已建：空集合与路由边界）
+  pages/                 # 基础页面、P3 公开资源文档与摘要附件静态端点
   layouts/               # SiteLayout、ResourceLayout（P1 已建：阅读宽度与标题插槽）
   components/
     site/                # 顶部导航、主题、目录等站点组件（P1 只建导航与主题）
-    resource/            # 八个资源组件的共享展示实现（待 P3）
+    resource/            # 八资源组件、CopyBlock、SourceEntry、受限 AST 渲染器（P3 已建）
   content/
     categories.ts        # 八个主分类常量（P1 已建）
     schema/              # Front Matter、来源、产物、指令参数（P2 已建）
@@ -70,12 +70,12 @@ src/
     validate/            # 跨资源引用、公开性、附件、锚点（P2 已建）
     registry/            # 不可变 public／显式 preview 注册表（P2 已建）
     integration.ts       # CLI 同链构建门禁、dev 内容监听（P2 已建）
-    render/              # 受限 AST 与统一组件映射的实际渲染（待 P3）
-    resolve/             # sourceId/assetId 到真实行为与地址（待 P3）
+    render/              # 摘要附件实际读取和再核对（P3 已建；AST 渲染见 components/resource）
+    resolve/             # 来源行为、附件地址与下载候选模型（P3 已建）
     search/              # 索引生成、排序与检索配置（待 P5）
-  scripts/               # 浏览器渐进增强，不读取服务器路径（P1 的导航与主题脚本在组件内，模块化拆分待 P3/P5）
-  styles/                # tokens、base、prose（P1 已建）
-content/resources/       # 唯一资源内容根（P1 已建，当前为空）
+  scripts/               # P3 复制／下载选择渐进增强，不读取服务器路径；搜索待 P5
+  styles/                # tokens、base、prose（P1）；resource-components（P3）
+content/resources/       # 唯一资源内容根（已收录两篇正式站内指南）
 public/                  # 站点级受控静态文件，不放资源草稿附件（待实现）
 scripts/                 # check-content.ts（P2 已建）；产物检查待 P7
 config/                  # 站点名、域名、贡献仓库等非机密配置（P1 已建 site.ts）
@@ -83,15 +83,27 @@ config/                  # 站点名、域名、贡献仓库等非机密配置�
 archive/legacy/          # 历史资料，不是 workspace
 ```
 
-P1 在根目录另外新增：`package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`（pnpm 记录构建脚本白名单与发布年龄例外）、`astro.config.ts`、`tsconfig.json`。P2 已创建内容 Schema、Parser、Validator、Registry、Astro 校验集成与正式 CLI。渲染、Resolver、搜索、浏览器增强模块、资源附件输出和新 CI 均尚未实现。
+P1 在根目录另外新增：`package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`（pnpm 记录构建脚本白名单与发布年龄例外）、`astro.config.ts`、`tsconfig.json`。P2 已创建内容 Schema、Parser、Validator、Registry、Astro 校验集成与正式 CLI。P3 已创建受限渲染器、Resolver、复制与选择器增强、资源文档和摘要附件静态端点。完整浏览体验、搜索和新 CI 尚未实现。
 
 ### P2 实际接口
 
 `src/content/registry/load.ts` 的 `loadResourceRegistry(projectRoot, { siteUrl })` 默认返回 `ResourceRegistry<PublishedResource>`；显式 `{ mode: "preview" }` 才包含已校验草稿。方法每次读取并校验内容，不复用陈旧缓存。
 
-公开对象包含 `metadata`、`data`（来源文件包）、受限 `document`／`headings`、实际引用的 `files` 和 `resourceReferences`；递归复制冻结，无原始文档代码、磁盘绝对路径或文件字节。`get(id)` 和 `referencesTo(id)` 只查询当前选定集合。每个文件记录相对路径、实际字节数、SHA256／SHA512 和格式；附件 URL 与静态复制在 P3 实现，不能把 path 直接当服务器 URL。
+公开对象包含 `metadata`、`data`（来源文件包）、受限 `document`／`headings`、实际引用的 `files` 和 `resourceReferences`；递归复制冻结，无原始文档代码、磁盘绝对路径或文件字节。`get(id)` 和 `referencesTo(id)` 只查询当前选定集合。每个文件记录相对路径、实际字节数、SHA256／SHA512 和格式；P3 已将附件解析为摘要 URL 并生成静态文件，不能把 path 直接当服务器 URL。
 
-CLI 使用 Node 24 原生 TypeScript，不额外引入脚本 runner。Astro 在 dev／build 配置阶段调用相同 Registry 加载器；dev 监听内容根，串行合并变更、重新校验并刷新模块，出错报告明确位置。当前资源路由仍为空集合，P4 接入页面时只消费 Registry。
+CLI 使用 Node 24 原生 TypeScript，不额外引入脚本 runner。Astro 在 dev／build 配置阶段调用相同 Registry 加载器；dev 监听内容根，串行合并变更、重新校验并刷新模块，出错报告明确位置。P3 的资源文档和附件端点已消费公开 Registry；当前已生成两篇正式站内指南及两个附件，目录也已消费公开 Registry 计数和名称卡片。P4 继续补全浏览体验。
+
+### P3 实际接口
+
+`resolveSource(resource, sourceId)` 返回 file／page／command 判别联合，`resolveGroup` 保留维护者的组内来源顺序。Resolver 只消费已校验公开对象，没有 fetch、自动版本探测或任意 URL 代理。`downloadChoices` 保留 artifact 数组顺序与明确 defaultVersion；缺省维度和“全部”是不同键，不把缺字段当通配。
+
+`ResourceDocument.astro → DocumentNodes.astro → 八组件` 是唯一渲染入口。Astro.self 递归渲染受限节点，固定导入组件并按指令判别联合分派；不调用 set:html，不加载文档代码。代码与命令复用 CopyBlock，原始值作为转义后的 JSON 属性传给复制脚本，避免 HTML 把 CRLF 改为 LF；浏览器不执行任何命令。
+
+`pages/resources/[id].astro` 只生成公开资源详情。`pages/resource-assets/[id]/[hash]/[file].ts` 使用相同公开 Registry 和 Astro 配置中的 root，列出实际引用文件并在读取时再次核对大小／SHA256；不根据请求参数拼任意磁盘路径。生产构建生成普通静态字节，不需要 Node 运行服务。图片用受控格式扩展名，其他文件固定 file.bin，原始下载名通过同源链接的 download 属性提供；静态托管的响应头约束见 delivery。
+
+原生选择器只重建筛选项和所选下载链接，不请求服务器或自动打开链接。筛选后有多个文件必须重新选择；无可用来源时不改选其他 artifact。完整来源 details 在无 JS 时展开，有 JS 后仍能打开；复制控件仅脚本成功初始化后显示。
+
+P3 已收录编写／贡献指南两篇正式站内文档，不生成临时样本；静态构建已处理八组件，用户已确认本轮功能验收。未覆盖状态仍须后续真实内容验收，UI／UX／样式优化后置；状态和人工清单见 PLAN／acceptance。
 
 ## 4. 模块边界
 

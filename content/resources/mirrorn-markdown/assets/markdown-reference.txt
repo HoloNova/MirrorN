@@ -1,0 +1,40 @@
+MirrorN Markdown 离线速查
+版本：1.0
+用途：为本站资源贡献者提供纯文本参考。
+
+一、文件组织
+每个资源：content/resources/<id>/index.md
+结构化来源：sources.json
+图片和小型附件：assets/
+
+二、正文
+页面标题来自 Front Matter 的 name，正文从二级标题开始。
+支持普通 Markdown、GFM 表格、任务列表、代码块和本资源图片。
+
+三、自定义指令
+::download{source="source-id"}
+::download-select{group="group-id"}
+::source-list{group="group-id"}
+::install-command{source="source-id"}
+::checksum{artifact="artifact-id"}
+::compatibility-table{table="table-id"}
+::resource-card{resource="other-resource-id"}
+
+:::notice{type="info" title="说明"}
+这里可以写普通 Markdown。
+:::
+
+参数使用真实的来源、分组、产物、兼容表或资源 ID。
+来源和下载地址在 sources.json 中维护，不在指令里重复填写。
+
+四、来源规则
+文件、网页和安装命令是不同入口。
+同一字节产物可有多个来源；不同版本、平台、架构或封装应使用不同产物。
+
+五、校验和发布
+pnpm content:check
+pnpm typecheck
+pnpm build
+
+draft: true 不公开。准备发布时改为 false 并补齐发布字段。
+不在文档中写 JSX 标签、任意 HTML 或脚本；代码块只展示，不执行。

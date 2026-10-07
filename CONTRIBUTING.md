@@ -2,7 +2,7 @@
 
 MirrorN 的内容以 Git 为唯一事实来源。欢迎通过 PR 增加资源、修正文档、更新来源、补充兼容性说明或标记失效链接。不需要管理员账号，也没有在线内容管理后台。
 
-> 当前工程与 P2 内容处理链可用，可运行内容校验和构建；组件渲染、资源页面接入、搜索及 CI 尚待后续阶段。可用命令见 README，不把本地 Registry 草稿模式称为已经存在的页面预览 UI。
+> 当前工程、内容处理链、八组件和公开资源页可用；站内编写／贡献指南已进入目录。搜索、完整浏览布局及 CI 尚待后续阶段。可用命令见 README，不把本地 Registry 草稿模式称为已经存在的页面预览 UI。
 
 ## 1. 内容贡献流程
 
@@ -10,11 +10,13 @@ MirrorN 的内容以 Git 为唯一事实来源。欢迎通过 PR 增加资源、
 2. 在 `content/resources/<id>/` 编写 `index.md`，需要来源时添加 `sources.json`，小型图片／附件放 `assets/`。通过 `::download-select{group="installers"}` 等自定义 Markdown 指令引用功能，组件由站点实现，不在文档中写 JSX／组件标签。
 3. 按 [内容规范](docs/content-spec.md) 填写身份、简介、分类、标签、作者、维护状态和来源；正文解释用途、适用条件与操作，不搬运无关库存。
 4. 新内容先保持 draft=true。填写完成后显式设为 false，并填写发布日期；代码示例和模板中的 example.com 必须替换为真实来源。
-5. 运行 `pnpm content:check`，修正文件／行列／字段指向的问题，再运行 `pnpm typecheck` 和 `pnpm build`。目前可用 `pnpm content:check --include-drafts` 显式查看本地草稿集合；资源文档的页面预览待 P3／P4。修改现有资源时修正跨资源及锚点引用。
+5. 运行 `pnpm content:check`，修正文件／行列／字段指向的问题，再运行 `pnpm typecheck` 和 `pnpm build`。目前可用 `pnpm content:check --include-drafts` 显式查看本地草稿集合；已公开资源可在本地 `/resources/<id>/` 查看页面，草稿页面 UI 仍未实现。修改现有资源时修正跨资源及锚点引用。
 6. 提交 PR，说明增加／修改了什么、来源依据、手动核查范围和附件许可。不要声称没有验证的文件已校验或兼容。
 7. 维护者审核结构、内容和来源，CI 校验通过后合并。合并不等于已经上线；只有静态构建与发布成功才会更新公开站点。
 
 贡献者自己操作 Git 按项目流程提交 PR；本会话中的 Agent 仍必须遵守 AGENTS 中未经用户许可不得提交／推送的规则。
+
+站内可阅读版本：`/resources/mirrorn-contributing/`，写作指南为 `/resources/mirrorn-markdown/`。两篇与本规范保持一致，均为长期维护内容，不是临时预览样本。
 
 ## 2. PR 应提供的信息
 

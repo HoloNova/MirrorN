@@ -1,24 +1,25 @@
 ---
+import { fileURLToPath } from 'node:url';
+import { root } from 'astro:config/server';
+import { siteConfig } from '../../../config/site.ts';
 import ResourceLayout from '../../layouts/ResourceLayout.astro';
+import ResourceDocument from '../../components/resource/ResourceDocument.astro';
+import Notice from '../../components/resource/Notice.astro';
+import { loadResourceRegistry } from '../../content/registry/load.ts';
+import type { PublishedResource, ResourceRegistry } from '../../content/registry/types.ts';
 
-interface Props {
-  title: string;
-  summary: string;
+interface Props { resource: PublishedResource; registry: ResourceRegistry }
+
+/** P3 的最小可用接入：只生成已校验公开文档，不接入目录排序、搜索或 TOC。 */
+export async function getStaticPaths() {
+  const registry = await loadResourceRegistry(fileURLToPath(root), { siteUrl: siteConfig.siteUrl });
+  return registry.resources.map((resource) => ({ params: { id: resource.metadata.id }, props: { resource, registry } satisfies Props }));
 }
 
-/**
- * 资源详情路由边界。
- *
- * 为什么返回空数组：资源注册表（P2）与页面生成（P4）尚未实现，这里既不能凭目录名
- * 编造页面，也不能把未校验的内容渲染成公开页面。空 getStaticPaths 让 /resources/<id>/
- * 这一层路径在静态构建中存在但不产出任何页面，访问时由 404 处理。
- * P4 改为从注册表读取公开资源并生成路径。
- */
-export function getStaticPaths(): Array<{ params: { id: string }; props: Props }> {
-  return [];
-}
-
-const { title, summary } = Astro.props;
+const { resource, registry } = Astro.props;
+const metadata = resource.metadata;
 ---
-
-<ResourceLayout title={title} summary={summary} />
+<ResourceLayout title={metadata.name} summary={metadata.summary}>
+  {metadata.status !== 'active' && <Notice type="warning" title={metadata.status === 'deprecated' ? '资源已废弃' : '资源仅作存档'}><p>{metadata.statusReason}</p></Notice>}
+  <ResourceDocument resource={resource} registry={registry} />
+</ResourceLayout>

@@ -1,6 +1,6 @@
 # 构建、发布与持续维护
 
-> 本文是完整目标交付契约。当前已实现 `dev`／`content:check`／`typecheck`／`build`／`preview`；`lint`、`test:content`、`check:dist` 与新 CI 尚未实现。P2 本轮按用户要求不创建过渡测试，下表不等于所有命令和后续页面／附件／索引输出均已落地。
+> 本文是完整目标交付契约。当前已实现 `dev`／`content:check`／`typecheck`／`build`／`preview`；`lint`、`test:content`、`check:dist` 与新 CI 尚未实现。P2／P3 按用户要求不创建过渡测试；P3 公开文档和附件已接通，下表不等于完整浏览／索引输出或所有命令均已落地。
 
 ## 1. 命令职责
 
@@ -11,7 +11,7 @@
 | pnpm typecheck | 检查新站 Astro／TypeScript 与契约类型 |
 | pnpm lint | 检查新源码，不扫描归档与生成文件 |
 | pnpm test:content | 解析器、引用、来源解析和索引的定向逻辑验证，无 UI 单元测试 |
-| pnpm build | 已接入同一内容门禁；当前仍生成四个基础页面，资源组件／附件输出、内容页面、搜索和 sitemap 随 P3–P7 落地 |
+| pnpm build | 已接入同一内容门禁；P3 生成基础页面、公开资源文档和实际引用附件。内容根仍为空时只有四个基础页面；搜索和 sitemap 后续落地 |
 | pnpm check:dist | 检查本次产物内链、资源引用、草稿泄漏和归档污染 |
 | pnpm preview | 本地预览实际生产产物，不重新引入草稿 |
 
@@ -28,6 +28,12 @@
 P1 当前只支持站点根路径部署，`siteUrl` 不能包含 `/docs/` 等子路径；仓库地址的真实路径不受此限制。未配置 `siteUrl` 的本地产物默认 noindex，404 始终 noindex 且不输出 canonical。独立预览环境的发布标识与真实地址管理仍属于 P7，不把填写正式域名后的本地构建误称为专用预览产物。
 
 资源 URL 是 `/resources/<id>/`，由静态托管支持目录索引。不存在路径返回真实 404，不用 SPA fallback 把所有失效路径都返回首页 200。
+
+### P3 附件输出契约
+
+图片生成 `/resource-assets/<id>/<sha256>/image.<png|jpeg|webp|avif>`，其他附件生成同前缀下的 `file.bin`。更换字节会更换地址；只输出公开 Registry 实际引用的文件，不将整个 assets 或草稿目录复制到 public。实际读取发现大小／摘要变化会终止生成，须重新构建，不能冒充旧版本文件。
+
+Astro 静态端点在构建后是普通文件，部署不启用应用服务。端点的 Response 头只用于 dev／生成上下文，不保证自动成为托管商响应头。P7 指定实际主机后配置：图片按扩展名返回正确 MIME；`file.bin` 返回 application/octet-stream 和 Content-Disposition: attachment（不固定 filename，保留链接 download 指定的原始名称）；附件设置 nosniff 和摘要缓存。当前没有选择托管商，尚未生成这些主机配置。
 
 ## 3. CI 与审核
 

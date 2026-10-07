@@ -1,10 +1,20 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
+import { fileURLToPath } from 'node:url';
+import { root } from 'astro:config/server';
+import { siteConfig } from '../../../config/site.ts';
 import { contentCategories } from '../../content/categories';
+import { loadResourceRegistry } from '../../content/registry/load.ts';
 
-// P1 还没有资源注册表（P2 起实现），八个分类真实为空，所以统一显示 0；
-// P4 接入注册表后这里改为读取实际公开资源数量。
-const resourceCount = 0;
+// 公开文档已有内容，目录必须反映 Registry，不能继续显示写死的零。
+const registry = await loadResourceRegistry(fileURLToPath(root), { siteUrl: siteConfig.siteUrl });
+const collator = new Intl.Collator('zh-Hans-CN', { numeric: true, sensitivity: 'base' });
+const categories = contentCategories.map((category) => ({
+  ...category,
+  resources: registry.resources.filter((resource) => resource.metadata.category === category.id).toSorted((left, right) =>
+    collator.compare(left.metadata.sortKey ?? left.metadata.name, right.metadata.sortKey ?? right.metadata.name)
+      || collator.compare(left.metadata.id, right.metadata.id)),
+}));
 ---
 
 <SiteLayout title="已收录" description="按八个固定分类浏览 MirrorN 收录的资源。">
@@ -15,13 +25,15 @@ const resourceCount = 0;
 
   <div class="category-list">
     {
-      contentCategories.map((category) => (
+      categories.map((category) => (
         <details class="category">
           <summary class="category__summary">
             <span class="category__name">{category.name}</span>
-            <span class="category__count">{resourceCount} 项</span>
+            <span class="category__count">{category.resources.length} 项</span>
           </summary>
-          <p class="category__empty">尚未收录。</p>
+          {category.resources.length ? <ul class="category__resources">
+            {category.resources.map((resource) => <li><a class="category__resource" href={`/resources/${resource.metadata.id}/`}>{resource.metadata.name}</a></li>)}
+          </ul> : <p class="category__empty">尚未收录。</p>}
         </details>
       ))
     }
@@ -61,6 +73,28 @@ const resourceCount = 0;
     font-size: var(--font-size-note);
     font-weight: var(--font-weight-regular);
   }
+
+  .category__resources {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    list-style: none;
+    gap: var(--space-2);
+    padding: 0 var(--space-4) var(--space-4);
+    margin: 0;
+  }
+
+  .category__resource {
+    display: flex;
+    align-items: center;
+    min-block-size: var(--target-min-size);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .category__resource:hover { background: var(--color-surface-muted); }
 
   .category__empty {
     margin: 0;

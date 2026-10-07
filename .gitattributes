@@ -1,0 +1,2 @@
+# 资源附件按原始字节保存，避免不同平台的换行转换改变文件大小和摘要。
+content/resources/**/assets/** -text
