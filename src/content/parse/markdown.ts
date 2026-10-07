@@ -106,7 +106,7 @@ function convertNode(node: Nodes, context: ParseContext): DocumentNode | undefin
       const childContext = { ...context, insideNotice: true };
       return { ...directive, children: childrenOf(node, childContext) } as ResourceDirective;
     }
-    case 'html': fail(position, 'E_MARKDOWN', 'v1 不接受原始 HTML / JSX；示例请放代码块');
+    case 'html': return fail(position, 'E_MARKDOWN', 'v1 不接受原始 HTML / JSX；示例请放代码块');
     default: fail(position, 'E_MARKDOWN', `v1 未注册节点类型 ${node.type}`);
   }
 }

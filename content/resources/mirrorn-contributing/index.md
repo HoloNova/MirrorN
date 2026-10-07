@@ -7,6 +7,7 @@ category: document
 tags:
   domain: [documentation]
   format: [text]
+  license: [CC-BY-4.0]
 aliases: [贡献流程, PR 指南, gong xian zhi nan]
 authors: [MirrorN]
 publishedAt: 2026-10-07
@@ -50,9 +51,7 @@ pnpm content:check --include-drafts
 准备公开预览时补齐简介、作者、发布日期、维护状态等发布字段，并明确设为 `draft: false`。然后执行：
 
 ```bash
-pnpm content:check
-pnpm typecheck
-pnpm build
+pnpm check
 ```
 
 由贡献者手动启动本地开发或预览服务，在 `/resources/<id>/` 阅读实际页面。类型检查不是页面验收：还要确认下载来源、复制内容、键盘操作、窄屏布局以及禁用 JavaScript 后的基本阅读。
@@ -63,9 +62,9 @@ pnpm build
 
 ## 提交 PR
 
-在项目实际 Git 仓库提交 PR，说明资源 ID、变更用途、来源依据、已做的检查和附件来源。站点配置中的贡献仓库入口尚未配置，不使用占位域名代替真实入口。
+在项目实际 Git 仓库提交 PR，说明资源 ID、变更用途、来源依据、已做的检查和附件来源。贡献仓库为 HoloNova/MirrorN，可由本站关于页进入；新文档须先推送到对应分支，GitHub 编辑链接才能实际打开。
 
-维护者审阅后合并。自动 CI 与正式部署配置仍属于后续开发阶段，不能把“已合并”理解成“已上线”；网站只有在静态构建与发布成功后才会更新。
+维护者审阅后合并。新 CI 已编写，实际云端运行待授权推送；正式域名与托管仍未配置，不能把“已合并”理解成“已上线”；网站只有在静态构建与发布成功后才会更新。
 
 ## 后续维护
 
@@ -82,3 +81,9 @@ pnpm build
 :::notice{type="info" title="引用是发布单元的一部分"}
 文档、来源、附件和跨资源引用必须一起校验。删除或撤下被其他公开文章引用的资源，会阻止构建；先修正这些引用再发布。
 :::
+
+## 本站许可与统一校验
+
+新站代码和原创程序示例采用 MIT，原创文档采用 CC BY 4.0；贡献者保留版权。转载文章应保留作者、原文链接与许可并说明修改；第三方材料和附件应分别写明出处与原许可，收录不是重新授权。
+
+使用 `pnpm resource:new <id>` 创建草稿，不会覆盖现有目录；补齐内容与真实来源后主动提交 PR。运行 `pnpm check` 完成文档、长期模板、lint、内容、类型、一次预览构建和产物门禁，纯工程说明文档可只运行 `pnpm docs:check`。默认 CI 上传 noindex 静态预览包，不自动部署；只有实际发布成功才会更新公开站点。

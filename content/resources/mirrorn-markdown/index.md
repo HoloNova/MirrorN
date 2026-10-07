@@ -8,6 +8,7 @@ tags:
   domain: [web, documentation]
   platform: [any]
   format: [text]
+  license: [CC-BY-4.0]
 aliases: [文档编写指南, Markdown 写作, 组件使用指南, wen dang bian xie zhi nan]
 authors: [MirrorN]
 publishedAt: 2026-10-07
@@ -26,7 +27,7 @@ MirrorN 的资源正文是普通 Markdown，加上站点定义的指令语法。
 
 ## 下载离线速查
 
-离线速查是本站编写的内容，提供 Markdown 和纯文本两种格式。两者都是 **1.0** 版，但文件格式不同，因此分别作为两个产物，不伪装成同一文件的替代来源。
+离线速查是本站编写的内容，提供 Markdown 和纯文本两种格式。两份离线速查均为本站原创，采用 CC BY 4.0，原创程序示例采用 MIT。两者都是 **1.0** 版，但文件格式不同，因此分别作为两个产物，不伪装成同一文件的替代来源。
 
 ::download-select{group="reference-files"}
 

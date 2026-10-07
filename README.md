@@ -6,7 +6,7 @@ MirrorN 人工整理软件、运行时、软件包、数据集、模型、系统
 
 ## 当前状态
 
-P1–P4 已获用户确认验收并提交，P4 为 `8490afd`，均未推送。P5 首页搜索和公开摘要索引、P6 的 MDN 风格视觉与可访问性完善均已获用户确认验收，74 文件类型检查与新站构建通过；用户授权将 P5／P6 合并提交为前台功能基线，不推送。状态见 PLAN。
+P1–P4 已获用户确认验收并提交，P4 为 `8490afd`，均未推送。P5 首页搜索和公开摘要索引、P6 的 MDN 风格视觉与可访问性完善均已获用户确认验收，74 文件类型检查与新站构建通过；P5／P6 已按授权合并提交 `c8eb513`，未推送。P7 平台无关贡献／CI／产物门禁已实现、通过本地检查并获用户确认验收；域名与托管后置，代码 MIT、原创文档 CC BY 4.0 已确定。状态见 PLAN。
 
 - 站点骨架已经可用：Astro 静态单包工程、顶部单行导航（首页／已收录／关于本站，窄屏横滑不折叠）、44px 图标切换亮／暗／跟随系统主题、首页、已收录目录、关于本站和真实 404 页面。
 - 已有 v1 Schema、Markdown 自定义指令解析、来源／跨资源／锚点／附件校验、不可变资源注册表与 `content:check`，dev／build 使用同一处理链。
@@ -16,7 +16,7 @@ P1–P4 已获用户确认验收并提交，P4 为 `8490afd`，均未推送。P5
 
 ## 本地开发
 
-要求 Node.js ≥ 24 与 pnpm ≥ 12（仓库声明 `packageManager: pnpm@12.8.1`，启用 corepack 时按该版本执行）。
+要求 Node.js 24 LTS（≥ 24.16.0）与 pnpm ≥ 12（仓库声明 `packageManager: pnpm@12.8.1`，启用 corepack 时按该版本执行）。
 
 ```bash
 pnpm install    # 按 package.json 与 pnpm-lock.yaml 安装依赖
@@ -34,7 +34,7 @@ pnpm content:check --include-drafts # 显式本地 preview 注册表；productio
 pnpm content:check --json           # 仅输出摘要／已选资源 ID，不导出正文
 ```
 
-草稿注册表不是草稿页面预览 UI；资源页、目录、附件与搜索索引固定使用公开集合。`lint`、`test:content` 和 `check:dist` 尚未实现，不提供空命令。本次按用户要求未创建过渡测试或临时资源样本。
+草稿注册表不是草稿页面预览 UI；资源页、目录、附件与搜索索引固定使用公开集合。P7 已实现 lint、模板／文档和产物门禁，不提供空 test:content 命令。本次按用户要求未创建过渡测试或临时资源样本。
 
 ### 当前可验收文档
 
@@ -49,7 +49,7 @@ pnpm content:check --json           # 仅输出摘要／已选资源 ID，不导
 
 ### P6 视觉验收
 
-本轮涉及全站字体／焦点／主题、首页搜索布局、目录分类、两篇资源页的正文／组件，以及关于和 404；不更改文档契约或 P5 检索行为。字体只自托管 Latin 子集，中文由系统字体显示；使用 `font-display: swap`，字体请求失败仍可读。可从关于页查看原始字体许可，本站代码和原创文档的许可证仍由维护者在 P7 明确。
+本轮涉及全站字体／焦点／主题、首页搜索布局、目录分类、两篇资源页的正文／组件，以及关于和 404；不更改文档契约或 P5 检索行为。字体只自托管 Latin 子集，中文由系统字体显示；使用 `font-display: swap`，字体请求失败仍可读。可从关于页查看原始字体许可，本站代码 MIT、原创文档 CC BY 4.0 已按维护者授权确定，第三方字体仍按 OFL。
 
 手工清单见 [P6 验收](docs/acceptance.md#本轮-p6-受影响-ui-与手工-todo)，正式内容、74 文件 Astro check（零错误／警告／提示）和静态构建通过；静态门禁不代表视觉与辅助技术已经人工通过。
 
@@ -74,7 +74,10 @@ src/scripts/        原生复制／下载筛选、顶栏测量、章节追踪、
 src/styles/         本地字体、设计 Tokens、基础／正文／资源组件／搜索样式
 public/font-licenses/ 字体上游版权与完整 OFL（随静态产物分发）
 src/content/        Schema、解析、校验、Registry、Resolver、附件读取、搜索索引／排序、Astro 校验集成
-scripts/            正式内容校验 CLI
+src/delivery/       P7 产物摘要、HTML／CSS／ESM 与公开集合检查
+scripts/            正式校验／贡献草稿／发布产物 CLI
+templates/          长期贡献模板，非已收录内容
+.github/workflows/  只读校验与 noindex 产物 CI，不部署
 config/             站点级非机密配置
 content/resources/  唯一资源内容根（当前两篇正式站内指南）
 astro.config.ts     静态输出、站点地址与扫描边界
@@ -102,4 +105,21 @@ astro.config.ts     静态输出、站点地址与扫描边界
 
 内容以 Git 中的资源目录为唯一事实来源。通过 PR 添加、修订、下架资源；审核合并后由静态构建发布。资源写作格式为普通 Markdown＋自定义指令，站点统一映射为可复用组件，不要求作者编写 MDX／JSX 标签。
 
-贡献仓库地址已核实配置；生产域名和项目许可证尚未配置，远端资源文件和编辑入口仍须实际落实；首次公开发布前按[交付门槛](docs/delivery.md#6-首次公开发布门槛)落实。`example.com` 仅是原需求占位，不作为真实贡献入口。
+贡献仓库地址已核实配置；生产域名与托管尚未配置，项目许可已确定为 MIT／CC BY 4.0，远端资源文件和编辑入口仍须实际落实；首次公开发布前按[交付门槛](docs/delivery.md#6-首次公开发布门槛)落实。`example.com` 仅是原需求占位，不作为真实贡献入口。
+
+## P7 贡献与交付命令
+
+```powershell
+pnpm resource:new my-resource  # 主动创建工作草稿；不会覆盖已有资源
+pnpm template:check            # 校验长期贡献模板，不创建样本
+pnpm docs:check                # 仅工程文档及内链
+pnpm lint                      # 仅新源码、Astro 与正式工具
+pnpm check                     # 全部正式门禁，只构建一次 noindex 预览
+pnpm check:dist                # 检查当前 dist 是否仍对应当前公开内容
+```
+
+当前正式域名／主机按用户要求后置。普通 build 与 PR CI 默认 preview，即使以后填写域名也不会自动公开索引。`pnpm build:release` 要求真实 HTTPS siteUrl 与已提交的干净 Git 修订，只生成和检查产物，不部署；未配置时明确失败。
+
+新 CI `.github/workflows/verify.yml` 冻结安装后执行同一门禁，仅工程文档变动不重复构建；没有部署权限或 Secret。完整产物携带 build-info.json、逐文件 SHA256 和完整许可证。实际云端运行、源码推送及发布流程尚未执行。
+
+代码采用 [MIT](LICENSE)，原创文档采用 [CC BY 4.0](LICENSE-DOCS)，原创程序示例仍为 MIT。第三方文件与归档不被重新授权，详细范围与署名方式见 [许可说明](docs/licensing.md)。

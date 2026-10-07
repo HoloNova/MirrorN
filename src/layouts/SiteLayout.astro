@@ -13,14 +13,18 @@ interface Props {
   description?: string;
   /** 404 等非索引页面不输出 canonical，并显式禁止索引。 */
   noindex?: boolean;
+  /** 分享元信息，不改变正文 h1；不生成不存在的分享图。 */
+  image?: string;
+  pageType?: 'website' | 'article';
 }
 
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, image, pageType = 'website' } = Astro.props;
 // 未确定正式地址的本地产物默认不索引，不能被误当成正式发布版本。
 const shouldNoindex = noindex || !Astro.site;
 const pageTitle = title ? `${title} · ${siteConfig.siteName}` : siteConfig.siteName;
 // site 未配置时 Astro.site 为 undefined，此时不输出 canonical，预览不会冒充正式域名。
 const canonicalUrl = Astro.site && !noindex ? new URL(Astro.url.pathname, Astro.site) : null;
+const shareImage = canonicalUrl && image ? new URL(image, canonicalUrl).href : null;
 ---
 
 <!doctype html>
@@ -32,13 +36,20 @@ const canonicalUrl = Astro.site && !noindex ? new URL(Astro.url.pathname, Astro.
     {description && <meta name="description" content={description} />}
     {shouldNoindex && <meta name="robots" content="noindex" />}
     {canonicalUrl && <link rel="canonical" href={canonicalUrl.href} />}
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:site_name" content={siteConfig.siteName} />
+    <meta property="og:type" content={pageType} />
+    {description && <meta property="og:description" content={description} />}
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl.href} />}
+    {shareImage && <meta property="og:image" content={shareImage} />}
+    <meta name="twitter:card" content={shareImage ? 'summary_large_image' : 'summary'} />
     <script is:inline>
       // 首次绘制前决定主题，避免整页亮暗闪烁；存储不可用时退回系统偏好。
       // 主导航不依赖脚本；主题控件仅在自身脚本成功初始化后显示。
       (function () {
-        var root = document.documentElement;
+        const root = document.documentElement;
         try {
-          var stored = window.localStorage.getItem('mirrorn-theme');
+          const stored = window.localStorage.getItem('mirrorn-theme');
           if (stored === 'light' || stored === 'dark') {
             root.dataset.theme = stored;
           }

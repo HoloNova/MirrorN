@@ -75,16 +75,17 @@ src/
     resolve/             # 来源行为、附件地址与下载候选模型（P3 已建）
     search/              # 最小公开投影、摘要快照、共享 Schema、归一化与 Fuse 检索（P5 已建）
   scripts/               # P3 复制／下载选择；P4 顶栏测量／章节追踪／分类定位；P5 按需索引加载／首页搜索
-  styles/                # tokens、base、prose（P1）；resource-components（P3）、search（P5）
+  delivery/              # P7 原始许可／公开文件／HTML-CSS-ESM 引用与产物摘要门禁
+  styles/                # tokens、base、prose（P1）；resource-components（P3）、search（P5）、fonts（P6）
 content/resources/       # 唯一资源内容根（已收录两篇正式站内指南）
 public/                  # font-licenses 原始许可（P6）；不放资源草稿附件
-scripts/                 # check-content.ts（P2 已建）；产物检查待 P7
+scripts/                 # check-content.ts（P2 已建）；P7 的正式工具与产物门禁
 config/                  # 站点名、域名、贡献仓库等非机密配置（P1 已建 site.ts）
-.github/workflows/       # 新项目 CI，尚未创建
+.github/workflows/       # P7 新 CI，只校验并上传 noindex 预览，不部署
 archive/legacy/          # 历史资料，不是 workspace
 ```
 
-P1 在根目录另外新增：`package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`（pnpm 记录构建脚本白名单与发布年龄例外）、`astro.config.ts`、`tsconfig.json`。P2 已创建内容 Schema、Parser、Validator、Registry、Astro 校验集成与正式 CLI。P3 已创建受限渲染器、Resolver、复制与选择器增强、资源文档和摘要附件静态端点。P4 浏览闭环已验收并提交；P5 首页搜索与静态索引已获用户确认验收；P6 完善视觉与可访问性，新 CI 尚未实现。
+P1 在根目录另外新增：`package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`（pnpm 记录构建脚本白名单与发布年龄例外）、`astro.config.ts`、`tsconfig.json`。P2 已创建内容 Schema、Parser、Validator、Registry、Astro 校验集成与正式 CLI。P3 已创建受限渲染器、Resolver、复制与选择器增强、资源文档和摘要附件静态端点。P4 浏览闭环已验收并提交；P5 首页搜索与静态索引已获用户确认验收；P6 完善视觉与可访问性，P7 新 CI 与平台无关交付链已编写，运行证据与剩余发布条件见 PLAN。
 
 ### P2 实际接口
 
@@ -160,3 +161,13 @@ P3 已收录编写／贡献指南两篇正式站内文档，不生成临时样�
 不引入 Hono、SQLite、Redis、BullMQ、旧共享包或旧 CSS。归档内容不能进入源码导入图、tsconfig include、资源发现、站点 sitemap 或构建产物。P1 已落实扫描边界：`tsconfig.json` 的 include 覆盖 `src/`、`config/`、正式 `scripts/` 与 `astro.config.ts`，Vite 文件监听忽略 `archive/`、`.local/`、`.pi/`，构建产物 `dist/` 只有新站页面与样式。
 
 未来对象存储由 Asset Resolver 扩展；文集导航由明确的文集数据扩展；搜索规模增长由 Search 模块替换。只有需求发生才启用对应扩展，不建立目前无人使用的服务接口。
+
+### P7 交付层（平台无关部分）
+
+`config/deployment.ts` 独立区分 preview／release；默认不公开索引，正式构建需要实际 HTTPS siteUrl，不能凭 NODE_ENV 或已经填好域名推断发布意图。官方 `@astrojs/sitemap` 只在 release 注册，过滤为首页、分类、关于与公开资源页；robots 静态端点遵循同一模式。SiteLayout 输出标题／描述／OG／Twitter，资源页消费已校验 seo 字段，原始阅读 h1 不因 SEO 标题改变。
+
+`src/delivery/{files,manifest,integration,markup,links,check}.ts` 负责受限输出扫描、内容／产物摘要、Astro 构建钩子、HTML／CSS／ESM 解析与公开集合复核。`scripts/check.ts` 顺序调用正式工具，不引入常驻服务、浏览器或临时数据集。新 lint 使用 ESLint 10、typescript-eslint 与 Astro 官方插件生态配置，归档不在输入范围；类型门禁仍是 Astro check。
+
+根 LICENSE／LICENSE-DOCS 是项目许可权威文本，`config/licensing.ts` 为固定原始文件映射，静态端点只读取该映射，不以 URL 参数读取磁盘。依赖与字体许可证保持原始字节；具体权限范围见 [licensing.md](licensing.md)。templates 是长期编辑入口，未进入 content/resources 扫描；resource:new 创建真实工作草稿，但不自动生成公开资源。
+
+GitHub CI 最小 contents:read、不保留 checkout 写凭据，无 pull_request_target、部署 Secret 或自动 PR。正式主机、缓存／响应头和实际发布流程明确后置，不把编写 workflow 当成云端检查已运行。

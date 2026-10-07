@@ -8,6 +8,7 @@ import ResourceMetadata from '../../components/resource/ResourceMetadata.astro';
 import Notice from '../../components/resource/Notice.astro';
 import { contentCategories } from '../../content/categories';
 import { categoryHref, resourceEditUrl } from '../../content/navigation';
+import { resolveDocumentUrl } from '../../content/resolve/assets.ts';
 import { loadResourceRegistry } from '../../content/registry/load.ts';
 import type { PublishedResource, ResourceRegistry } from '../../content/registry/types.ts';
 
@@ -24,7 +25,9 @@ const returnHref = categoryHref(metadata.category);
 const editUrl = resourceEditUrl(siteConfig, metadata.id);
 const contributionPage = registry.get('mirrorn-contributing');
 ---
-<ResourceLayout title={metadata.name} summary={metadata.summary} headings={resource.document.headings}>
+<ResourceLayout title={metadata.name} summary={metadata.summary} headings={resource.document.headings}
+  seoTitle={metadata.seo?.title} seoDescription={metadata.seo?.description}
+  seoImage={metadata.seo?.image ? resolveDocumentUrl(resource, metadata.seo.image) : undefined}>
   <ResourceMetadata slot="metadata" resource={resource} categoryName={category.name} />
   {metadata.status !== 'active' && <Notice type="warning" title={metadata.status === 'deprecated' ? '资源已废弃' : '资源仅作存档'}><p>{metadata.statusReason}</p></Notice>}
   <ResourceDocument resource={resource} registry={registry} />
@@ -35,6 +38,7 @@ const contributionPage = registry.get('mirrorn-contributing');
       {contributionPage && contributionPage.metadata.id !== metadata.id && <a class="page-action" href={`/resources/${contributionPage.metadata.id}/`}>贡献指南</a>}
     </nav>
     {editUrl && <p>在 GitHub 完成修改后主动提交 PR；同一项修改继续更新同一个 PR。本站不会自动提 PR。</p>}
+    <p>除另有标注，本站原创文档采用 <a href="/licenses/cc-by-4.0.txt">CC BY 4.0</a>，转载请保留作者与原文链接、注明改动；原创程序示例采用 MIT，所介绍资源与附件按各自许可。</p>
   </footer>
 </ResourceLayout>
 <style>

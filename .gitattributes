@@ -1,2 +1,7 @@
 # 资源附件按原始字节保存，避免不同平台的换行转换改变文件大小和摘要。
 content/resources/**/assets/** -text
+
+# 上游和项目完整许可按原始字节分发；检查与构建在 Windows / Linux 保持一致。
+public/font-licenses/** -text
+LICENSE -text
+LICENSE-DOCS -text

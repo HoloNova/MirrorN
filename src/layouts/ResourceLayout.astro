@@ -8,11 +8,14 @@ interface Props {
   title: string;
   summary?: string;
   headings?: readonly DocumentHeading[];
+  seoTitle?: string;
+  seoDescription?: string;
+  seoImage?: string;
 }
-const { title, summary, headings = [] } = Astro.props;
+const { title, summary, headings = [], seoTitle, seoDescription, seoImage } = Astro.props;
 const hasToc = headings.length >= 2;
 ---
-<SiteLayout title={title} description={summary}>
+<SiteLayout title={seoTitle ?? title} description={seoDescription ?? summary} image={seoImage} pageType="article">
   <div class:list={['resource-frame', { 'resource-frame--with-toc': hasToc }]}>
     {hasToc && <PageToc headings={headings} />}
     <article class="resource" data-resource-article>

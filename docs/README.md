@@ -1,6 +1,6 @@
 # 项目文档地图
 
-当前是新定位的规范与归档阶段，不是功能完成声明。进度只在 [PLAN.md](../PLAN.md) 维护。
+新站前台 P1–P6 已验收，正在完善贡献与交付闭环；未配置正式发布目标，不是已上线声明。进度只在 [PLAN.md](../PLAN.md) 维护。
 
 | 文档 | 唯一职责 |
 | --- | --- |
@@ -13,6 +13,8 @@
 | [delivery.md](delivery.md) | 命令职责、CI、部署、缓存与回退 |
 | [acceptance.md](acceptance.md) | 可观察的完成条件与人工验收 |
 | [decisions.md](decisions.md) | 重大决策的原因与替代方案 |
+| [licensing.md](licensing.md) | MIT／CC BY 4.0 的适用范围、署名及第三方分发 |
+| [资源模板](../templates/README.md) | 新资源草稿创建与长期模板 |
 | [归档说明](../archive/README.md) | 历史基线与本地数据去向 |
 
 ## 文档更新约定

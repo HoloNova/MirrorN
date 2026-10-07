@@ -1,7 +1,10 @@
 import { defineConfig } from 'astro/config';
 import type { AstroIntegration } from 'astro';
-import { siteConfig, siteConfigWarnings } from './config/site';
+import { siteConfigWarnings } from './config/site';
 import { contentIntegration } from './src/content/integration.ts';
+import sitemap from '@astrojs/sitemap';
+import { releaseSiteUrl } from './config/deployment.ts';
+import { deliveryIntegration } from './src/delivery/integration.ts';
 
 /**
  * 为什么有站点配置提示：正式域名和贡献仓库属于发布前才确定的值，P1 允许它们为空。
@@ -21,9 +24,14 @@ const siteConfigHints: AstroIntegration = {
 export default defineConfig({
   // 纯静态输出：产物是可直接托管的 HTML，不需要 Node 常驻服务。
   output: 'static',
-  // 只有配置了正式地址才输出 canonical 等绝对地址；未配置时保持 undefined，不伪造域名。
-  site: siteConfig.siteUrl ?? undefined,
-  integrations: [siteConfigHints, contentIntegration()],
+  // 只有显式正式模式才使用真实地址；普通构建与 PR 保持 noindex，不因填好域名而变成生产。
+  site: releaseSiteUrl ?? undefined,
+  integrations: [siteConfigHints, contentIntegration(), ...(releaseSiteUrl ? [sitemap({
+    filter: (page) => {
+      const path = new URL(page).pathname;
+      return ['/', '/resources/', '/about/'].includes(path) || /^\/resources\/[a-z0-9-]+\/$/u.test(path);
+    },
+  })] : []), deliveryIntegration()],
   vite: {
     server: {
       watch: {
