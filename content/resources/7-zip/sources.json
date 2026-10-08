@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "artifacts": [
+    {
+      "id": "win-x64-exe",
+      "label": "Windows x64 安装程序（26.04）",
+      "version": "26.04",
+      "platform": "windows",
+      "arch": "x64",
+      "fileName": "7z2604-x64.exe",
+      "fileType": "exe",
+      "fileSize": 1664082
+    }
+  ],
+  "sources": [
+    {
+      "id": "official-exe",
+      "type": "release",
+      "target": "file",
+      "label": "7-Zip 26.04 · 官方发布（Windows x64）",
+      "url": "https://github.com/ip7z/7zip/releases/download/26.04/7z2604-x64.exe",
+      "artifactId": "win-x64-exe",
+      "health": "available",
+      "checkedAt": "2026-10-08",
+      "note": "7-zip.org 下载页链接到的官方发布文件。已核实 HTTP 响应与文件大小；官网未给出 SHA-256，本页不显示校验值。"
+    },
+    {
+      "id": "official-page",
+      "type": "webpage",
+      "label": "7-Zip 官方下载页",
+      "url": "https://www.7-zip.org/download.html"
+    },
+    {
+      "id": "release-page",
+      "type": "release",
+      "target": "page",
+      "label": "7-Zip 26.04 发布页（GitHub）",
+      "url": "https://github.com/ip7z/7zip/releases/tag/26.04"
+    }
+  ],
+  "groups": [
+    {
+      "id": "official-docs",
+      "label": "官方资料",
+      "sourceIds": ["official-page", "release-page"]
+    }
+  ]
+}

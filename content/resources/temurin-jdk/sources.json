@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "artifacts": [
+    {
+      "id": "win-x64-msi",
+      "label": "Windows x64 MSI（JDK 25 LTS）",
+      "version": "25.0.4.1+1",
+      "platform": "windows",
+      "arch": "x64",
+      "fileName": "OpenJDK25U-jdk_x64_windows_hotspot_25.0.4.1_1.msi",
+      "fileType": "msi",
+      "fileSize": 115998720,
+      "checksum": { "algorithm": "sha256", "value": "517b3590be43120c34c3891d09c97a1eddc12da982208c4f5adf1bdc1b5e3f15" }
+    }
+  ],
+  "sources": [
+    {
+      "id": "official-msi",
+      "type": "release",
+      "target": "file",
+      "label": "Temurin 25 LTS · 官方发布（Windows x64 MSI）",
+      "url": "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.4.1%2B1/OpenJDK25U-jdk_x64_windows_hotspot_25.0.4.1_1.msi",
+      "artifactId": "win-x64-msi",
+      "health": "available",
+      "checkedAt": "2026-10-08",
+      "note": "Adoptium 在 GitHub 发布的 MSI。已核实文件大小；SHA-256 与同一发布中的 .sha256.txt 及 Adoptium 接口数据一致。"
+    },
+    {
+      "id": "temurin-releases",
+      "type": "webpage",
+      "label": "Adoptium Temurin 版本列表",
+      "url": "https://adoptium.net/temurin/releases/"
+    },
+    {
+      "id": "windows-install",
+      "type": "webpage",
+      "label": "Adoptium Windows MSI 安装说明",
+      "url": "https://adoptium.net/installation/windows/"
+    },
+    {
+      "id": "release-page",
+      "type": "release",
+      "target": "page",
+      "label": "Temurin 25.0.4.1+1 发布页（GitHub）",
+      "url": "https://github.com/adoptium/temurin25-binaries/releases/tag/jdk-25.0.4.1%2B1"
+    }
+  ],
+  "groups": [
+    {
+      "id": "official-docs",
+      "label": "官方资料",
+      "sourceIds": ["temurin-releases", "windows-install", "release-page"]
+    }
+  ]
+}

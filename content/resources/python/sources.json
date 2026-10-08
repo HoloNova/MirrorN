@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "artifacts": [
+    {
+      "id": "win-x64-exe",
+      "label": "Windows 64 位安装程序（3.14.8）",
+      "version": "3.14.8",
+      "platform": "windows",
+      "arch": "x64",
+      "fileName": "python-3.14.8-amd64.exe",
+      "fileType": "exe",
+      "fileSize": 33387464,
+      "checksum": { "algorithm": "sha256", "value": "759be887b96e736a3ca886daf8d575f18fcae1a09efab6902f42d59e8999f8ef" }
+    }
+  ],
+  "sources": [
+    {
+      "id": "official-exe",
+      "type": "direct",
+      "label": "Python 3.14.8 · python.org 安装程序（64 位）",
+      "url": "https://www.python.org/ftp/python/3.14.8/python-3.14.8-amd64.exe",
+      "artifactId": "win-x64-exe",
+      "health": "available",
+      "checkedAt": "2026-10-08",
+      "note": "python.org 发布页列出的文件。已核实文件大小；下载后计算的 SHA-256 与发布页一致。"
+    },
+    {
+      "id": "windows-page",
+      "type": "webpage",
+      "label": "Python 官方 Windows 下载页",
+      "url": "https://www.python.org/downloads/windows/"
+    },
+    {
+      "id": "release-page",
+      "type": "webpage",
+      "label": "Python 3.14.8 发布页（含文件列表）",
+      "url": "https://www.python.org/downloads/release/python-3148/"
+    },
+    {
+      "id": "windows-doc",
+      "type": "webpage",
+      "label": "Python 官方 Windows 使用说明（中文）",
+      "url": "https://docs.python.org/zh-cn/3/using/windows.html"
+    }
+  ],
+  "groups": [
+    {
+      "id": "official-docs",
+      "label": "官方资料",
+      "sourceIds": ["windows-page", "release-page", "windows-doc"]
+    }
+  ]
+}

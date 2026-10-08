@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "artifacts": [
+    {
+      "id": "win-x64-exe",
+      "label": "Windows x64 安装程序（2.56.0）",
+      "version": "2.56.0.windows.2",
+      "platform": "windows",
+      "arch": "x64",
+      "fileName": "Git-2.56.0.2-64-bit.exe",
+      "fileType": "exe",
+      "fileSize": 66763664
+    }
+  ],
+  "sources": [
+    {
+      "id": "official-exe",
+      "type": "release",
+      "target": "file",
+      "label": "Git for Windows 2.56.0 · 官方发布（64 位）",
+      "url": "https://github.com/git-for-windows/git/releases/download/v2.56.0.windows.2/Git-2.56.0.2-64-bit.exe",
+      "artifactId": "win-x64-exe",
+      "health": "available",
+      "checkedAt": "2026-10-08",
+      "note": "git-scm.com 安装页链接到的官方发布文件。已核实重定向与文件大小；项目未提供单独的 SHA-256 文件，本页不显示校验值。"
+    },
+    {
+      "id": "install-page",
+      "type": "webpage",
+      "label": "Git 官方 Windows 安装页",
+      "url": "https://git-scm.com/install/windows"
+    },
+    {
+      "id": "release-page",
+      "type": "release",
+      "target": "page",
+      "label": "Git for Windows 2.56.0 发布页（GitHub）",
+      "url": "https://github.com/git-for-windows/git/releases/tag/v2.56.0.windows.2"
+    }
+  ],
+  "groups": [
+    {
+      "id": "official-docs",
+      "label": "官方资料",
+      "sourceIds": ["install-page", "release-page"]
+    }
+  ]
+}

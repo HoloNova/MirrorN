@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "en-home",
+      "type": "webpage",
+      "label": "cppreference 英文站首页",
+      "url": "https://en.cppreference.com/w/"
+    },
+    {
+      "id": "cpp-index",
+      "type": "webpage",
+      "label": "C++ 参考目录（英文站）",
+      "url": "https://en.cppreference.com/w/cpp"
+    }
+  ],
+  "groups": [
+    {
+      "id": "reference",
+      "label": "参考入口",
+      "sourceIds": ["en-home", "cpp-index"]
+    }
+  ]
+}
