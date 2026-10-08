@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "artifacts": [
+    {
+      "id": "win-x64-lts",
+      "label": "Windows x64 安装包（v24.21.0 LTS）",
+      "version": "24.21.0",
+      "platform": "windows",
+      "arch": "x64",
+      "fileName": "node-v24.21.0-x64.msi",
+      "fileType": "msi",
+      "fileSize": 33230848,
+      "checksum": { "algorithm": "sha256", "value": "bb0eaee134f9357f22aea915ee793343e627aefc1e66488164bac6915bce2cac" }
+    }
+  ],
+  "sources": [
+    {
+      "id": "official-msi",
+      "type": "direct",
+      "label": "Node.js 官方 MSI 安装包",
+      "url": "https://nodejs.org/dist/v24.21.0/node-v24.21.0-x64.msi",
+      "artifactId": "win-x64-lts",
+      "health": "available",
+      "checkedAt": "2026-10-08"
+    },
+    {
+      "id": "official-page",
+      "type": "webpage",
+      "label": "Node.js 官方下载页",
+      "url": "https://nodejs.org/en/download"
+    }
+  ],
+  "groups": [
+    { "id": "installers", "label": "安装文件", "sourceIds": ["official-msi"] },
+    { "id": "upstream", "label": "上游资料", "sourceIds": ["official-page"] }
+  ]
+}
