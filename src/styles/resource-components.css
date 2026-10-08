@@ -79,6 +79,22 @@
   cursor: not-allowed;
 }
 .resource-link { display: inline-flex; align-items: center; min-block-size: var(--target-min-size); }
+/* 行内文档链接 `<>[文字](地址)`：紧凑控件，行盒高度 15px × 1.5 ＋ 边框，不撑开正文段落。 */
+.prose a.resource-chip {
+  display: inline-flex;
+  align-items: center;
+  max-inline-size: 100%;
+  padding: 1px var(--space-2);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  transition: background-color var(--motion-fast), border-color var(--motion-fast);
+}
+.prose a.resource-chip:hover { background: var(--color-accent-soft); border-color: var(--color-link); }
 
 .copy-block {
   margin-block: var(--space-5);

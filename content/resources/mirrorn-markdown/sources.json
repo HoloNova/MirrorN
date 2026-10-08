@@ -4,29 +4,29 @@
     {
       "id": "reference-markdown-v1",
       "label": "Markdown 离线速查",
-      "version": "1.0",
+      "version": "1.1",
       "platform": "any",
       "arch": "any",
       "fileName": "mirrorn-markdown-reference.md",
       "fileType": "md",
-      "fileSize": 1393,
+      "fileSize": 2775,
       "checksum": {
         "algorithm": "sha256",
-        "value": "72268c15c46871e17acb1bf95c82aac4e81af0c7359c3f11cb3192f270d9adfa"
+        "value": "730da84370bbc78f6218a03acf67282817817458f64be6d181f788a95a0ea9b5"
       }
     },
     {
       "id": "reference-text-v1",
       "label": "纯文本离线速查",
-      "version": "1.0",
+      "version": "1.1",
       "platform": "any",
       "arch": "any",
       "fileName": "mirrorn-markdown-reference.txt",
       "fileType": "txt",
-      "fileSize": 1323,
+      "fileSize": 2709,
       "checksum": {
         "algorithm": "sha256",
-        "value": "7c2f97b50b9aa94dc90135becdfe3c49aca9cc68420b710384bb1510f8033da5"
+        "value": "f3423ae1264a95914139a46b95503e2aefe02037a9608e557b50d7aff27335dd"
       }
     }
   ],
@@ -55,18 +55,18 @@
       "note": "在项目根目录运行。这里只提供复制，不会自动执行。"
     },
     {
-      "id": "astro-markdown-docs",
+      "id": "markdown-docs",
       "type": "webpage",
-      "label": "Astro Markdown 官方文档",
-      "url": "https://docs.astro.build/en/guides/markdown-content/",
-      "note": "框架参考资料；MirrorN 自定义指令以本站的写作规范为准。"
+      "label": "GitHub Markdown 写作参考",
+      "url": "https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting",
+      "note": "普通 Markdown 参考；MirrorN 的指令及受限语法以本站规范为准。"
     },
     {
-      "id": "astro-repository",
+      "id": "project-repository",
       "type": "repository",
       "target": "page",
-      "label": "Astro 源码仓库",
-      "url": "https://github.com/withastro/astro"
+      "label": "MirrorN 源码仓库",
+      "url": "https://github.com/HoloNova/MirrorN"
     }
   ],
   "groups": [
@@ -78,7 +78,7 @@
     {
       "id": "reading-and-tools",
       "label": "相关文档与工具",
-      "sourceIds": ["reference-markdown", "project-dependencies", "astro-markdown-docs", "astro-repository"]
+      "sourceIds": ["markdown-docs", "project-repository"]
     }
   ],
   "assets": [

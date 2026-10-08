@@ -2,12 +2,8 @@ name: Verify new site
 
 on:
   pull_request:
-    paths-ignore:
-      - 'archive/**'
   push:
     branches: [main]
-    paths-ignore:
-      - 'archive/**'
   workflow_dispatch:
 
 permissions:

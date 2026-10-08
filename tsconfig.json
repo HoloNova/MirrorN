@@ -15,5 +15,5 @@
     "rootDirs": [".", "./.react-router/types"]
   },
   "include": ["src/**/*", "config/**/*", "scripts/**/*.ts", "vite.config.ts", "react-router.config.ts", ".react-router/types/**/*"],
-  "exclude": ["dist", "node_modules", "archive", ".local", ".pi", "content"]
+  "exclude": ["dist", "node_modules", ".local", ".pi", "content"]
 }

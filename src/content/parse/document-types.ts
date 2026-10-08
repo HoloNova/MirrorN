@@ -34,7 +34,7 @@ export type DocumentNode = PositionedNode & (
   | { readonly type: 'list'; readonly ordered: boolean; readonly start: number | null; readonly spread: boolean; readonly children: readonly DocumentNode[] }
   | { readonly type: 'listItem'; readonly checked: boolean | null; readonly spread: boolean; readonly children: readonly DocumentNode[] }
   | { readonly type: 'table'; readonly align: readonly ('left' | 'right' | 'center' | null)[]; readonly children: readonly DocumentNode[] }
-  | { readonly type: 'link'; readonly url: string; readonly title: string | null; readonly children: readonly DocumentNode[] }
+  | { readonly type: 'link'; readonly url: string; readonly title: string | null; readonly chip?: true; readonly children: readonly DocumentNode[] }
   | { readonly type: 'image'; readonly url: string; readonly title: string | null; readonly alt: string }
   /** 脚注编号按正文中首次引用的顺序；occurrence 区分同一脚注的多次引用，供返回链接定位。 */
   | { readonly type: 'footnoteReference'; readonly number: number; readonly occurrence: number }

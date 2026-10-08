@@ -200,9 +200,10 @@
     }
   }
 
-/* 首页只有搜索框：放在视口上部约三分之一处，结果向下展开，不把输入框顶走。 */
+/* 首页以搜索为主体：结果向下展开，整理说明不参与搜索状态反馈。 */
 .home { max-inline-size: 44rem; margin-inline: auto; padding-block-start: clamp(var(--space-6), 22vh, 14rem); }
   .home .resource-search { margin-block: 0; }
+  .home__note { margin-block: var(--space-4) 0; color: var(--color-text-muted); font-size: var(--font-size-note); }
   @media (max-width: 767px) {
     .home { padding-block-start: clamp(var(--space-5), 12vh, var(--space-8)); }
   }

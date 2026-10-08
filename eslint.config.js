@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint';
 
 const unused = ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' }];
 export default defineConfig([
-  globalIgnores(['archive/**', '.local/**', '.pi/**', 'dist/**', 'node_modules/**', 'content/**', 'public/**', 'templates/**', '.react-router/**']),
+  globalIgnores(['.local/**', '.pi/**', 'dist/**', 'node_modules/**', 'content/**', 'public/**', 'templates/**', '.react-router/**']),
   { files: ['**/*.js', '**/*.ts', '**/*.tsx'], extends: [js.configs.recommended], languageOptions: { globals: { ...globals.node, ...globals.browser } } },
   ...tseslint.configs.recommended.map((config) => ({ ...config, files: ['**/*.ts', '**/*.tsx'] })),
   { files: ['**/*.ts', '**/*.tsx'], rules: { '@typescript-eslint/no-unused-vars': unused } },

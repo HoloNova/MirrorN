@@ -1,8 +1,8 @@
 # 贡献 MirrorN
 
-MirrorN 的内容以 Git 为唯一事实来源。欢迎通过 PR 增加资源、修正文档、更新来源、补充兼容性说明或标记失效链接。不需要管理员账号，也没有在线内容管理后台。
+MirrorN 的内容以 Git 为唯一事实来源。欢迎通过 PR 增加开发资源和学习文档、维护下载直链与镜像入口、补充兼容性说明，也欢迎开发或优化 Markdown 展示组件。不需要管理员账号，也没有在线内容管理后台。
 
-> 当前工程、内容处理链、八组件和公开资源页可用；站内编写／贡献指南已进入目录。P4 导航与阅读布局已验收并提交；P5 首页搜索已获用户确认验收；P6 视觉与可访问性已获用户确认，新 CI 与交付检查已在 P7 编写，实际远端运行待授权推送后确认。可用命令见 README，不把本地 Registry 草稿模式称为已经存在的页面预览 UI。
+> 可用命令见 README，实际阶段与发布状态见 PLAN。内容与组件参考是长期维护的公开文档；草稿 Registry 只用于校验，不是草稿页面预览 UI。
 
 ## 1. 内容贡献流程
 
@@ -16,7 +16,7 @@ MirrorN 的内容以 Git 为唯一事实来源。欢迎通过 PR 增加资源、
 
 贡献者自己操作 Git 按项目流程提交 PR；本会话中的 Agent 仍必须遵守 AGENTS 中未经用户许可不得提交／推送的规则。
 
-站内可阅读版本：`/resources/mirrorn-contributing/`，写作指南为 `/resources/mirrorn-markdown/`。两篇与本规范保持一致，均为长期维护内容，不是临时预览样本。
+站内流程见 `/resources/mirrorn-contributing/`，文件与来源写作见 `/resources/mirrorn-markdown/`，实际样式、折叠写法与源码位置见 `/resources/mirrorn-components/`。三篇职责分开，均为长期维护内容。
 
 ### 搜索信息维护
 
@@ -26,7 +26,7 @@ MirrorN 的内容以 Git 为唯一事实来源。欢迎通过 PR 增加资源、
 
 资源页的「编辑此页（GitHub）」打开对应 `index.md` 的平台编辑器，不由本站保存内容或自动新建 PR。按 GitHub 提示在自己的工作分支完成修改，准备好后主动创建 PR；如果任务还需要改 `sources.json` 或附件，也放在同一分支。审核期间继续提交到已有 PR 的分支，不为每次保存另建 PR；不同任务则保持可独立审阅，不凑成巨型 PR。
 
-当前新文档仍未推送到远端，本地页面有编辑链接不代表 GitHub 已存在该文件；发布前由维护者落实源文件推送。平台账号与权限由 GitHub 处理，MirrorN 没有站内登录。
+本地页面有编辑链接不代表对应修订已在 GitHub；新增资源须推送对应文件，平台编辑入口才能使用。平台账号与权限由 GitHub 处理，MirrorN 没有站内登录。
 
 ## 2. PR 应提供的信息
 
@@ -54,7 +54,7 @@ MirrorN 的内容以 Git 为唯一事实来源。欢迎通过 PR 增加资源、
 
 全站 UI 使用 React／TypeScript／TSX，包括资源正文展示组件；只有资源输入是 Markdown，自定义指令不变。页面在 src/routes，组件在 src/components，HTML 外壳在 src/root.tsx，不新增 Astro／MDX 层。页面交互以 MAIN 与 DESIGN 为准，组件 API 以内容规范为准。实现前查阅 [PLAN.md](PLAN.md) 当前阶段，避免把归档功能重新搬回。
 
-P6 统一字体、主题和正文／组件样式，作者不在资源文档写字体或 CSS，也不因视觉调整改指令参数。新增字体或第三方静态文件时，保留上游版权和分发许可；现有 Fontsource 许可位于 `public/font-licenses/`，与项目自身许可证区分。
+贡献者可以开发或优化普通 Markdown 排版和资源组件。正文排版位于 `src/styles/prose.css`，控件与代码框样式位于 `src/styles/resource-components.css`，颜色与间距复用 `src/styles/tokens.css`；React 组件位于 `src/components/resource/`。资源作者不在文章中直接写字体、CSS 或 JSX，也不因视觉调整改指令参数。新增指令须同步 `src/content/schema/directives.ts`、解析与引用校验、`DocumentNodes.tsx` 渲染、内容规范、站内组件参考和必要迁移说明。新增字体或第三方静态文件时，保留上游版权和分发许可；现有 Fontsource 许可位于 `public/font-licenses/`，与项目自身许可证区分。
 
 先使用已有成熟解析库，不自己写 Markdown 语法解析或版本比较器。业务代码改动先解释原因与边界；保持小范围实现和必要验证。禁止 UI 单元测试和浏览器自动验收；影响 UI 时列出手工验收清单，由维护者启动浏览器。
 

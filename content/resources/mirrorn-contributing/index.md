@@ -2,7 +2,7 @@
 schemaVersion: 1
 id: mirrorn-contributing
 name: MirrorN 贡献指南
-summary: 从新建资源目录到本地校验、页面预览和 PR 审核的贡献流程。
+summary: 新增开发资源、修订学习文档、维护下载来源，以及开发或优化 Markdown 展示组件的贡献流程。
 category: document
 tags:
   domain: [documentation]
@@ -11,79 +11,99 @@ tags:
 aliases: [贡献流程, PR 指南, gong xian zhi nan]
 authors: [MirrorN]
 publishedAt: 2026-10-07
+updatedAt: 2026-10-08
 draft: false
 status: active
 ---
 
-## 贡献什么
+## 可以贡献什么
 
-本站通过 Git 手工维护资源与文档。可以新增资源、补充用法、修订来源、说明兼容条件或标记已失效的入口；不需要管理员账号，不通过在线后台编辑。
+MirrorN 整理开发常用资源与学习文档，提供下载直链、镜像入口和安装说明。欢迎新增资源、补充教程、修订来源、记录失效入口，也欢迎开发或优化 Markdown 展示组件。
 
-一个资源是长期稳定的收录对象，不因文件格式、版本或平台变化就新建一个资源页。先检查已收录目录，已有资源优先修改原目录。
+内容与源码通过 [项目仓库](https://github.com/HoloNova/MirrorN) 的 PR 维护，没有站内编辑后台。先检查已收录目录，已有资源优先修改原页，不按每个版本重复收录。
 
-## 组织文件
+## 贡献资源与文档
 
-在 `content/resources/` 下建立以稳定 ID 命名的目录：
-
-```text
-content/resources/your-resource/
-  index.md
-  sources.json
-  assets/
-```
-
-`index.md` 包含 Front Matter 和正文。需要来源时添加 `sources.json`；只讲解知识的文档可以没有下载来源。图片或小型附件放 `assets/`，下载附件还要通过 Asset 和 local Source 声明。
-
-:::notice{type="info" title="先熟悉写作语法"}
-使用普通 Markdown 和站点指令，不在文章中手写组件或导入代码。下面的关联指南提供完整写法与离线速查。
+:::steps
+1. Fork 仓库并建立工作分支，先阅读编写指南和已有资源。
+2. 新增资源时运行 `pnpm resource:new <id>` 创建草稿；修订时直接修改原资源目录。
+3. 在 `index.md` 讲清用途、获取方式与必要操作，在 `sources.json` 维护文件、来源、命令及附件声明。
+4. 检查来源与许可；没有核实的版本、架构、摘要或可用状态不要补成事实。
+5. 补齐发布字段并设为 `draft: false`，运行检查并自行查看本地页面。
+6. 在自己的分支提交修改，发起 PR，说明改动、来源依据与已完成的检查。
 :::
 
 ::resource-card{resource="mirrorn-markdown"}
+::resource-card{resource="mirrorn-components"}
 
-## 从草稿到本地页面
+正文使用 Markdown 与注册指令，不需导入组件。图片和小型附件放在资源内的 `assets/`；大型安装包使用真实下载来源，不超出仓库附件预算。
 
-写作时先设 `draft: true`。草稿也要满足身份、语法、字段类型和已有引用的校验，但不会生成公开页面。
+## 贡献 Markdown 样式与组件
 
-```bash
+你可以修正文档排版、优化已有组件，也可以提出新的可复用展示功能。**统一组件在站点源码里实现，资源作者通过 Markdown 使用它们**，不让每篇文章复制一套 CSS 或交互代码。
+
+| 改动 | 主要位置 |
+| --- | --- |
+| 普通 Markdown 排版 | `src/styles/prose.css` |
+| 资源控件样式 | `src/styles/resource-components.css`（含代码框、来源与下载控件） |
+| 亮暗主题、颜色与间距 | `src/styles/tokens.css` |
+| React 资源组件 | `src/components/resource/` |
+| 指令名、参数与组件映射 | `src/content/schema/directives.ts` |
+| Markdown 解析与结构限制 | `src/content/parse/markdown.ts`、`src/content/parse/directive-syntax.ts` |
+| 指令引用和内容校验 | `src/content/validate/` |
+| 节点到组件的渲染 | `src/components/resource/DocumentNodes.tsx` |
+
+修改已有样式时保留指令含义与旧文档兼容，优先复用主题 Token。增加指令时先说明“现有功能为什么不够”，再同步参数契约、允许的嵌套、校验、渲染、内容规范和组件参考。不要只注册名称却留下空组件，也不要允许文档传入任意 HTML 属性或执行代码。
+
+:::details{title="开发贡献的检查顺序"}
+```powershell
+pnpm lint
+pnpm content:check
+pnpm typecheck
+pnpm build
+pnpm check:dist
+```
+
+也可以运行 `pnpm check` 完成统一检查，不需要再重复上述全部命令。涉及界面时列出受影响页面与人工检查项，包括亮暗主题、窄屏、键盘、复制及关闭 JavaScript 后的基本阅读；不添加 UI 单元测试或浏览器自动验收。
+:::
+
+## 内容校验与本地阅读
+
+草稿可先检查身份、语法和引用：
+
+```powershell
 pnpm content:check --include-drafts
 ```
 
-准备公开预览时补齐简介、作者、发布日期、维护状态等发布字段，并明确设为 `draft: false`。然后执行：
+草稿不会生成页面；准备公开时补齐作者、简介、日期等字段并设为 `draft: false`，运行：
 
-```bash
+```powershell
 pnpm check
 ```
 
-由贡献者手动启动本地开发或预览服务，在 `/resources/<id>/` 阅读实际页面。类型检查不是页面验收：还要确认下载来源、复制内容、键盘操作、窄屏布局以及禁用 JavaScript 后的基本阅读。
+由贡献者自行启动本地开发或预览，在 `/resources/<id>/` 阅读实际页面。内容、类型与构建检查不是页面验收，也不会自动执行安装命令。
 
-:::notice{type="warning" title="草稿集合不等于草稿页面"}
-`--include-drafts` 只选择本地校验集合；当前网站没有草稿页面预览 UI。公开页面和附件始终来自公开 Registry。
-:::
+## PR 说明
 
-## 提交 PR
+PR 应写清资源 ID 或组件名称、增加／修订的用途、下载或资料的来源、附件许可，以及已做与尚未做的检查。若只检查了文件入口，不写成“安装验证通过”。
 
-在项目实际 Git 仓库提交 PR，说明资源 ID、变更用途、来源依据、已做的检查和附件来源。贡献仓库为 HoloNova/MirrorN，可由本站关于页进入；新文档须先推送到对应分支，GitHub 编辑链接才能实际打开。
+资源页的“编辑此页”只打开 GitHub 文件编辑器。涉及来源或附件的改动放在同一个工作分支；审核中继续更新同一个 PR，不为每次保存另建 PR。
 
-维护者审阅后合并。新 CI 已编写，实际云端运行待授权推送；正式域名与托管仍未配置，不能把“已合并”理解成“已上线”；网站只有在静态构建与发布成功后才会更新。
+维护者审核并合并后，仍需完成静态构建与发布，公开站点才会更新。PR 合并不等于已经上线。
 
 ## 后续维护
 
 | 情况 | 处理方式 |
 | --- | --- |
-| 增加版本或文件格式 | 新增产物及来源，解释推荐版本 |
-| 同一个文件增加入口 | 引用同一个 artifact，不复制一份文件元数据 |
-| 某条来源失效 | 设置 health 为 broken 并填写 note，不自动下架整篇教程 |
-| 不再推荐资源 | 设置 status 为 deprecated 并写 statusReason |
-| 仅保留历史资料 | 设置 status 为 archived 并写原因 |
-| 撤下资源 | 先解除其他公开文章的引用，再设 draft 为 true |
-| 删除资源 | 删除目录并修正引用，Git 保留历史 |
+| 增加版本、平台或封装 | 新增产物及来源，说明适用条件 |
+| 同一文件增加镜像 | 核对字节身份后引用同一 artifact，否则独立声明产物 |
+| 某条来源失效 | `health: broken` 并填写 `note`，不自动下架整篇教程 |
+| 不再推荐资源 | `status: deprecated` 并写 `statusReason` |
+| 保留历史资料 | `status: archived` 并说明原因 |
+| 撤下或删除资源 | 先修正其他公开文章的引用，再设为草稿或删除目录 |
 
-:::notice{type="info" title="引用是发布单元的一部分"}
-文档、来源、附件和跨资源引用必须一起校验。删除或撤下被其他公开文章引用的资源，会阻止构建；先修正这些引用再发布。
-:::
+修改正文时更新 `updatedAt`，作者列表记录实际贡献者，不把 CI 机器人当作者。
 
-## 本站许可与统一校验
+## 内容与源码许可
 
-新站代码和原创程序示例采用 MIT，原创文档采用 CC BY 4.0；贡献者保留版权。转载文章应保留作者、原文链接与许可并说明修改；第三方材料和附件应分别写明出处与原许可，收录不是重新授权。
-
-使用 `pnpm resource:new <id>` 创建草稿，不会覆盖现有目录；补齐内容与真实来源后主动提交 PR。运行 `pnpm check` 完成文档、长期模板、lint、内容、类型、一次预览构建和产物门禁，纯工程说明文档可只运行 `pnpm docs:check`。默认 CI 上传 noindex 静态预览包，不自动部署；只有实际发布成功才会更新公开站点。
+新站代码与原创程序示例采用 MIT，原创文档采用 CC BY 4.0，贡献者保留版权。转载材料须保留出处和许可并说明修改；第三方软件、图片和附件按各自许可，收录不是重新授权。无需签署 CLA。

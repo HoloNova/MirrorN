@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "artifacts": [
+    {
+      "id": "hello-cpp", "label": "hello.cpp 原创源码", "platform": "any", "arch": "any", "fileName": "hello.cpp", "fileType": "cpp", "fileSize": 144,
+      "checksum": { "algorithm": "sha256", "value": "3d9532f916a3e15e54dc51ff9c71baa4b89a4f9c8cb8d19172387c65f7477fbc" }
+    }
+  ],
+  "sources": [
+    { "id": "hello-local", "type": "local", "label": "本站原创 hello.cpp", "assetId": "hello-source", "artifactId": "hello-cpp", "note": "MIT 原创示例；附件为源码，不是编译后的程序，不声称已在各平台编译实测。" },
+    { "id": "project-repository", "type": "repository", "target": "page", "label": "MirrorN 源码仓库", "url": "https://github.com/HoloNova/MirrorN" },
+    { "id": "project-dependencies", "type": "package-manager", "label": "安装 MirrorN 项目依赖", "packageManager": "pnpm", "installCommand": "pnpm install", "shell": "powershell", "note": "在项目根目录运行，需项目声明的 Node 与 pnpm；只复制，不自动执行。" }
+  ],
+  "groups": [
+    { "id": "example-files", "label": "原创示例文件", "sourceIds": ["hello-local"] },
+    { "id": "reference-sources", "label": "本站源码与工具", "sourceIds": ["hello-local", "project-repository", "project-dependencies"] }
+  ],
+  "assets": [
+    { "id": "hello-source", "path": "assets/hello.cpp", "downloadName": "hello.cpp", "mediaType": "text/plain" }
+  ],
+  "compatibility": [
+    { "id": "source-reading", "rows": [
+      { "platform": "windows", "arch": "any", "support": "supported", "note": "UTF-8 源文件，可用文本编辑器阅读；不代表编译或运行验证。" },
+      { "platform": "macos", "arch": "any", "support": "supported", "note": "UTF-8 源文件，可用文本编辑器阅读；编译需另外配置工具链。" },
+      { "platform": "linux", "arch": "any", "support": "supported", "note": "UTF-8 源文件，可用文本编辑器阅读；未进行平台编译实测。" }
+    ] }
+  ]
+}

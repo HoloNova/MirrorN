@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "artifacts": [
+    { "id": "community-stable-bootstrapper", "label": "Visual Studio Community 稳定通道在线安装器", "platform": "windows", "fileName": "vs_community.exe", "fileType": "exe" },
+    { "id": "community-2022-bootstrapper", "label": "Visual Studio 2022 Community 在线安装器", "platform": "windows", "fileName": "vs_community.exe", "fileType": "exe" }
+  ],
+  "sources": [
+    { "id": "community-stable", "type": "direct", "label": "Community 当前稳定版 · 官方下载", "url": "https://aka.ms/vs/stable/vs_community.exe", "artifactId": "community-stable-bootstrapper", "health": "available", "checkedAt": "2026-10-08", "note": "官方滚动通道；已检查文件重定向，未完整下载或实测安装。此入口的字节随发布更新，不提供固定文件摘要。" },
+    { "id": "community-2022", "type": "direct", "label": "Community 2022 · 官方下载", "url": "https://aka.ms/vs/17/release/vs_community.exe", "artifactId": "community-2022-bootstrapper", "health": "available", "checkedAt": "2026-10-08", "note": "2022 发布通道；已检查文件重定向，未完整下载或实测安装。安装器仍需联网下载组件。" },
+    { "id": "winget-stable", "type": "package-manager", "label": "用 WinGet 安装 Community 当前稳定版", "packageManager": "WinGet", "installCommand": "winget install --id Microsoft.VisualStudio.Community --exact --source winget", "shell": "powershell", "note": "已核对 Microsoft WinGet 包清单；未执行安装。安装后按课程需求选择工作负载。" },
+    { "id": "winget-2022", "type": "package-manager", "label": "用 WinGet 安装 Community 2022", "packageManager": "WinGet", "installCommand": "winget install --id Microsoft.VisualStudio.2022.Community --exact --source winget", "shell": "powershell", "note": "用于明确要求 2022 的课程；未执行安装。" },
+    { "id": "download-page", "type": "webpage", "label": "Visual Studio 官方下载页", "url": "https://visualstudio.microsoft.com/downloads/" },
+    { "id": "install-docs", "type": "webpage", "label": "安装参数与 WinGet 官方说明", "url": "https://learn.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio" },
+    { "id": "workload-docs", "type": "webpage", "label": "工作负载与组件 ID", "url": "https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-community" },
+    { "id": "offline-docs", "type": "webpage", "label": "官方离线安装方法", "url": "https://learn.microsoft.com/en-us/visualstudio/install/create-an-offline-installation-of-visual-studio" }
+  ],
+  "groups": [
+    { "id": "official-docs", "label": "官方资料", "sourceIds": ["download-page", "install-docs", "workload-docs", "offline-docs"] }
+  ]
+}

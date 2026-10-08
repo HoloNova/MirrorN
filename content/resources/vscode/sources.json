@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "artifacts": [
+    { "id": "windows-x64-user", "label": "Windows x64 用户安装包", "platform": "windows", "arch": "x64", "fileType": "exe" },
+    { "id": "windows-arm64-user", "label": "Windows ARM64 用户安装包", "platform": "windows", "arch": "arm64", "fileType": "exe" },
+    { "id": "macos-universal", "label": "macOS 通用版（Intel / Apple Silicon）", "platform": "macos", "fileType": "zip" },
+    { "id": "linux-deb-x64", "label": "Linux x64 DEB", "platform": "linux", "arch": "x64", "fileType": "deb" },
+    { "id": "linux-deb-arm64", "label": "Linux ARM64 DEB", "platform": "linux", "arch": "arm64", "fileType": "deb" },
+    { "id": "linux-rpm-x64", "label": "Linux x64 RPM", "platform": "linux", "arch": "x64", "fileType": "rpm" },
+    { "id": "linux-rpm-arm64", "label": "Linux ARM64 RPM", "platform": "linux", "arch": "arm64", "fileType": "rpm" }
+  ],
+  "sources": [
+    { "id": "windows-x64", "type": "direct", "label": "Windows x64 · 官方稳定通道", "url": "https://update.code.visualstudio.com/latest/win32-x64-user/stable", "artifactId": "windows-x64-user", "health": "available", "checkedAt": "2026-10-08", "note": "滚动文件入口，已检查 HTTP 文件重定向；未下载完整文件或实测安装，不提供固定版本摘要。" },
+    { "id": "windows-arm64", "type": "direct", "label": "Windows ARM64 · 官方稳定通道", "url": "https://update.code.visualstudio.com/latest/win32-arm64-user/stable", "artifactId": "windows-arm64-user", "health": "available", "checkedAt": "2026-10-08", "note": "滚动文件入口，已检查 HTTP 文件重定向；未下载完整文件或实测安装。" },
+    { "id": "macos-universal", "type": "direct", "label": "macOS 通用版 · 官方稳定通道", "url": "https://update.code.visualstudio.com/latest/darwin-universal/stable", "artifactId": "macos-universal", "health": "available", "checkedAt": "2026-10-08", "note": "滚动文件入口，包含 Intel 与 Apple Silicon 架构，未写单一架构；已检查文件重定向，未实测安装。" },
+    { "id": "linux-deb-x64", "type": "direct", "label": "Linux x64 DEB · 官方稳定通道", "url": "https://update.code.visualstudio.com/latest/linux-deb-x64/stable", "artifactId": "linux-deb-x64", "health": "available", "checkedAt": "2026-10-08", "note": "滚动文件入口，已检查文件重定向；未实测安装。" },
+    { "id": "linux-deb-arm64", "type": "direct", "label": "Linux ARM64 DEB · 官方稳定通道", "url": "https://update.code.visualstudio.com/latest/linux-deb-arm64/stable", "artifactId": "linux-deb-arm64", "health": "available", "checkedAt": "2026-10-08", "note": "滚动文件入口，已检查文件重定向；未实测安装。" },
+    { "id": "linux-rpm-x64", "type": "direct", "label": "Linux x64 RPM · 官方稳定通道", "url": "https://update.code.visualstudio.com/latest/linux-rpm-x64/stable", "artifactId": "linux-rpm-x64", "health": "available", "checkedAt": "2026-10-08", "note": "滚动文件入口，已检查文件重定向；未实测安装。" },
+    { "id": "linux-rpm-arm64", "type": "direct", "label": "Linux ARM64 RPM · 官方稳定通道", "url": "https://update.code.visualstudio.com/latest/linux-rpm-arm64/stable", "artifactId": "linux-rpm-arm64", "health": "available", "checkedAt": "2026-10-08", "note": "滚动文件入口，已检查文件重定向；未实测安装。" },
+    { "id": "winget", "type": "package-manager", "label": "WinGet 安装 VS Code", "packageManager": "WinGet", "installCommand": "winget install --id Microsoft.VisualStudioCode --exact --source winget", "shell": "powershell", "note": "已核对包 ID；包清单可能晚于官方下载通道更新，未执行安装。" },
+    { "id": "downloads", "type": "webpage", "label": "官方完整下载页", "url": "https://code.visualstudio.com/Download" },
+    { "id": "windows-docs", "type": "webpage", "label": "Windows 安装说明", "url": "https://code.visualstudio.com/docs/setup/windows" },
+    { "id": "macos-docs", "type": "webpage", "label": "macOS 安装说明", "url": "https://code.visualstudio.com/docs/setup/mac" },
+    { "id": "linux-docs", "type": "webpage", "label": "Linux 安装说明", "url": "https://code.visualstudio.com/docs/setup/linux" },
+    { "id": "cli-docs", "type": "webpage", "label": "命令行操作说明", "url": "https://code.visualstudio.com/docs/configure/command-line" },
+    { "id": "cpp-docs", "type": "webpage", "label": "微软 C/C++ 配置指南", "url": "https://code.visualstudio.com/docs/languages/cpp" }
+  ],
+  "groups": [
+    { "id": "linux-packages", "label": "Linux 安装包", "sourceIds": ["linux-deb-x64", "linux-deb-arm64", "linux-rpm-x64", "linux-rpm-arm64"] },
+    { "id": "official-docs", "label": "官方资料", "sourceIds": ["downloads", "windows-docs", "macos-docs", "linux-docs", "cli-docs", "cpp-docs"] }
+  ]
+}

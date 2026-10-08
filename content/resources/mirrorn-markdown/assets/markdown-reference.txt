@@ -1,40 +1,74 @@
 MirrorN Markdown 离线速查
-版本：1.0
-用途：为本站资源贡献者提供纯文本参考。
+版本：1.1
+MirrorN 原创文档，CC BY 4.0；原创程序示例 MIT。
 
-一、文件组织
+一、文件与正文
 每个资源：content/resources/<id>/index.md
-结构化来源：sources.json
-图片和小型附件：assets/
+来源与附件元数据：sources.json
+小型图片与附件：assets/
+页面标题来自 name，正文从 ## 开始。
+支持普通 Markdown、GFM 表格、任务列表、脚注和围栏代码。
+代码语言受白名单限制，可加 title="文件名"，代码只展示，不执行。
+不在正文写任意 HTML、JSX、CSS 或脚本。
 
-二、正文
-页面标题来自 Front Matter 的 name，正文从二级标题开始。
-支持普通 Markdown、GFM 表格、任务列表、代码块和本资源图片。
-
-三、自定义指令
+二、指令
 ::download{source="source-id"}
+::download{url="https://github.com/HoloNova/MirrorN" target="page" label="打开项目仓库"}
 ::download-select{group="group-id"}
 ::source-list{group="group-id"}
 ::install-command{source="source-id"}
 ::checksum{artifact="artifact-id"}
 ::compatibility-table{table="table-id"}
-::resource-card{resource="other-resource-id"}
+::resource-card{resource="mirrorn-contributing"}
 
 :::notice{type="info" title="说明"}
-这里可以写普通 Markdown。
+普通 Markdown，不嵌套资源指令。
+:::
+类型：info / warning / danger / success / note。
+
+::::choice{label="选择做法"}
+:::option{label="做法一"}
+第一种做法。
+:::
+:::option{label="做法二"}
+第二种做法。
+:::
+::::
+至少两个标签不同的选项，外层冒号比内层多，各自等量闭合。
+
+:::details{title="补充说明"}
+说明或代码块。
 :::
 
-参数使用真实的来源、分组、产物、兼容表或资源 ID。
-来源和下载地址在 sources.json 中维护，不在指令里重复填写。
+:::steps
+1. 第一步。
+2. 第二步。
+:::
+steps 内必须是一个有序列表。
+option / details 不放标题，不再嵌套 choice / option / details。
 
-四、来源规则
-文件、网页和安装命令是不同入口。
-同一字节产物可有多个来源；不同版本、平台、架构或封装应使用不同产物。
+正文说明[^ref]。
+[^ref]: 补充来源。
+脚注不放标题、指令或脚注引用，引用与定义必须成对。
 
-五、校验和发布
-pnpm content:check
-pnpm typecheck
-pnpm build
+三、来源与附件
+source / group / artifact / table 对应本资源 sources.json 的真实 ID。
+resource 对应另一公开资源的 ID。
+download 的 source 与 url 二选一；url 必須有 label。
+target=page 访问网页，默认 file 下载文件。
+官方下载、镜像下载、本站文件与安装命令分别标明。
+只有相同字节文件可共用产物；不同版本、平台、架构或封装分开声明。
+可用状态须有核查日期，入口可用不代表安装已验证。
+滚动通道不填写固定摘要；未知版本、架构或许可不编造。
+本站附件通过 Asset 和 local Source 声明；单文件不超过 5 MiB，单资源合计不超过 20 MiB。
 
-draft: true 不公开。准备发布时改为 false 并补齐发布字段。
-不在文档中写 JSX 标签、任意 HTML 或脚本；代码块只展示，不执行。
+四、校验与贡献
+pnpm resource:new <id>
+pnpm content:check --include-drafts
+准备公开时补齐发布字段并设 draft: false，再运行 pnpm check。
+草稿只参与校验，不生成草稿页面。
+自行检查页面后提交 PR，合并不等于上线。
+
+在线效果与写法：/resources/mirrorn-components/
+编写指南：/resources/mirrorn-markdown/
+贡献指南：/resources/mirrorn-contributing/

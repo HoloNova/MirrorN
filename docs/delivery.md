@@ -1,27 +1,27 @@
 # 构建、发布与持续维护
 
-> P7 已编写平台无关交付链，正式门禁与实际进度见 PLAN。域名和托管由用户明确后置，当前没有部署、没有推送，也不能声称 GitHub CI 或完整 PR→上线流程已运行。普通构建是 noindex 预览；正式构建有独立配置门槛，不创建过渡／UI 测试。
+> 正式门禁与实际进度见 PLAN。普通构建是 noindex 预览，正式构建有独立配置门槛；本地构建不证明 GitHub CI 或完整 PR→上线流程已运行，不创建过渡／UI 测试。
 
 ## 1. 命令职责
 
 | 实际命令 | 职责 |
 | --- | --- |
-| pnpm dev | 本地预览新站，默认不公开草稿；显式本地预览选项才能查看草稿 |
+| pnpm dev | 本地预览公开资源；草稿仅可通过内容 CLI 校验，不生成草稿页面 |
 | pnpm content:check | 已实现：校验全量资源结构、引用、附件与锚点；默认交付公开 Registry，不访问外网 |
 | pnpm typecheck | React Router typegen＋tsc 检查 React／TypeScript 与契约类型 |
-| pnpm lint | ESLint／TypeScript／TSX 检查新源码，不扫描归档与生成文件 |
+| pnpm lint | ESLint／TypeScript／TSX 检查源码，不扫描本地数据与生成文件 |
 | pnpm docs:check | 活跃工程 Markdown 的 UTF-8、文件与章节引用，不探测外链 |
 | pnpm template:check | 直接校验长期模板，不创建临时资源 |
 | pnpm resource:new ID | 创建 draft=true 的新资源，已有目录拒绝覆盖 |
 | pnpm check | 文档→模板→lint→内容→类型→一次预览构建→产物门禁，失败即停止 |
 | pnpm build | 生成 noindex 预览：公开 HTML、摘要附件、索引、字体、完整许可、禁止抓取的 robots 与 build-info；不生成生产 sitemap |
 | pnpm build:release | 真实 HTTPS siteUrl＋干净 Git 修订通过后生成并检查正式产物；不执行部署 |
-| pnpm check:dist | 检查本次产物内链、资源引用、草稿泄漏和归档污染 |
+| pnpm check:dist | 检查本次产物内链、资源引用、草稿泄漏和非公开文件污染 |
 | pnpm preview | 本地预览实际生产产物，不重新引入草稿 |
 
 `content:check --json` 输出摘要或结构化错误，不导出正文；`content:check --include-drafts` 只显式选择本地 preview 注册表，production 环境拒绝。dev 的资源文件变化会重新校验并刷新；正式 build 始终选择 public 模式。草稿页面 UI 尚未实现，`pnpm preview` 仍只展示已构建产物。
 
-这些命令不能调用 archive 中的脚本。当前要求 Node 24 LTS ≥24.16.0（CI 24.18.0）、pnpm 12.8.1（`packageManager`）、dev 与 preview 默认端口 4321；不沿用旧双进程 dev.mjs。
+这些命令仅使用当前工程脚本，旧项目目录已删除。当前要求 Node 24 LTS ≥24.16.0（CI 24.18.0）、pnpm 12.8.1（`packageManager`）、dev 与 preview 默认端口 4321；不沿用旧双进程 dev.mjs。
 
 ## 2. 一次发布的内容集合
 
@@ -37,7 +37,7 @@ P1 当前只支持站点根路径部署，`siteUrl` 不能包含 `/docs/` 等子
 
 贡献仓库已按 origin 核实为 `https://github.com/HoloNova/MirrorN`，默认分支按远端 HEAD 核实为 `main`，编辑链接仅指向平台编辑器，不使用站内账号、写仓库 Token 或自动提 PR。来源和附件的多文件修改在同一工作分支完成，主动提交一个 PR，审核中继续更新它。
 
-当前远端 HEAD 仍为归档前基线，新文档尚未推送；静态构建只证明链接生成，不证明平台上已有这些文件。推送／发布仍需用户授权，首次公开发布前须确保文档和来源已在配置分支，并实际验证编辑入口。正式域名与托管配置由用户后置；许可证已确定为代码 MIT／原创文档 CC BY 4.0，详见 licensing。
+静态构建只证明链接生成，不证明平台上已有对应文件或修订。推送／发布仍需用户授权，首次公开发布前须确保文档和来源已在配置分支，并实际验证编辑入口。正式域名与托管配置由用户后置；许可证已确定为代码 MIT／原创文档 CC BY 4.0，详见 licensing。
 
 ### P3 附件输出契约
 
@@ -59,7 +59,7 @@ P1 当前只支持站点根路径部署，`siteUrl` 不能包含 `/docs/` 等子
 
 `.github/workflows/verify.yml`：冻结锁文件安装 → `pnpm check`（文档／模板／lint／内容／类型／一次静态构建／产物检查） → 保留 7 天 noindex 静态预览包，不发布网站。Node 24.18.0／pnpm 12.8.1，四个官方 Actions 均按已核实稳定标签固定到完整提交摘要，不执行旧 Compose 服务。
 
-正式资源、源码、模板、依赖或配置修改执行完整新站门禁；仅工程说明 Markdown 修改运行 docs:check，未知范围保守全检查。scope 脚本使用经过校验的 SHA 与 NUL 分隔文件名，不把 PR 内容插入 shell。archive-only 不触发新站 CI。
+正式资源、源码、模板、依赖或配置修改执行完整新站门禁；仅工程说明 Markdown 修改运行 docs:check，未知范围保守全检查。scope 脚本使用经过校验的 SHA 与 NUL 分隔文件名，不把 PR 内容插入 shell。旧目录删除后不再保留 archive 专用跳过规则。
 
 不新增浏览器自动测试、UI 单元测试或付费外部验证。UI 验收由维护者本地启动浏览器，清单见 acceptance。
 

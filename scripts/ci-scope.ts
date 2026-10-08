@@ -15,7 +15,7 @@ async function main(): Promise<void> {
   if (base && head && shaPattern.test(base) && shaPattern.test(head) && !/^0+$/u.test(base)) {
     const { stdout } = await promisify(execFile)('git', ['diff', '--name-only', '-z', base, head], { maxBuffer: 4 * 1024 * 1024 });
     const paths = stdout.split('\u0000').filter(Boolean);
-    const docsOnly = (path: string) => path.startsWith('archive/') || path.startsWith('docs/')
+    const docsOnly = (path: string) => path.startsWith('docs/')
       || (!path.includes('/') && path.endsWith('.md')) || path === '.github/PULL_REQUEST_TEMPLATE.md'
       || path === 'templates/README.md';
     full = paths.some((path) => !docsOnly(path));

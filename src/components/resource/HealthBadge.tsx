@@ -1,6 +1,9 @@
 /**
  * 来源可用性徽章。状态由维护者在 sources.json（或行内 status）里手写，本站不探测，
  * 所以徽章总是带核查日期，避免被读成“实时状态”。形状 + 文字 + 颜色三者并用。
+ *
+ * 为什么没写 health 就不渲染：以前缺省值算作 unknown，会把“还没记录”显示成读者眼里的
+ * “未验证状态”，看着像这个来源有问题；现在只有维护者真的记了状态才出徽章。
  */
 const states = {
   available: { text: '正常', path: 'm5 12.5 4.5 4.5L19 7.5' },
@@ -8,7 +11,8 @@ const states = {
   unknown: { text: '未验证', path: 'M8 12h8' },
 } as const;
 export type Health = keyof typeof states;
-export default function HealthBadge({ health, checkedAt }: { health: Health; checkedAt?: string }) {
+export default function HealthBadge({ health, checkedAt }: { health?: Health; checkedAt?: string }) {
+  if (!health) return null;
   const state = states[health];
   return <span className="health">
     <span className={`health-badge health-badge--${health}`} title={checkedAt ? `维护者于 ${checkedAt} 核查；当前状态仍以来源站点为准` : '维护者尚未核查此来源'}>

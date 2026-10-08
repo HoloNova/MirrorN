@@ -6,7 +6,7 @@
 .env.*
 !.env.example
 
-# Reproducible dependencies and build output, including inside the archive
+# Reproducible dependencies and build output
 node_modules/
 dist/
 coverage/
@@ -17,7 +17,3 @@ coverage/
 *.log
 .DS_Store
 .superdesign/
-
-# Legacy runtime data is never source content
-archive/legacy/apps/server/.data/
-archive/legacy/docs/tmp/

@@ -19,7 +19,7 @@ export async function loadSiteData(request: Request) {
   const resource = match ? registry.get(match[1]!) : undefined;
   const known = path === '/' || path === '/resources' || path === '/about' || Boolean(resource);
   const title = resource ? resource.metadata.seo?.title ?? resource.metadata.name : path === '/' ? undefined : path === '/resources' ? '已收录' : path === '/about' ? '关于本站' : '页面不存在';
-  const description = resource ? resource.metadata.seo?.description ?? resource.metadata.summary : path === '/' ? 'MirrorN 是由贡献者通过 Git 共同维护的资源目录与文档站。' : path === '/resources' ? '按八个固定分类浏览 MirrorN 收录的资源。' : path === '/about' ? 'MirrorN 的定位、贡献方式与当前状态。' : undefined;
+  const description = resource ? resource.metadata.seo?.description ?? resource.metadata.summary : path === '/' ? 'MirrorN 整理开发常用资源与学习文档，提供下载直链、镜像入口和安装说明。' : path === '/resources' ? '按八个固定分类浏览 MirrorN 收录的资源。' : path === '/about' ? 'MirrorN 的定位、资源获取方式、内容与组件贡献及许可说明。' : undefined;
   const canonical = releaseSiteUrl && known ? new URL(path === '/' ? '/' : `${path}/`, releaseSiteUrl).href : null;
   const image = canonical && resource?.metadata.seo?.image ? new URL(resolveDocumentUrl(resource, resource.metadata.seo.image), canonical).href : null;
   const snapshot = createSearchSnapshot(registry);

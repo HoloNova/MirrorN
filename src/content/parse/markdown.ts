@@ -10,7 +10,7 @@ import { unified } from 'unified';
 import { ContentError, fail, issuesFrom, type ContentLocation, type LocatedData } from '../diagnostics.ts';
 import { contentLimits } from '../limits.ts';
 import { parseCodeFence } from '../schema/code-blocks.ts';
-import { reservedDocumentAnchors } from '../schema/document-contract.ts';
+import { inlineLinkMarker, reservedDocumentAnchors } from '../schema/document-contract.ts';
 import { checkContainerShape, parseDirective, rejectMalformedDirective, type ContainerContext } from './directive-syntax.ts';
 import { documentNodes, type DocumentNode, type ResourceDirective, type ResourceDocument } from './document-types.ts';
 import type { SourceText } from './source-text.ts';
@@ -59,11 +59,51 @@ function definitionMap(root: Root, source: SourceText): ReadonlyMap<string, Defi
   return new Map(definitions.map((node) => [normalizeIdentifier(node.identifier), node]));
 }
 
+/**
+ * `<>[文字](地址)`：把紧跟标记的标准 Markdown 链接标成行内小按钮。
+ *
+ * 为什么在兄弟层合并：标记写在链接前一个文本节点的结尾，与链接本身是两个节点；
+ * 合并后渲染器仍收到普通 link 节点，只多一个展示标志，所以链接解析、站内资源存在性、
+ * 锚点、草稿拦截和引用收集都不用为这个组件单独实现。
+ * 标记后面不是链接时直接报错，不让作者以为生效了、页面上却显示原始符号。
+ */
+function mergeInlineLinkMarker(nodes: readonly DocumentNode[]): readonly DocumentNode[] {
+  const merged: DocumentNode[] = [];
+  let index = 0;
+  while (index < nodes.length) {
+    const node = nodes[index];
+    if (node?.type !== 'text') {
+      if (node) merged.push(node);
+      index += 1;
+      continue;
+    }
+    // 标记后面跟着 `[` 却没被解析成链接，说明链接写法不完整；保持静默会把原始符号直接显示给读者。
+    if (node.value.includes(`${inlineLinkMarker}[`)) {
+      fail(node.position, 'E_MARKDOWN', `行内链接标记 ${inlineLinkMarker} 后面的链接没有解析成功，检查是否写成 ${inlineLinkMarker}[文字](地址)`);
+    }
+    if (!node.value.endsWith(inlineLinkMarker)) {
+      merged.push(node);
+      index += 1;
+      continue;
+    }
+    const target = nodes[index + 1];
+    if (target?.type !== 'link') {
+      fail(node.position, 'E_MARKDOWN', `行内链接标记 ${inlineLinkMarker} 后面必须紧跟一个 Markdown 链接，例如 ${inlineLinkMarker}[文字](地址)；只展示这两个符号时请用行内代码包起来`);
+    }
+    const rest = node.value.slice(0, -inlineLinkMarker.length);
+    if (rest) merged.push({ ...node, value: rest });
+    merged.push({ ...target, chip: true });
+    index += 2;
+  }
+  return merged;
+}
+
 function childrenOf(node: Nodes, context: ParseContext): readonly DocumentNode[] {
-  return 'children' in node ? node.children.flatMap((child) => {
+  if (!('children' in node)) return [];
+  return mergeInlineLinkMarker(node.children.flatMap((child) => {
     const converted = convertNode(child, context);
     return converted ? [converted] : [];
-  }) : [];
+  }));
 }
 
 function convertHeading(node: Extract<Nodes, { type: 'heading' }>, context: ParseContext): DocumentNode {

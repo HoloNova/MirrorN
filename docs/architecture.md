@@ -15,7 +15,7 @@
 | 样式 | CSS Tokens＋语义组件类 | 保留现有 MDN 风格，不在技术迁移中重设计视觉 |
 | 交付 | Node 24＋pnpm，纯静态 dist | 内容、类型、产物字节和引用门禁，不依赖浏览器或常驻后端 |
 
-Markdown 仅是资源正文输入格式。首页、已收录、关于、404、文章布局和八个资源组件都由 TSX 定义，能够独立优化 UI／UX。没有幕后 Astro 构建层，也没有 Astro 开发工具栏。
+Markdown 仅是资源正文输入格式。首页、已收录、关于、404、文章布局和资源展示组件都由 TSX 定义，能够独立优化 UI／UX。没有幕后 Astro 构建层，也没有 Astro 开发工具栏。站内写作资料分为文件与来源编写指南、内容与开发贡献指南、样式与组件参考；参考页使用现有指令渲染实际效果，并以原生 details 收起代码，不另建组件演示运行时。
 
 实际版本锁在 pnpm-lock.yaml。TypeScript 6.0.3、React Router 的 typegen 与 tsc 共同检查路由和源码；正式 CLI 继续使用 Node 24 原生 TypeScript。框架选型依据为官方静态预渲染文档及安装包声明，不自建 React 静态渲染框架。
 
@@ -49,7 +49,7 @@ src/routes.ts            显式路由注册
 src/routes/              首页、已收录、关于、资源页、404 的 TSX 页面
 src/layouts/             ResourceLayout：左侧目录和正文阅读布局
 src/components/site/     吸顶导航、主题、本页目录、搜索
-src/components/resource/ 八组件、复制／来源、元信息、受限 AST 渲染器
+src/components/resource/ 下载、提示、选项、复制／来源、元信息、受限 AST 渲染器
 src/hooks/               React 搜索状态和生命周期
 src/scripts/search/      按需索引与模块加载，非 DOM 渲染器
 src/content/site.server.ts 构建／开发的数据加载，禁止进入浏览器包
@@ -70,7 +70,7 @@ react-router.config.ts   公开页面预渲染及构建收口
 vite.config.ts           构建插件、开发端口、监听边界
 ```
 
-archive/legacy 是历史资料，不进入导入图、类型检查、内容发现、sitemap 或产物；.local 和 .pi 同样不参与公开构建。
+旧项目与 archive 目录已删除，不保留旧组件或兼容层；历史资料仅在 Git 中。`.local` 和 `.pi` 不参与导入、类型检查或公开构建。
 
 ## 4. 内容与资源展示边界
 
@@ -78,7 +78,7 @@ archive/legacy 是历史资料，不进入导入图、类型检查、内容发�
 
 Parser 保留语法与位置，Validator 检查字段及跨文件约束，Registry 只输出校验结果。Schema 是字段类型和默认值的唯一来源，页面不维护第二份来源契约。
 
-`ResourceDocument.tsx → DocumentNodes.tsx → 八组件` 是唯一资源正文渲染入口。React 递归映射受限节点，不动态编译文档、不注入原始 HTML、不加载作者代码。只有固定的本站主题首绘脚本使用原始脚本注入，与文档内容隔离。
+`ResourceDocument.tsx → DocumentNodes.tsx → 资源组件` 是唯一资源正文渲染入口。React 递归映射受限节点，不动态编译文档、不注入原始 HTML、不加载作者代码。只有固定的本站主题首绘脚本使用原始脚本注入，与文档内容隔离。
 
 Resolver 保留 file／page／command 判别联合；没有 fetch、自动版本探测或任意 URL 代理。下载选择器只筛选同一组内的明确产物，不跨版本／平台回退，多匹配要求选择文件；broken 来源不提供操作入口。React 状态控制筛选与反馈，命令复制直接使用原始字符串，保留 CRLF 和首尾空白，不执行命令。
 
@@ -92,7 +92,7 @@ SiteHeader 始终吸顶；ResizeObserver 测量真实高度并更新共用 --anc
 
 React 组件负责主题、复制、下载选择、分类定位和目录生命周期；监听、定时器、观察器与请求在卸载时清理。样式统一从 root 引入，原组件样式迁为带组件边界的 site.css，避免全局选择器影响其他页面。
 
-编辑入口仅跳转 GitHub 对应文件的编辑器，不自动提 PR、没有站内账号或仓库写入服务。repositoryUrl 为 HoloNova/MirrorN、defaultBranch 为 main；远端文件尚未推送，不能以链接生成证明在线编辑可用。
+编辑入口仅跳转 GitHub 对应文件的编辑器，不自动提 PR、没有站内账号或仓库写入服务。repositoryUrl 为 HoloNova/MirrorN、defaultBranch 为 main；只有对应文件已推送，平台编辑入口才可用，不能以链接生成证明远端存在该修订。
 
 ## 6. 搜索与渐进增强
 

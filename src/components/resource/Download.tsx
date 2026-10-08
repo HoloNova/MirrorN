@@ -7,7 +7,8 @@ export default function Download({ resource, props }: { resource: PublishedResou
   if (props.source !== undefined) return <SourceEntry entry={resolveDownload(resource, props.source)} label={props.label} />;
   // Schema 已保证 source 与 url 二选一，且 url 写法必有 label。
   if (props.url === undefined || props.label === undefined) throw new Error('Download 缺少 source 或 url');
-  const health = props.status ?? 'unknown';
+  // 不写 status 时不显示徽章；行内写法与 sources.json 的 health 保持同一条规则。
+  const health = props.status;
   const page = props.target === 'page';
   return <div className="source-entry">
     <div className="source-entry__heading"><strong>{props.label}</strong><span className="resource-muted">{page ? '网页入口' : '直链'}</span><HealthBadge health={health} checkedAt={props.checked} /></div>

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "artifacts": [
+    { "id": "embarcadero-63-gcc", "label": "Dev-C++ 6.3（含 TDM-GCC 9.2）", "version": "6.3", "platform": "windows", "fileName": "Embarcadero_Dev-Cpp_6.3_TDM-GCC_9.2_Setup.exe", "fileType": "exe" },
+    { "id": "orwell-511-setup", "label": "Dev-C++ 5.11（含 TDM-GCC 4.9.2）", "version": "5.11", "platform": "windows", "fileName": "Dev-Cpp 5.11 TDM-GCC 4.9.2 Setup.exe", "fileType": "exe" }
+  ],
+  "sources": [
+    { "id": "embarcadero-setup", "type": "release", "target": "file", "label": "Dev-C++ 6.3 · GitHub 官方文件", "url": "https://github.com/Embarcadero/Dev-Cpp/releases/download/v6.3/Embarcadero_Dev-Cpp_6.3_TDM-GCC_9.2_Setup.exe", "artifactId": "embarcadero-63-gcc", "health": "available", "checkedAt": "2026-10-08", "note": "自动启动下载程序" },
+    { "id": "orwell-setup", "type": "direct", "label": "Dev-C++ 5.11 · SourceForge", "url": "https://downloads.sourceforge.net/project/orwelldevcpp/Setup%20Releases/Dev-Cpp%205.11%20TDM-GCC%204.9.2%20Setup.exe", "artifactId": "orwell-511-setup", "health": "available", "checkedAt": "2026-10-08", "note": "链接会重定向至下载节点，等待一段时间后会自动启动下载，如果未下载，请尝试刷新目标页面；非本站托管文件" },
+    { "id": "embarcadero-release", "type": "release", "target": "page", "label": "Dev-C++ 6.3 发布说明", "url": "https://github.com/Embarcadero/Dev-Cpp/releases/tag/v6.3" },
+    { "id": "orwell-sourceforge", "type": "webpage", "label": "Dev-C++ 5.11 上游文件目录", "url": "https://sourceforge.net/projects/orwelldevcpp/files/" }
+  ],
+  "groups": [
+    { "id": "upstream", "label": "上游资料", "sourceIds": ["embarcadero-release", "orwell-sourceforge"] }
+  ]
+}

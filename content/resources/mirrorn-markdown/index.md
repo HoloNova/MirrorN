@@ -2,187 +2,150 @@
 schemaVersion: 1
 id: mirrorn-markdown
 name: MirrorN Markdown 编写指南
-summary: 介绍本站的 Markdown 写作与来源引用规范，并提供可下载的离线速查。
+summary: 资源文件结构、元数据、下载来源与 Markdown 写作规则，附离线速查。
 category: document
 tags:
   domain: [web, documentation]
   platform: [any]
   format: [text]
   license: [CC-BY-4.0]
-aliases: [文档编写指南, Markdown 写作, 组件使用指南, wen dang bian xie zhi nan]
+aliases: [文档编写指南, Markdown 写作, wen dang bian xie zhi nan]
 authors: [MirrorN]
 publishedAt: 2026-10-07
+updatedAt: 2026-10-08
 draft: false
 status: active
-defaultVersion: "1.0"
+defaultVersion: "1.1"
 ---
 
-## 如何使用这份指南
+## 从一份 Markdown 开始
 
-MirrorN 的资源正文是普通 Markdown，加上站点定义的指令语法。作者不用导入组件、写 JSX 标签，或为每篇文章编写交互代码。这份指南本身就使用同一套解析和渲染链，下面的下载、命令和表格都来自它的 `sources.json`。
+资源正文使用普通 Markdown，加上本站注册的指令。作者不用写 JSX、导入组件或为每篇文章编写交互代码。想看各样式的实际效果和写法，阅读组件参考；这份指南重点说明如何组织一篇资源文档。
 
-:::notice{type="info" title="文档与来源分开维护"}
-在 `index.md` 中讲解资源用途，在 `sources.json` 中维护产物与来源。指令只引用稳定 ID，更新地址时不用重写正文。
+::resource-card{resource="mirrorn-components"}
+
+## 创建资源目录
+
+在项目根目录运行，例如为新资源 `my-tool` 创建草稿：
+
+```powershell
+pnpm resource:new my-tool
+```
+
+命令不会覆盖已有目录。一个软件或一套学习资料使用稳定的资源 ID，不按每个版本另建页面。
+
+```text
+content/resources/my-tool/
+  index.md
+  sources.json
+  assets/
+```
+
+`index.md` 放元数据和正文。需要下载、安装命令或其他获取入口时添加 `sources.json`；纯学习文档可以省略它。图片与小型附件放 `assets/`。
+
+## 填写元数据
+
+Front Matter 位于文档开头。公开资源需要名称、简介、分类、标签、作者、真实发布日期、维护状态，并明确设置 `draft: false`。
+
+| 字段 | 如何填写 |
+| --- | --- |
+| `id` | 与目录名一致，创建后保持稳定 |
+| `name` | 软件或资料的通用名称，作为页面标题 |
+| `summary` | 简洁说明用途和本文提供什么，不写“最快”“绝对安全”等无依据承诺 |
+| `category` | 选择一个主分类，如 `software` 或 `document` |
+| `aliases` | 常用简称、别名和需要被搜索到的拼音 |
+| `tags` | 平台、领域、资源形式等已知信息，不猜架构或许可 |
+| `authors` | 实际贡献者的显示名或 GitHub handle |
+| `updatedAt` | 修改内容时更新，不早于发布日期 |
+
+首页搜索读取名称、简介、别名和标签，不搜索正文。中文名称需填写明确的拼音排序键 `sortKey`；搜索缩写和拼音也由贡献者维护，不自动猜测。
+
+## 编写正文
+
+正文从 `##` 二级标题开始，页面已有一个由 `name` 生成的一级标题。下载类资源建议按 **获取入口 → 安装／使用 → 常见问题 → 参考资料** 组织；学习文档按知识内容组织，不必套用软件安装模板。
+
+普通 Markdown 支持段落、强调、列表、引用、链接、图片、GFM 表格、任务列表和脚注。代码块写明确语言，可加 `title="文件名"`；不认识的语言和参数会在内容检查中报错。
+
+:::details{title="代码块写法"}
+````markdown
+```cpp title="hello.cpp"
+#include <iostream>
+
+int main() {
+    std::cout << "Hello, World!\n";
+    return 0;
+}
+```
+````
 :::
+
+下载、提示、折叠等功能使用已注册指令，不在正文里写任意 HTML、CSS、JSX 或脚本。用于说明的源码放在围栏代码块里，仅展示，不执行。
+
+## 维护下载与安装来源
+
+**官方下载、镜像下载、本站文件、下载页面和安装命令是不同入口。** 文件按钮应直接指向文件，网页入口应明确写“访问页面”。有实际镜像才展示镜像，没有时不要用官网页面凑出镜像标签。
+
+只有一个链接、不需要版本选择或校验值时，可以直接写：
+
+```markdown
+::download{url="https://github.com/HoloNova/MirrorN" target="page" label="打开项目仓库"}
+```
+
+有版本、平台筛选、校验值或多个来源时，在 `sources.json` 声明产物、来源和分组，再用稳定 ID 引用：
+
+```markdown
+::download{source="reference-markdown"}
+::download-select{group="reference-files"}
+::install-command{source="project-dependencies"}
+```
+
+上面是本指南已经登记的 ID。其他资源应改成自己登记的 ID，不能跨资源引用一个来源 ID。
+
+同一字节文件可以有多个入口；不同版本、架构或封装需要不同产物。上游滚动通道会更换文件，不应填写无法保持一致的固定摘要，也不能把另一份镜像未经核对就归到同一产物下。
+
+:::notice{type="note" title="状态是维护记录，不是实时测速"}
+只有实际核查后才标为可用并填写核查日期。文件入口能打开，不代表已下载完整文件、验证安装或测试兼容；备注应写清范围。失效入口填写原因；没记录状态的来源不显示徽章，也不写成“未验证”。
+:::
+
+## 图片与本站附件
+
+正文图片使用资源 `assets/` 内的相对路径。下载附件通过 Asset 和 local Source 声明，再用下载指令引用，不直接拼接产物路径。
+
+当前单附件上限为 **5 MiB**，一个资源引用的附件总计不超过 **20 MiB**。大型安装包、模型或数据集使用实际外部来源；不要把它们放进 Git 资源附件。第三方文件应说明来源与许可。
 
 ## 下载离线速查
 
-离线速查是本站编写的内容，提供 Markdown 和纯文本两种格式。两份离线速查均为本站原创，采用 CC BY 4.0，原创程序示例采用 MIT。两者都是 **1.0** 版，但文件格式不同，因此分别作为两个产物，不伪装成同一文件的替代来源。
+本站原创速查提供 Markdown 与纯文本 **1.1** 版，两种格式是两个不同产物。文档采用 CC BY 4.0，原创程序示例采用 MIT。
 
 ::download-select{group="reference-files"}
-
-如果只需要 Markdown 格式，可以直接下载：
-
-::download{source="reference-markdown" label="下载 Markdown 速查"}
-
-## 查看文件校验值
-
-下面是 Markdown 速查实际文件的 SHA256。下载后可在本机计算并对比；这里的附件摘要已由构建链核对，不代表本站验证了任何第三方远程文件。
-
 ::checksum{artifact="reference-markdown-v1"}
 
-在 PowerShell 中计算：
+在 PowerShell 中对比下载文件的 SHA256：
 
 ```powershell
 Get-FileHash -Algorithm SHA256 .\mirrorn-markdown-reference.md
 ```
 
-## 安装项目依赖
+这里的本站附件摘要由构建链核对，不代表本站已经验证其他远程文件。
 
-在项目根目录安装当前锁文件声明的依赖；安装环境要求 Node.js 24 或更新版本，并使用项目声明的 pnpm 版本。按钮只复制命令，不自动执行。
+## 校验并贡献
 
-::install-command{source="project-dependencies"}
+写作时保留 `draft: true`，检查草稿：
 
-完成写作后检查内容，再构建静态页面：
-
-```bash
-pnpm content:check
-pnpm typecheck
-pnpm build
+```powershell
+pnpm content:check --include-drafts
 ```
 
-:::notice{type="warning" title="没有匹配文件时不要猜测"}
-选择器区分“未注明”和“全部”。不同格式、平台、架构或版本应各自声明产物；来源切换只在同一产物内进行，不偷偷换下载文件。
-:::
+准备公开时补齐发布字段并设为 `draft: false`，再运行统一检查：
 
-## 阅读与编辑条件
-
-离线速查是文本，不要求特定 CPU 架构。下表是格式使用说明，不是运行测试结果；项目构建工具的要求见上文。
-
-::compatibility-table{table="reference-support"}
-
-## 只想放一个链接
-
-只需要一个入口、不需要版本筛选或校验值时，可以不进 `sources.json`，直接在正文写链接。`label` 必须写清按钮的真实行为；`target` 为 `file`（默认）是文件下载，为 `page` 是访问网页，二者不能混用。
-
-```markdown
-::download{url="https://github.com/HoloNova/MirrorN" target="page" label="打开项目仓库"}
-::download{url="https://example.com/tool.zip" label="下载 tool.zip" status="available" checked="2026-10-07"}
+```powershell
+pnpm check
 ```
 
-下面是实际渲染效果，状态未填写，所以显示“未验证”：
-
-::download{url="https://github.com/HoloNova/MirrorN" target="page" label="打开项目仓库"}
-
-状态由维护者手写，不是实时检测：`status` 可填 `available`（必须同时写核查日期 `checked`）、`broken`（必须在 `note` 说明原因）或省略为未验证。徽章旁边始终显示核查日期。需要多个来源、版本筛选或校验值时，仍然使用 `sources.json`。
-
-:::notice{type="note" title="灰色备注"}
-`type="note"` 是中性的补充说明；`info`、`warning`、`danger`、`success` 各自带不同图标，不只靠颜色区分。
-:::
-
-## 选项、步骤、折叠与脚注
-
-**选项切换**用于“同一件事有几种做法”，例如不同系统的安装方式。外层多写一个冒号：
-
-```markdown
-::::choice{label="选择获取方式"}
-:::option{label="下载文件"}
-::download{source="reference-markdown"}
-:::
-:::option{label="复制命令"}
-::install-command{source="project-dependencies"}
-:::
-::::
-```
-
-下面是实际效果。它与上文的下载选择器不同：下载选择器按 `sources.json` 的版本、平台筛选文件，选项切换则由作者决定每个选项里放什么。
-
-::::choice{label="选择获取方式"}
-:::option{label="下载文件"}
-::download{source="reference-markdown"}
-:::
-:::option{label="复制命令"}
-::install-command{source="project-dependencies"}
-:::
-::::
-
-选项里可以放普通 Markdown、下载、命令、提示块和步骤，但不能再嵌套选项或折叠块，也不能放标题（标题放在选项外面，右侧目录才指得到）。至少两个选项，标签不能重复。关闭 JavaScript 时所有选项会依次展开，内容不会丢。
-
-**步骤**把一个有序列表显示成带编号的时间轴：
-
-```markdown
-:::steps
-1. 安装依赖。
-2. 运行内容检查。
-:::
-```
-
-:::steps
-1. 安装项目依赖：`pnpm install`。
-2. 检查内容：`pnpm content:check`，修正它指出的行列问题。
-3. 在本地阅读实际页面，再提交 PR。
-:::
-
-**折叠块**收起次要内容，如长日志或常见问题：
-
-:::details{title="为什么选项里不能写标题？"}
-折叠或隐藏的内容里如果有标题，右侧“本页目录”就会指向看不见的位置。所以标题只能写在选项、折叠块和脚注的外面。
-:::
-
-**脚注**用 GFM 原生写法：正文写 `[^名称]`，在任意位置另起一行写 `[^名称]: 说明`。编号按正文里出现的先后自动生成，说明统一列在文末并可返回。引用和定义必须成对，缺一个都会报错。
-
-脚注示例：本站使用受限的 Markdown 子集[^subset]，不执行文档里的代码。
-
-[^subset]: 解析使用 remark，指令白名单与字段校验见内容规范；原始 HTML、JSX 和脚本都会被拒绝。
-
-## 指令速查
-
-| 功能 | 写法 | 引用对象 |
-| --- | --- | --- |
-| 单个下载 | `::download{source="reference-markdown"}` | 文件来源 |
-| 行内链接 | `::download{url="https://…" label="…"}` | 无，直接写在正文 |
-| 选择下载 | `::download-select{group="reference-files"}` | 文件来源分组 |
-| 来源列表 | `::source-list{group="reading-and-tools"}` | 文件、网页或命令来源 |
-| 安装命令 | `::install-command{source="project-dependencies"}` | 包管理器来源 |
-| 选项切换 | `::::choice{label="…"}` 内放若干 `:::option{label="…"}`，各自用 `:::` 结束，最后 `::::` 结束 | Markdown 与叶子指令 |
-| 步骤 | `:::steps` 内一个有序列表 | 有序列表 |
-| 折叠块 | `:::details{title="…"}`，用 `:::` 结束 | Markdown 与叶子指令 |
-| 脚注 | 正文 `[^名称]`，另起一行 `[^名称]: 说明` | 同一文档内 |
-| 提示块 | `:::notice{type="info"}`，正文后用 `:::` 结束；类型 info／warning／danger／success／note | Markdown 正文 |
-| 校验值 | `::checksum{artifact="reference-markdown-v1"}` | 具体产物 |
-| 兼容说明 | `::compatibility-table{table="reference-support"}` | 说明表 |
-| 关联文档 | `::resource-card{resource="mirrorn-contributing"}` | 另一个公开资源 |
-
-:::notice{type="danger" title="示例代码不作为页面代码执行"}
-文档不允许原始 HTML、JSX 或脚本。要解释这些写法，请放进代码块；普通文字中的花括号也不会被当作 JavaScript 执行。
-:::
-
-## 其他阅读与工具入口
-
-下面分别标明本站附件、项目依赖命令、Astro 文档和源代码仓库。网页或仓库是阅读入口，不冒充可直接下载的文件。
-
-::source-list{group="reading-and-tools"}
-
-:::notice{type="success" title="所有功能使用站点统一实现"}
-所有指令共用注册表、字段校验和组件实现。修改组件内部样式不会要求作者逐篇修改文档。
-:::
-
-## 继续贡献
-
-下一篇说明资源如何从编辑、校验走到 PR 审核，以及如何修订或下架。
+草稿集合只用于内容校验，不会生成草稿页面。贡献者自行在本地查看公开资源页，检查正文、链接、复制和窄屏展示后提交 PR。
 
 ::resource-card{resource="mirrorn-contributing"}
 
-- [ ] 先填写资源身份与真实来源。
-- [ ] 修正内容校验指出的问题。
-- [ ] 在本地阅读实际页面，检查下载、复制和窄屏布局。
+## 参考资料
+
+::source-list{group="reading-and-tools"}

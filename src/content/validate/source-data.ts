@@ -41,6 +41,8 @@ function sourceIssues(input: ResourceInput): readonly ContentIssue[] {
     return [
       ...(source.health === 'available' && !source.checkedAt ? [issueAt(at('checkedAt'), 'E_SOURCE', 'available 必须记录 checkedAt')] : []),
       ...(source.health === 'broken' && !source.note ? [issueAt(at('note'), 'E_SOURCE', 'broken 必须记录原因 note')] : []),
+      ...(source.checkedAt !== undefined && source.health === undefined
+        ? [issueAt(at('health'), 'E_SOURCE', 'checkedAt 只在记录了 health 时使用；没有状态就没有可标注的核查日期')] : []),
       ...(artifactId && !index.artifacts.has(artifactId) ? [issueAt(at('artifactId'), 'E_REFERENCE', `产物不存在：${artifactId}`)] : []),
       ...(source.type === 'local' && source.assetId && !index.assets.has(source.assetId) ? [issueAt(at('assetId'), 'E_REFERENCE', `附件不存在：${source.assetId}`)] : []),
       ...(target === 'page' && artifactId ? [issueAt(at('artifactId'), 'E_SOURCE', '网页入口不填写 artifactId，不能伪装为文件')] : []),

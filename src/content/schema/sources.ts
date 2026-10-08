@@ -25,7 +25,8 @@ const commonSourceFields = {
   id: idSchema,
   label: labelSchema,
   note: multilineTextSchema.max(1000).optional(),
-  health: z.enum(['unknown', 'available', 'broken']).default('unknown'),
+  // 不写 health 表示“还没记录状态”，与显式 unknown（已看过但无法判定）不同；缺省不再当成 unknown。
+  health: z.enum(['unknown', 'available', 'broken']).optional(),
   checkedAt: dateSchema.optional(),
 };
 
