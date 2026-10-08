@@ -1,11 +1,12 @@
 import { useRouteLoaderData } from 'react-router';
 import type { loader } from '../root';
 import { siteConfig } from '../../config/site.ts';
+import { externalLinkProps } from '../components/external-link.ts';
 export default function About() {
   const data = useRouteLoaderData<typeof loader>('root');
   return <article className="reading-page prose about">
     <h1>关于本站</h1><p className="page-lede">MirrorN 整理开发常用资源与学习文档，提供下载直链、镜像入口和安装说明。资源与文档由贡献者通过 Git 共同维护。</p>
-    <div className="page-actions">{siteConfig.repositoryUrl && <a className="page-action" href={siteConfig.repositoryUrl}>项目仓库</a>}{data?.contributionId && <a className="page-action" href={`/resources/${data.contributionId}/`}>贡献指南</a>}<a className="page-action" href="/resources/">已收录 {data?.search.count ?? 0} 项</a></div>
+    <div className="page-actions">{siteConfig.repositoryUrl && <a className="page-action" href={siteConfig.repositoryUrl} {...externalLinkProps(siteConfig.repositoryUrl)}>项目仓库</a>}{data?.contributionId && <a className="page-action" href={`/resources/${data.contributionId}/`}>贡献指南</a>}<a className="page-action" href="/resources/">已收录 {data?.search.count ?? 0} 项</a></div>
     {!siteConfig.repositoryUrl && <p>贡献仓库地址尚未配置，正式发布前会在站点配置中填写真实地址，不使用占位链接。</p>}
     <h2>如何获取资源</h2><p>资源页先展示获取入口，再说明安装与使用。官方下载、镜像下载、本站文件和下载页面会分别标明；安装命令可复制，但不会由本站执行。并非每项资源都有镜像或本站文件，以页面实际提供的入口为准。</p>
     <h2>参与贡献</h2><p>欢迎补充资源、修订文档、维护下载来源，也可以开发或优化 Markdown 展示组件。已有样式和使用方法见<a href="/resources/mirrorn-components/">Markdown 样式与组件参考</a>。</p>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { PublishedResource } from '../../content/registry/types.ts';
 import { artifactDescription, dimensionKey, downloadChoices } from '../../content/resolve/selection.ts';
 import SourceEntry from './SourceEntry';
+import { externalLinkProps } from '../external-link.ts';
 
 export default function DownloadSelect({ resource, group }: { resource: PublishedResource; group: string }) {
   const choices = downloadChoices(resource, group);
@@ -40,7 +41,7 @@ export default function DownloadSelect({ resource, group }: { resource: Publishe
         </select></label>
       </div>
       <p className="resource-state" aria-live="polite">{status}</p>
-      {source && <a className="resource-action" href={source.href} download={source.downloadName}>下载所选文件</a>}
+      {source && <a className="resource-action" href={source.href} {...externalLinkProps(source.href)} download={source.downloadName}>下载所选文件</a>}
     </fieldset>
     <details open={!ready || expanded} onToggle={(event) => setExpanded(event.currentTarget.open)}><summary>所有文件与来源</summary>
       <ul className="source-list">{choices.entries.map((entry) => <li key={entry.id} aria-label={artifactDescription(entry)}><SourceEntry entry={entry} /></li>)}</ul>

@@ -2,6 +2,7 @@ import { Fragment, type ReactNode } from 'react';
 import type { DocumentNode } from '../../content/parse/document-types.ts';
 import type { PublishedResource } from '../../content/registry/types.ts';
 import { resolveDocumentUrl } from '../../content/resolve/assets.ts';
+import { externalLinkProps } from '../external-link.ts';
 import CodeFence from './CodeFence';
 import Choice from './Choice';
 import Download from './Download';
@@ -46,7 +47,7 @@ function renderNode(node: DocumentNode, props: Props): ReactNode {
     case 'footnoteReference': return <sup className="footnote-ref"><a id={node.occurrence === 1 ? `footnote-ref-${node.number}` : `footnote-ref-${node.number}-${node.occurrence}`} href={`#footnote-${node.number}`} aria-label={`脚注 ${node.number}`}>{node.number}</a></sup>;
     case 'footnotes': return <section className="footnotes" aria-label="脚注"><hr /><ol>{children}</ol></section>;
     case 'footnoteItem': return <li id={`footnote-${node.number}`}><DocumentNodes nodes={node.children} resource={resource} references={references} unwrapParagraphs={node.children.length === 1} /> <a className="footnote-back" href={`#footnote-ref-${node.number}`} aria-label={`返回正文中的脚注 ${node.number}`}>↩</a></li>;
-    case 'link': return <a className={node.chip ? 'resource-chip' : undefined} href={resolveDocumentUrl(resource, node.url)} title={node.title ?? undefined}>{children}</a>;
+    case 'link': { const href = resolveDocumentUrl(resource, node.url); return <a className={node.chip ? 'resource-chip' : undefined} href={href} title={node.title ?? undefined} {...externalLinkProps(href)}>{children}</a>; }
     case 'image': return <img src={resolveDocumentUrl(resource, node.url)} alt={node.alt} title={node.title ?? undefined} loading="lazy" decoding="async" />;
     case 'resourceDirective':
       switch (node.name) {

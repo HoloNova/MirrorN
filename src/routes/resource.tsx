@@ -4,12 +4,13 @@ import ResourceLayout from '../layouts/ResourceLayout';
 import ResourceMetadata from '../components/resource/ResourceMetadata';
 import ResourceDocument from '../components/resource/ResourceDocument';
 import Notice from '../components/resource/Notice';
+import { externalLinkProps } from '../components/external-link.ts';
 export async function loader({ params }: LoaderFunctionArgs) { return loadResourceData(params.id ?? ''); }
 export default function Resource() {
   const data = useLoaderData<typeof loader>();
   const { resource, categoryName, editUrl, contributionId, returnHref, references, highlights } = data;
   const metadata = resource.metadata;
-  const footer = <footer className="resource-footer"><nav aria-label="文章操作"><a className="page-action" href={returnHref}>返回{categoryName}</a>{editUrl && <a className="page-action" href={editUrl} rel="noopener">编辑此页（GitHub）</a>}{contributionId && contributionId !== metadata.id && <a className="page-action" href={`/resources/${contributionId}/`}>贡献指南</a>}</nav>
+  const footer = <footer className="resource-footer"><nav aria-label="文章操作"><a className="page-action" href={returnHref}>返回{categoryName}</a>{editUrl && <a className="page-action" href={editUrl} {...externalLinkProps(editUrl)}>编辑此页（GitHub）</a>}{contributionId && contributionId !== metadata.id && <a className="page-action" href={`/resources/${contributionId}/`}>贡献指南</a>}</nav>
     {editUrl && <p>在 GitHub 完成修改后主动提交 PR；同一项修改继续更新同一个 PR。本站不会自动提 PR。</p>}
     <p>除另有标注，本站原创文档采用 <a href="/licenses/cc-by-4.0.txt">CC BY 4.0</a>，转载请保留作者与原文链接、注明改动；原创程序示例采用 MIT，所介绍资源与附件按各自许可。</p>
   </footer>;
