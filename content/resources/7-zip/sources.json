@@ -21,8 +21,7 @@
       "url": "https://github.com/ip7z/7zip/releases/download/26.04/7z2604-x64.exe",
       "artifactId": "win-x64-exe",
       "health": "available",
-      "checkedAt": "2026-10-08",
-      "note": "7-zip.org 下载页链接到的官方发布文件。已核实 HTTP 响应与文件大小；官网未给出 SHA-256，本页不显示校验值。"
+      "checkedAt": "2026-10-08"
     },
     {
       "id": "official-page",

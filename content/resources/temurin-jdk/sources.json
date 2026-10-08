@@ -2,28 +2,66 @@
   "schemaVersion": 1,
   "artifacts": [
     {
-      "id": "win-x64-msi",
-      "label": "Windows x64 MSI（JDK 25 LTS）",
+      "id": "win-x64-25",
+      "label": "Windows x64 安装包（JDK 25 LTS）",
       "version": "25.0.4.1+1",
       "platform": "windows",
       "arch": "x64",
       "fileName": "OpenJDK25U-jdk_x64_windows_hotspot_25.0.4.1_1.msi",
       "fileType": "msi",
-      "fileSize": 115998720,
-      "checksum": { "algorithm": "sha256", "value": "517b3590be43120c34c3891d09c97a1eddc12da982208c4f5adf1bdc1b5e3f15" }
+      "fileSize": 115998720
+    },
+    {
+      "id": "win-x64-21",
+      "label": "Windows x64 安装包（JDK 21 LTS）",
+      "version": "21.0.12.1+1",
+      "platform": "windows",
+      "arch": "x64",
+      "fileName": "OpenJDK21U-jdk_x64_windows_hotspot_21.0.12.1_1.msi",
+      "fileType": "msi",
+      "fileSize": 179351552
+    },
+    {
+      "id": "win-x64-17",
+      "label": "Windows x64 安装包（JDK 17 LTS）",
+      "version": "17.0.20.1+1",
+      "platform": "windows",
+      "arch": "x64",
+      "fileName": "OpenJDK17U-jdk_x64_windows_hotspot_17.0.20.1_1.msi",
+      "fileType": "msi",
+      "fileSize": 168423424
     }
   ],
   "sources": [
     {
-      "id": "official-msi",
+      "id": "official-25",
       "type": "release",
       "target": "file",
-      "label": "Temurin 25 LTS · 官方发布（Windows x64 MSI）",
+      "label": "Temurin 25 LTS · 官方发布（Windows x64）",
       "url": "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.4.1%2B1/OpenJDK25U-jdk_x64_windows_hotspot_25.0.4.1_1.msi",
-      "artifactId": "win-x64-msi",
+      "artifactId": "win-x64-25",
       "health": "available",
-      "checkedAt": "2026-10-08",
-      "note": "Adoptium 在 GitHub 发布的 MSI。已核实文件大小；SHA-256 与同一发布中的 .sha256.txt 及 Adoptium 接口数据一致。"
+      "checkedAt": "2026-10-08"
+    },
+    {
+      "id": "official-21",
+      "type": "release",
+      "target": "file",
+      "label": "Temurin 21 LTS · 官方发布（Windows x64）",
+      "url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_x64_windows_hotspot_21.0.12.1_1.msi",
+      "artifactId": "win-x64-21",
+      "health": "available",
+      "checkedAt": "2026-10-08"
+    },
+    {
+      "id": "official-17",
+      "type": "release",
+      "target": "file",
+      "label": "Temurin 17 LTS · 官方发布（Windows x64）",
+      "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jdk_x64_windows_hotspot_17.0.20.1_1.msi",
+      "artifactId": "win-x64-17",
+      "health": "available",
+      "checkedAt": "2026-10-08"
     },
     {
       "id": "temurin-releases",
@@ -34,22 +72,15 @@
     {
       "id": "windows-install",
       "type": "webpage",
-      "label": "Adoptium Windows MSI 安装说明",
+      "label": "Adoptium Windows 安装说明",
       "url": "https://adoptium.net/installation/windows/"
-    },
-    {
-      "id": "release-page",
-      "type": "release",
-      "target": "page",
-      "label": "Temurin 25.0.4.1+1 发布页（GitHub）",
-      "url": "https://github.com/adoptium/temurin25-binaries/releases/tag/jdk-25.0.4.1%2B1"
     }
   ],
   "groups": [
     {
       "id": "official-docs",
       "label": "官方资料",
-      "sourceIds": ["temurin-releases", "windows-install", "release-page"]
+      "sourceIds": ["temurin-releases", "windows-install"]
     }
   ]
 }

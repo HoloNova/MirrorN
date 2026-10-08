@@ -12,7 +12,7 @@ tags:
 aliases: [Git, Git Bash, 版本控制, Git 版本控制, git-scm]
 authors: [HoloNova]
 publishedAt: 2026-10-08
-draft: true
+draft: false
 status: active
 official: https://git-scm.com/
 ---
@@ -25,7 +25,6 @@ Git 是版本控制工具。它会记录代码的每一次修改，方便回退�
 
 ::download{source="official-exe" label="下载 Git 2.56.0（Windows 64 位安装程序）"}
 
-文件名为 `Git-2.56.0.2-64-bit.exe`，由 git-scm.com 安装页链接到的 Git for Windows 官方发布提供。官方发布中没有单独的 SHA-256 校验文件，因此本页不显示校验值。
 
 ## 安装
 

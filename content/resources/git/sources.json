@@ -22,7 +22,7 @@
       "artifactId": "win-x64-exe",
       "health": "available",
       "checkedAt": "2026-10-08",
-      "note": "git-scm.com 安装页链接到的官方发布文件。已核实重定向与文件大小；项目未提供单独的 SHA-256 文件，本页不显示校验值。"
+      "note": "文件名为 `Git-2.56.0.2-64-bit.exe`，来自 Git for Windows 官方发布，本站不托管。"
     },
     {
       "id": "install-page",

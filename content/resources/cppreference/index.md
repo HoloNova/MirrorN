@@ -11,7 +11,7 @@ tags:
 aliases: [C++ 参考手册, C++ 标准库参考, cppreference.com, C++ 文档, C 语言参考, cpp 参考]
 authors: [HoloNova]
 publishedAt: 2026-10-08
-draft: true
+draft: false
 status: active
 ---
 

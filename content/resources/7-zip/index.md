@@ -12,20 +12,18 @@ tags:
 aliases: [7zip, 7z, 解压, 解压软件, 解压缩软件, 压缩软件]
 authors: [HoloNova]
 publishedAt: 2026-10-08
-draft: true
+draft: false
 status: active
 official: https://www.7-zip.org/
 ---
 
 ## 下载 7-Zip
 
-7-Zip 是免费的压缩与解压软件。Windows 自带的压缩功能主要处理 ZIP 格式，遇到 `.7z`、`.rar` 等压缩包时，需要装上 7-Zip 才能打开。官网说明它是免费软件，采用 GNU LGPL 许可，部分代码另有 unRAR 许可限制。
+7-Zip 是免费的压缩与解压软件。Windows 自带的压缩功能主要处理 ZIP 格式，遇到 `.7z`、`.rar` 等压缩包时，需要装上 7-Zip 才能打开。
 
 大多数 Intel 或 AMD 电脑选择下面的 **Windows x64** 安装程序。ARM 设备需要到官方下载页选择 ARM64 版本。
 
 ::download{source="official-exe" label="下载 7-Zip 26.04（Windows x64 安装程序）"}
-
-官方下载页当前标注的版本是 26.04，文件名为 `7z2604-x64.exe`。文件由 7-zip.org 下载页链接到的官方发布提供，本站不托管。官网没有给出这个文件的 SHA-256，因此本页不显示校验值。
 
 ## 安装
 

@@ -26,8 +26,6 @@ Node.js 让 JavaScript 能在电脑上运行，前端、Web 和全栈类课程�
 
 请选择 **LTS** 版本，它的支持周期更长，适合作业和课程环境。安装包已包含 npm，也就是 Node 的包管理工具。
 
-::checksum{artifact="win-x64-lts"}
-
 ## 安装
 
 :::steps

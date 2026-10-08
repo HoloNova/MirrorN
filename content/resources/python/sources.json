@@ -2,39 +2,50 @@
   "schemaVersion": 1,
   "artifacts": [
     {
-      "id": "win-x64-exe",
+      "id": "win-x64-314",
       "label": "Windows 64 位安装程序（3.14.8）",
       "version": "3.14.8",
       "platform": "windows",
       "arch": "x64",
       "fileName": "python-3.14.8-amd64.exe",
       "fileType": "exe",
-      "fileSize": 33387464,
-      "checksum": { "algorithm": "sha256", "value": "759be887b96e736a3ca886daf8d575f18fcae1a09efab6902f42d59e8999f8ef" }
+      "fileSize": 33387464
+    },
+    {
+      "id": "win-x64-312",
+      "label": "Windows 64 位安装程序（3.12.10）",
+      "version": "3.12.10",
+      "platform": "windows",
+      "arch": "x64",
+      "fileName": "python-3.12.10-amd64.exe",
+      "fileType": "exe",
+      "fileSize": 26964224
     }
   ],
   "sources": [
     {
-      "id": "official-exe",
+      "id": "official-314",
       "type": "direct",
-      "label": "Python 3.14.8 · python.org 安装程序（64 位）",
+      "label": "Python 3.14.8 安装程序（python.org）",
       "url": "https://www.python.org/ftp/python/3.14.8/python-3.14.8-amd64.exe",
-      "artifactId": "win-x64-exe",
+      "artifactId": "win-x64-314",
       "health": "available",
-      "checkedAt": "2026-10-08",
-      "note": "python.org 发布页列出的文件。已核实文件大小；下载后计算的 SHA-256 与发布页一致。"
+      "checkedAt": "2026-10-08"
+    },
+    {
+      "id": "official-312",
+      "type": "direct",
+      "label": "Python 3.12.10 安装程序（python.org）",
+      "url": "https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe",
+      "artifactId": "win-x64-312",
+      "health": "available",
+      "checkedAt": "2026-10-08"
     },
     {
       "id": "windows-page",
       "type": "webpage",
-      "label": "Python 官方 Windows 下载页",
+      "label": "Python 官方下载页（Windows）",
       "url": "https://www.python.org/downloads/windows/"
-    },
-    {
-      "id": "release-page",
-      "type": "webpage",
-      "label": "Python 3.14.8 发布页（含文件列表）",
-      "url": "https://www.python.org/downloads/release/python-3148/"
     },
     {
       "id": "windows-doc",
@@ -47,7 +58,7 @@
     {
       "id": "official-docs",
       "label": "官方资料",
-      "sourceIds": ["windows-page", "release-page", "windows-doc"]
+      "sourceIds": ["windows-page", "windows-doc"]
     }
   ]
 }

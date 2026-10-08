@@ -9,8 +9,7 @@
       "arch": "x64",
       "fileName": "node-v24.21.0-x64.msi",
       "fileType": "msi",
-      "fileSize": 33230848,
-      "checksum": { "algorithm": "sha256", "value": "bb0eaee134f9357f22aea915ee793343e627aefc1e66488164bac6915bce2cac" }
+      "fileSize": 33230848
     }
   ],
   "sources": [
